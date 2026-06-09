@@ -1,0 +1,9 @@
+# Normalize to LF in the repo so the Linux machine gets clean line endings.
+* text=auto eol=lf
+
+# PowerShell scripts are Windows-only; keep CRLF in working copies on Windows.
+*.ps1 text eol=crlf
+
+# Treat JSON/markdown as text (they contain UTF-8 incl. Chinese).
+*.json text
+*.md text

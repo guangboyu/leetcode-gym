@@ -1,0 +1,18 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.vscode/
+
+# Scratch / intermediate scraping artifacts
+**/_raw/
+*.tmp
+
+# Phase 2 build artifacts (when we get there)
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
