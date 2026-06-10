@@ -10,13 +10,21 @@
 <header>
   <h1>LeetCode Study Tracker</h1>
   <nav id="tabs">
-    <button data-tab="due" class="active">Due <span id="due-count" class="count"></span></button>
+    <button data-tab="today" class="active">Today <span id="due-count" class="count"></span></button>
     <button data-tab="browse">Browse</button>
+    <button data-tab="drill">Drill</button>
     <button data-tab="stats">Stats</button>
   </nav>
+  <label class="cap">Rating cap
+    <select id="cap-select">
+      <option>1400</option><option>1500</option><option>1600</option>
+      <option selected>1700</option><option>1800</option><option>2000</option>
+      <option>2200</option><option>2400</option><option value="none">none</option>
+    </select>
+  </label>
 </header>
 <main>
-  <section id="view-due"></section>
+  <section id="view-today"></section>
 
   <section id="view-browse" hidden>
     <div id="filters">
@@ -46,14 +54,18 @@
         <option value="rating">Sort: Rating</option>
         <option value="due">Sort: Due date</option>
       </select>
+      <label><input type="checkbox" id="f-cap"> &le; cap</label>
       <label id="comp-label" hidden><input type="checkbox" id="f-comp"> competition tier</label>
     </div>
     <div id="browse-table"></div>
     <div id="pager"></div>
   </section>
 
+  <section id="view-drill" hidden></section>
+
   <section id="view-stats" hidden></section>
 </main>
+<script src="route.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

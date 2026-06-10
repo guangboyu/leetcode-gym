@@ -11,14 +11,16 @@ A problem's progress entry (one value in data/progress.json):
   }
 
 Actions:
-  solved    -> climb the interval ladder; past the last rung the problem is mastered
-  forgotten -> due immediately, the ladder restarts on the next solve
-  reset     -> back to untouched (entry removed)
+  solved      -> climb the interval ladder; past the last rung the problem is mastered
+  solved_help -> solved by reading the solution: retry in 2 days, ladder doesn't climb
+  forgotten   -> due immediately, the ladder restarts on the next solve
+  reset       -> back to untouched (entry removed)
 """
 from datetime import date, timedelta
 
 INTERVALS = [1, 2, 4, 7, 15, 30]  # days until next review, per consecutive success
-ACTIONS = ("solved", "forgotten", "reset")
+HELP_INTERVAL = 2                 # retry gap after solving with the solution's help
+ACTIONS = ("solved", "solved_help", "forgotten", "reset")
 
 
 def apply_action(entry, action, today=None):
@@ -34,6 +36,13 @@ def apply_action(entry, action, today=None):
     if action == "forgotten":
         return {"status": "forgotten", "successes": 0, "last": today,
                 "due": today, "history": history}
+
+    if action == "solved_help":
+        successes = 0 if entry is None or entry["status"] == "forgotten" \
+            else min(entry["successes"], len(INTERVALS))
+        due = date.fromisoformat(today) + timedelta(days=HELP_INTERVAL)
+        return {"status": "solved", "successes": successes, "last": today,
+                "due": due.isoformat(), "history": history}
 
     successes = 1 if entry is None or entry["status"] == "forgotten" \
         else entry["successes"] + 1

@@ -10,11 +10,14 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
 - **Phase 1.5 — normalize & curate: DONE.** Python pipeline in `scripts/` (no extra deps);
   0x3F lists translated to English and curated for interviews; everything merged into
   `data/problems.json` (2,676 problems keyed by slug with list-membership tags).
-- **Phase 2 — tracker MVP: DONE.** Local web app, stdlib only: `python3 tracker/server.py`
-  → http://localhost:8765. Due-queue / Browse / Stats tabs; progress persisted to
-  `data/progress.json` (kept out of .gitignore on purpose — committable for durability).
-  Possible next steps: review-history charts, rating-based "suggest next problems",
-  import of existing LeetCode submissions.
+- **Phase 2 — tracker: DONE** (MVP + 0x3F-methodology features). Local web app, stdlib
+  only: `python3 tracker/server.py [--autocommit]` → http://localhost:8765.
+  Tabs: Today (due reviews + 7-stage 0x3F study route), Browse, Drill (type-blind random
+  practice), Stats (+ complexity cheat-sheet). Global rating cap (default 1700, DP widens
+  to 2000). Actions: Solved / w-help (+2d, ladder paused) / Forgot / Reset.
+  Storage: append-only `data/reviews.jsonl` is the source of truth (git-mergeable);
+  `data/progress.json` is a derived snapshot; `--autocommit` git-commits progress.
+  Possible next steps: review-history charts/heatmap, import of LeetCode submissions.
 
 ## Environment
 
@@ -23,12 +26,15 @@ Linux/macOS with python3 (stdlib only). Network needed only to refresh snapshots
 ## Repository layout
 
 ```
-tracker/               # Phase 2 app (no deps): server.py + scheduler.py + static/ UI
+tracker/               # Phase 2 app (no deps)
   server.py            #   ThreadingHTTPServer: static files, GET /api/progress,
-                       #   POST /api/review {slug, action: solved|forgotten|reset}
+                       #   POST /api/review {slug, action}; --autocommit
   scheduler.py         #   Ebbinghaus ladder 1/2/4/7/15/30d; 6 successes -> mastered;
-                       #   forgotten -> due now + ladder restarts; reset -> untouched
-  static/              #   vanilla JS SPA (Due / Browse / Stats)
+                       #   solved_help -> +2d ladder paused; forgotten -> due now,
+                       #   ladder restarts; reset -> untouched
+  store.py             #   data/reviews.jsonl event log (truth) -> replay -> snapshot
+  static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
+                       #   route.js = pure 0x3F-route logic, node-testable
 tests/                 # python3 -m unittest discover -s tests
 scripts/               # data pipeline (run from repo root, in this order to fully rebuild)
   fetch_catalog.py     #   leetcode.com API + zerotrac ratings -> source/data/catalog.json

@@ -46,6 +46,28 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual([a for _, a in e["history"]],
                          ["solved", "forgotten", "solved"])
 
+    def test_solved_help_does_not_climb_ladder(self):
+        e = apply_action(None, "solved_help", "2026-06-09")
+        self.assertEqual((e["status"], e["successes"], e["due"]),
+                         ("solved", 0, "2026-06-11"))
+        e = apply_action(e, "solved", "2026-06-11")
+        self.assertEqual((e["successes"], e["due"]), (1, "2026-06-12"))
+
+    def test_solved_help_pauses_existing_ladder(self):
+        e = apply_action(None, "solved", "2026-06-09")
+        e = apply_action(e, "solved", "2026-06-10")        # successes 2
+        e = apply_action(e, "solved_help", "2026-06-12")
+        self.assertEqual((e["successes"], e["due"]), (2, "2026-06-14"))
+        e = apply_action(e, "solved", "2026-06-14")        # resumes at 3
+        self.assertEqual((e["successes"], e["due"]), (3, "2026-06-18"))
+
+    def test_solved_help_after_forgotten_restarts(self):
+        e = apply_action(None, "solved", "2026-06-09")
+        e = apply_action(e, "forgotten", "2026-06-10")
+        e = apply_action(e, "solved_help", "2026-06-11")
+        self.assertEqual((e["status"], e["successes"], e["due"]),
+                         ("solved", 0, "2026-06-13"))
+
     def test_reset_removes_entry(self):
         e = apply_action(None, "solved", "2026-06-09")
         self.assertIsNone(apply_action(e, "reset", "2026-06-10"))
