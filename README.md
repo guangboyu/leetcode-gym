@@ -18,10 +18,29 @@ Requires only python3 (stdlib) on Linux/macOS. Your progress is saved to
 - Mark a problem **Solved** each time you solve it (first time or on review). Reviews are
   scheduled at growing intervals: **1 → 2 → 4 → 7 → 15 → 30 days**.
 - Clear all six intervals and the problem is **Mastered** (no more reviews).
+- Solved it only after reading the editorial? Mark **w/ help** — it comes back in 2 days
+  and the interval ladder doesn't climb.
 - Couldn't solve it at review time? Mark **Forgot** — it becomes due immediately and the
   interval ladder restarts on your next solve.
-- The **Due** tab is your daily queue; **Browse** filters by list, 0x3F topic, difficulty,
-  status, or contest rating; **Stats** shows per-list progress.
+
+## Practice methodology (after 0x3F's "how to practice scientifically")
+
+- **Today** tab: reviews due now, then the **study route** — 0x3F's 7-stage beginner path
+  (sliding window → binary search → core data structures → binary tree DFS → grid DFS →
+  backtracking → DP ch. 1–6) suggesting the next problems in his recommended order.
+- **Rating cap** (header, default **1700**): spiral learning — finish everything at or
+  below the cap before raising it. The DP stage automatically widens to 2000.
+- **Drill** tab: random already-unseen problem in a rating range with its topic and
+  difficulty hidden until you mark it — trains recognizing problem types cold.
+- **Browse**: filter by list, 0x3F topic, difficulty, status, ≤cap; search; sort by rating.
+- **Stats**: per-list progress (incl. within-cap %) and the data-range → complexity table.
+
+## Storage
+
+Every action is appended to `data/reviews.jsonl` (the source of truth — append-only, so
+it's crash-proof and merges trivially across machines via git); `data/progress.json` is a
+derived snapshot rebuilt on server start. Run with `--autocommit` to git-commit your
+progress automatically a minute after each study burst and on shutdown (it never pushes).
 
 ## The lists
 

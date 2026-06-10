@@ -65,6 +65,21 @@ a:hover { text-decoration: underline; }
 #pager button:disabled { opacity: .4; cursor: default; }
 
 .empty { color: var(--muted); padding: 2rem 0; text-align: center; }
+h2 { font-size: 1.05rem; margin: 1.4rem 0 .6rem; }
+.cap { margin-left: auto; color: var(--muted); font-size: .9rem; }
+.cap select { font: inherit; padding: .2rem .4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
+
+.route { margin: 1rem 0; color: var(--muted); }
+.route summary { cursor: pointer; }
+.route ol { margin: .5rem 0 0; padding-left: 1.4rem; }
+.route li.stage-done { color: var(--c-solved); }
+.route li.stage-current { color: var(--text); font-weight: 600; }
+
+.drillcard { background: var(--card); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1rem; }
+.drill-title { font-size: 1.15rem; margin: .2rem 0 .6rem; }
+.drillcard ul { margin: .3rem 0; }
+.drillcard button { font: inherit; font-size: .85rem; cursor: pointer; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); padding: .2rem .7rem; }
+.drillcard button:hover { border-color: var(--accent); color: var(--accent); }
 .statgrid { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0 1.5rem; }
 .statcard { background: var(--card); border-radius: 8px; padding: .8rem 1.2rem; min-width: 8rem; }
 .statcard .big { font-size: 1.6rem; font-weight: 700; }

@@ -5,13 +5,23 @@ let PROGRESS = {};   // slug -> progress entry   (/api/progress)
 let ROWS = [];       // [slug, problem] sorted by id
 const TODAY = new Date().toLocaleDateString("en-CA"); // local YYYY-MM-DD
 const PAGE_SIZE = 100;
+const SUGGEST = 5;   // new problems suggested per day on the Today tab
 const LIST_BADGES = { hot100: "H100", interview150: "I150", neetcode250: "NC250" };
 
-let tab = "due";
+let tab = "today";
 let page = 0;
+let drill = { slug: null, revealed: false };
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---------- settings ----------
+function cap() {
+  const v = localStorage.getItem("cap") ?? "1700";
+  return v === "none" ? null : Number(v);
+}
+const isDone = (slug) => Boolean(PROGRESS[slug]) && PROGRESS[slug].status !== "forgotten";
+const isNew = (slug) => !PROGRESS[slug];
 
 // ---------- status ----------
 function dstatus(slug) {
@@ -42,6 +52,13 @@ function badges(p) {
   return out;
 }
 
+function actionsHtml(slug) {
+  return `<button data-slug="${slug}" data-action="solved">Solved</button>
+    <button data-slug="${slug}" data-action="solved_help">w/ help</button>
+    <button data-slug="${slug}" data-action="forgotten">Forgot</button>
+    ${PROGRESS[slug] ? `<button data-slug="${slug}" data-action="reset">Reset</button>` : ""}`;
+}
+
 function rowHtml(slug, p) {
   const url = `https://leetcode.com/problems/${slug}/`;
   return `<tr>
@@ -50,11 +67,7 @@ function rowHtml(slug, p) {
     <td class="diff-${p.difficulty}">${p.difficulty}</td>
     <td class="num">${p.rating ?? ""}</td>
     <td>${chipHtml(slug)}</td>
-    <td class="actions">
-      <button data-slug="${slug}" data-action="solved">Solved</button>
-      <button data-slug="${slug}" data-action="forgotten">Forgot</button>
-      ${PROGRESS[slug] ? `<button data-slug="${slug}" data-action="reset">Reset</button>` : ""}
-    </td>
+    <td class="actions">${actionsHtml(slug)}</td>
   </tr>`;
 }
 
@@ -65,18 +78,38 @@ function tableHtml(rows) {
   </table>`;
 }
 
-function renderDue() {
+// ---------- Today: due reviews + study route ----------
+function renderToday() {
   const due = ROWS.filter(([s]) => ["due", "forgotten"].includes(dstatus(s)))
     .sort((a, b) => (PROGRESS[a[0]].due < PROGRESS[b[0]].due ? -1 : 1) || (a[1].rating ?? 9999) - (b[1].rating ?? 9999));
   $("#due-count").textContent = due.length || "";
+
   const upcoming = ROWS.filter(([s]) => dstatus(s) === "solved")
     .map(([s]) => PROGRESS[s].due).sort()[0];
-  $("#view-due").innerHTML = due.length
-    ? tableHtml(due)
-    : `<p class="empty">Nothing due today 🎉${upcoming ? ` — next review on ${upcoming}` : ""}<br>
-       Pick new problems in <b>Browse</b> and mark them Solved to start their review cycle.</p>`;
+  const dueHtml = due.length
+    ? `<h2>Reviews due (${due.length})</h2>` + tableHtml(due)
+    : `<p class="empty">No reviews due 🎉${upcoming ? ` — next on ${upcoming}` : ""}</p>`;
+
+  const states = Route.routeState(ROWS, isDone, cap());
+  const current = states.find((st) => st.todo.length > 0);
+  const overview = states.map((st) => {
+    const doneMark = st.todo.length === 0 ? "✓ " : st === current ? "▶ " : "";
+    return `<li class="${st.todo.length === 0 ? "stage-done" : st === current ? "stage-current" : ""}">
+      ${doneMark}${esc(st.stage.name)} <span class="sub">${st.done}/${st.total}</span></li>`;
+  }).join("");
+
+  const routeHtml = current
+    ? `<h2>Study route — ${esc(current.stage.name)} <span class="sub">${current.done}/${current.total} done${current.stage.minCap && cap() != null ? ` · cap ${Math.max(cap(), current.stage.minCap)}` : ""}</span></h2>
+       ${tableHtml(current.todo.slice(0, SUGGEST))}
+       <details class="route"><summary>Route overview (0x3F Method A, rating cap ${cap() ?? "none"})</summary><ol>${overview}</ol></details>`
+    : `<h2>Study route</h2><p class="empty">Beginner route complete at cap ${cap() ?? "none"} 🏆 —
+       raise the cap, practice the full lists in <b>Browse</b>, or test yourself in <b>Drill</b>.</p>
+       <details class="route"><summary>Route overview</summary><ol>${overview}</ol></details>`;
+
+  $("#view-today").innerHTML = dueHtml + routeHtml;
 }
 
+// ---------- Browse ----------
 function matchesFilters(slug, p) {
   const list = $("#f-list").value;
   if (list === "ox3f") {
@@ -86,6 +119,7 @@ function matchesFilters(slug, p) {
     if (!ms.length) return false;
   } else if (list !== "all" && !p.lists[list]) return false;
 
+  if ($("#f-cap").checked && cap() && p.rating && p.rating > cap()) return false;
   const diff = $("#f-diff").value;
   if (diff && p.difficulty !== diff) return false;
   const st = $("#f-status").value;
@@ -116,6 +150,70 @@ function renderBrowse() {
   }
 }
 
+// ---------- Drill (0x3F Method B: type-blind practice) ----------
+function drawDrill() {
+  const lo = Number($("#drill-lo")?.value ?? localStorage.getItem("drillLo") ?? (cap() ? cap() - 300 : 1400));
+  const hi = Number($("#drill-hi")?.value ?? localStorage.getItem("drillHi") ?? (cap() ?? 1700));
+  localStorage.setItem("drillLo", lo);
+  localStorage.setItem("drillHi", hi);
+  const pool = Route.drillPool(ROWS, isNew, lo, hi);
+  drill = pool.length
+    ? { slug: pool[Math.floor(Math.random() * pool.length)][0], revealed: false }
+    : { slug: null, revealed: false, empty: true };
+  renderDrill();
+}
+
+function renderDrill() {
+  const lo = localStorage.getItem("drillLo") ?? (cap() ? cap() - 300 : 1400);
+  const hi = localStorage.getItem("drillHi") ?? (cap() ?? 1700);
+  let card = "";
+  if (drill.empty) card = `<p class="empty">No untouched rated problems in that range — widen it.</p>`;
+  else if (drill.slug) {
+    const p = PROBLEMS[drill.slug];
+    const url = `https://leetcode.com/problems/${drill.slug}/`;
+    card = `<div class="drillcard">
+      <p class="drill-title"><a href="${url}" target="_blank" rel="noopener">${p.id}. ${esc(p.title)}</a></p>
+      ${drill.revealed
+        ? `<p><span class="diff-${p.difficulty}">${p.difficulty}</span> · rating ${p.rating} ${badges(p)}</p>
+           <ul class="sub">${(p.lists.ox3f || []).map((m) => `<li>${esc(m.topic)} — ${esc(m.section)}</li>`).join("") || "<li>not in the 0x3F lists</li>"}</ul>
+           <p>${chipHtml(drill.slug)}</p>
+           <button id="drill-next">Draw next →</button>`
+        : `<p class="sub">Type hidden — figure out the approach yourself, then mark it:</p>
+           <p class="actions">${actionsHtml(drill.slug)}
+           <button id="drill-skip">Skip</button></p>`}
+    </div>`;
+  }
+  $("#view-drill").innerHTML = `
+    <h2>Random drill</h2>
+    <p class="sub">0x3F's Method B: after the beginner route, occasionally practice without knowing the
+    problem type — contests and interviews won't tell you it's DP. Topic and difficulty stay hidden
+    until you mark the problem.</p>
+    <div id="filters">
+      <label>Rating <input id="drill-lo" type="number" step="50" value="${lo}"> –
+      <input id="drill-hi" type="number" step="50" value="${hi}"></label>
+      <button id="drill-draw">Draw a problem</button>
+    </div>
+    ${card}`;
+  $("#drill-draw").onclick = drawDrill;
+  const skip = $("#drill-skip");
+  if (skip) skip.onclick = drawDrill;
+  const next = $("#drill-next");
+  if (next) next.onclick = drawDrill;
+}
+
+// ---------- Stats ----------
+const CHEAT = [
+  ["n ≤ 10", "O(n!) / O(Cⁿ)", "backtracking, brute force"],
+  ["n ≤ 20", "O(2ⁿ)", "bitmask DP"],
+  ["n ≤ 40", "O(2<sup>n/2</sup>)", "meet in the middle"],
+  ["n ≤ 100", "O(n³)", "triple-loop DP, Floyd-Warshall"],
+  ["n ≤ 1 000", "O(n²)", "double-loop DP, knapsack"],
+  ["n ≤ 100 000", "O(n log n)", "most problems: sorting, heaps, binary search"],
+  ["n ≤ 1 000 000", "O(n)", "linear DP, sliding window"],
+  ["n ≤ 10⁹", "O(√n)", "primality testing"],
+  ["n ≤ 10¹⁸", "O(log n) / O(1)", "binary search on answer, fast power, math"],
+];
+
 function renderStats() {
   const counts = { new: 0, solved: 0, due: 0, forgotten: 0, mastered: 0 };
   ROWS.forEach(([s]) => counts[dstatus(s)]++);
@@ -134,24 +232,35 @@ function renderStats() {
   const topics = [...new Set(ROWS.flatMap(([, p]) => (p.lists.ox3f || []).map((m) => m.topic)))];
   topics.forEach((t) => lists.push([`0x3F · ${t}`, (p) => (p.lists.ox3f || []).some((m) => m.topic === t && m.tier === "interview")]));
 
+  const c = cap();
   const rows = lists.map(([name, pred]) => {
     const subset = ROWS.filter(([, p]) => pred(p));
     const started = subset.filter(([s]) => PROGRESS[s]).length;
     const mastered = subset.filter(([s]) => dstatus(s) === "mastered").length;
-    const pct = subset.length ? Math.round((100 * started) / subset.length) : 0;
+    const inCap = c ? subset.filter(([, p]) => !p.rating || p.rating <= c) : subset;
+    const startedCap = inCap.filter(([s]) => PROGRESS[s]).length;
+    const pct = inCap.length ? Math.round((100 * startedCap) / inCap.length) : 0;
     return `<tr><td>${esc(name)}</td><td class="num">${subset.length}</td>
-      <td class="num">${started} (${pct}%)</td><td class="num">${mastered}</td></tr>`;
+      <td class="num">${started}</td><td class="num">${mastered}</td>
+      <td class="num">${startedCap}/${inCap.length} (${pct}%)</td></tr>`;
   }).join("");
+
+  const cheat = CHEAT.map(([n, t, a]) => `<tr><td class="num">${n}</td><td>${t}</td><td>${a}</td></tr>`).join("");
 
   $("#view-stats").innerHTML = `
     <div class="statgrid">${cards}</div>
-    <table><thead><tr><th>List</th><th>Problems</th><th>Started</th><th>Mastered</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
+    <table><thead><tr><th>List</th><th>Problems</th><th>Started</th><th>Mastered</th><th>&le; cap ${c ?? "—"}</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <h2>Data range → expected complexity</h2>
+    <p class="sub">From 0x3F's guide: ~10⁸ simple operations/second (divide by ~10 for Python).</p>
+    <table><thead><tr><th>Data range</th><th>Allowed complexity</th><th>Typical algorithms</th></tr></thead>
+    <tbody>${cheat}</tbody></table>`;
 }
 
 function renderAll() {
-  renderDue();
+  renderToday();
   if (tab === "browse") renderBrowse();
+  if (tab === "drill") renderDrill();
   if (tab === "stats") renderStats();
 }
 
@@ -162,6 +271,7 @@ async function mark(slug, action) {
   const { entry } = await res.json();
   if (entry === null) delete PROGRESS[slug];
   else PROGRESS[slug] = entry;
+  if (slug === drill.slug) drill.revealed = true;
   renderAll();
 }
 
@@ -175,12 +285,18 @@ document.querySelectorAll("#tabs button").forEach((b) => {
   b.onclick = () => {
     tab = b.dataset.tab;
     document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("active", x === b));
-    ["due", "browse", "stats"].forEach((t) => { $(`#view-${t}`).hidden = t !== tab; });
+    ["today", "browse", "drill", "stats"].forEach((t) => { $(`#view-${t}`).hidden = t !== tab; });
     renderAll();
   };
 });
 
-["#f-list", "#f-topic", "#f-diff", "#f-status", "#f-sort", "#f-comp"].forEach((sel) => {
+$("#cap-select").value = localStorage.getItem("cap") ?? "1700";
+$("#cap-select").addEventListener("change", () => {
+  localStorage.setItem("cap", $("#cap-select").value);
+  renderAll();
+});
+
+["#f-list", "#f-topic", "#f-diff", "#f-status", "#f-sort", "#f-cap", "#f-comp"].forEach((sel) => {
   $(sel).addEventListener("change", () => {
     if (sel === "#f-list") {
       const isOx = $("#f-list").value === "ox3f";
