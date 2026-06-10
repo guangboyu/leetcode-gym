@@ -10,8 +10,11 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
 - **Phase 1.5 — normalize & curate: DONE.** Python pipeline in `scripts/` (no extra deps);
   0x3F lists translated to English and curated for interviews; everything merged into
   `data/problems.json` (2,676 problems keyed by slug with list-membership tags).
-- **Phase 2 — build the tracker: NOT STARTED.** Next step: the status + review-scheduler UI
-  on top of `data/problems.json`.
+- **Phase 2 — tracker MVP: DONE.** Local web app, stdlib only: `python3 tracker/server.py`
+  → http://localhost:8765. Due-queue / Browse / Stats tabs; progress persisted to
+  `data/progress.json` (kept out of .gitignore on purpose — committable for durability).
+  Possible next steps: review-history charts, rating-based "suggest next problems",
+  import of existing LeetCode submissions.
 
 ## Environment
 
@@ -20,6 +23,13 @@ Linux/macOS with python3 (stdlib only). Network needed only to refresh snapshots
 ## Repository layout
 
 ```
+tracker/               # Phase 2 app (no deps): server.py + scheduler.py + static/ UI
+  server.py            #   ThreadingHTTPServer: static files, GET /api/progress,
+                       #   POST /api/review {slug, action: solved|forgotten|reset}
+  scheduler.py         #   Ebbinghaus ladder 1/2/4/7/15/30d; 6 successes -> mastered;
+                       #   forgotten -> due now + ladder restarts; reset -> untouched
+  static/              #   vanilla JS SPA (Due / Browse / Stats)
+tests/                 # python3 -m unittest discover -s tests
 scripts/               # data pipeline (run from repo root, in this order to fully rebuild)
   fetch_catalog.py     #   leetcode.com API + zerotrac ratings -> source/data/catalog.json
   gen_lists.py         #   source/data/*.json -> the 3 western .md tables
@@ -30,6 +40,7 @@ scripts/               # data pipeline (run from repo root, in this order to ful
 data/
   problems.json        # THE TRACKER INPUT: slug -> {id, title, difficulty, rating,
                        #   paid_only, lists{hot100, interview150, neetcode250, ox3f[]}}
+  progress.json        # user review state (created by the tracker; safe to commit)
 source/
   README.md            # map of all four lists + data-source details + attribution
   Hot100.md            # LeetCode Hot 100 (100)        generated table

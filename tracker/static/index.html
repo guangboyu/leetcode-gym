@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeetCode Study Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>LeetCode Study Tracker</h1>
+  <nav id="tabs">
+    <button data-tab="due" class="active">Due <span id="due-count" class="count"></span></button>
+    <button data-tab="browse">Browse</button>
+    <button data-tab="stats">Stats</button>
+  </nav>
+</header>
+<main>
+  <section id="view-due"></section>
+
+  <section id="view-browse" hidden>
+    <div id="filters">
+      <select id="f-list">
+        <option value="all">All lists</option>
+        <option value="hot100">Hot 100</option>
+        <option value="interview150">Interview 150</option>
+        <option value="neetcode250">NeetCode 250</option>
+        <option value="ox3f">0x3F</option>
+      </select>
+      <select id="f-topic" hidden><option value="">All topics</option></select>
+      <select id="f-diff">
+        <option value="">Any difficulty</option>
+        <option>Easy</option><option>Medium</option><option>Hard</option>
+      </select>
+      <select id="f-status">
+        <option value="">Any status</option>
+        <option value="new">New</option>
+        <option value="solved">Scheduled</option>
+        <option value="due">Due</option>
+        <option value="forgotten">Forgotten</option>
+        <option value="mastered">Mastered</option>
+      </select>
+      <input id="f-search" type="search" placeholder="Search title or #id">
+      <select id="f-sort">
+        <option value="id">Sort: ID</option>
+        <option value="rating">Sort: Rating</option>
+        <option value="due">Sort: Due date</option>
+      </select>
+      <label id="comp-label" hidden><input type="checkbox" id="f-comp"> competition tier</label>
+    </div>
+    <div id="browse-table"></div>
+    <div id="pager"></div>
+  </section>
+
+  <section id="view-stats" hidden></section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
