@@ -42,6 +42,12 @@ Attribution: lists by [LeetCode](https://leetcode.com), [NeetCode](https://neetc
 [zerotrac](https://zerotrac.github.io/leetcode_problem_rating/). This repo redistributes
 factual list data only (IDs, titles, slugs, grouping) — no problem statements or solutions.
 
+## License
+
+The code in this repo (tracker, scripts) is [MIT](LICENSE). The problem-list data remains
+the work of its upstream curators (see attribution above) and is redistributed here as
+factual data with attribution, not under the MIT grant.
+
 ## Development
 
 ```bash
