@@ -9,6 +9,13 @@ desktop.ini
 **/_raw/
 *.tmp
 
+# Personal study progress — never publish from this repo.
+# Keep a git-backed backup by pointing the tracker's --data-dir at a
+# separate PRIVATE repo (see README "Backing up your progress").
+data/reviews.jsonl
+data/progress.json
+data/*.json.tmp
+
 # Phase 2 build artifacts (when we get there)
 node_modules/
 __pycache__/

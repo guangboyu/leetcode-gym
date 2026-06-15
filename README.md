@@ -39,8 +39,25 @@ Requires only python3 (stdlib) on Linux/macOS. Your progress is saved to
 
 Every action is appended to `data/reviews.jsonl` (the source of truth — append-only, so
 it's crash-proof and merges trivially across machines via git); `data/progress.json` is a
-derived snapshot rebuilt on server start. Run with `--autocommit` to git-commit your
-progress automatically a minute after each study burst and on shutdown (it never pushes).
+derived snapshot rebuilt on server start.
+
+### Backing up your progress
+
+Your progress files are **gitignored** in this repo, so they're never committed here and
+this repo can be published without exposing what you've solved. To keep a git-backed,
+off-machine backup anyway, point the tracker at a **separate private repo**:
+
+```bash
+# one-time: a private repo just for your progress (set it Private on GitHub)
+git clone git@github.com:you/leetcode-progress.git ~/leetcode-progress
+
+python3 tracker/server.py --data-dir ~/leetcode-progress --autocommit --push
+```
+
+`--autocommit` commits the event log in that data dir a minute after each study burst and on
+shutdown; `--push` also pushes it. Nothing touches this (public) repo. Note: GitHub
+visibility is per-repository — a public repo has no "private branch", so a separate private
+repo is the way to keep code public and progress private.
 
 ## The lists
 

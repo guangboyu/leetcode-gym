@@ -16,7 +16,9 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
   practice), Stats (+ complexity cheat-sheet). Global rating cap (default 1700, DP widens
   to 2000). Actions: Solved / w-help (+2d, ladder paused) / Forgot / Reset.
   Storage: append-only `data/reviews.jsonl` is the source of truth (git-mergeable);
-  `data/progress.json` is a derived snapshot; `--autocommit` git-commits progress.
+  `data/progress.json` is a derived snapshot. Both gitignored (don't leak progress from
+  a public repo); `--data-dir` puts them in a separate private repo that `--autocommit`
+  / `--push` backs up off-machine.
   Possible next steps: review-history charts/heatmap, import of LeetCode submissions.
 
 ## Environment
@@ -46,7 +48,7 @@ scripts/               # data pipeline (run from repo root, in this order to ful
 data/
   problems.json        # THE TRACKER INPUT: slug -> {id, title, difficulty, rating,
                        #   paid_only, lists{hot100, interview150, neetcode250, ox3f[]}}
-  progress.json        # user review state (created by the tracker; safe to commit)
+  progress.json        # user review state (derived snapshot; gitignored — see below)
 source/
   README.md            # map of all four lists + data-source details + attribution
   Hot100.md            # LeetCode Hot 100 (100)        generated table
