@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 """LeetCode study tracker — local web UI. Stdlib only.
 
-    python3 tracker/server.py [--port 8765] [--autocommit]
+    python3 tracker/server.py [--port 8765] [--data-dir DIR] [--autocommit] [--push]
 
 Serves tracker/static/ plus:
     GET  /data/problems.json   the merged problem table (read-only input)
-    GET  /api/progress         all progress entries (derived from data/reviews.jsonl)
+    GET  /api/progress         all progress entries (derived from the event log)
     POST /api/review           {"slug": ..., "action": "solved"|"solved_help"|"forgotten"|"reset"}
                                -> {"slug": ..., "entry": <updated entry or null>}
 
---autocommit: git-commit the progress files (data/reviews.jsonl + data/progress.json)
-60 seconds after the last review action, and on shutdown. Never pushes.
+--data-dir   where reviews.jsonl + progress.json live (default: ./data, which is
+             gitignored). To git-back-up your progress without leaking it from a
+             published repo, point this at a SEPARATE PRIVATE repo.
+--autocommit git-commit the progress files in their data dir 60s after the last
+             review action, and on shutdown.
+--push       after each autocommit, also `git push` the data dir's repo.
 """
 import argparse
 import json
@@ -31,23 +35,43 @@ PROBLEMS_FILE = ROOT / "data" / "problems.json"
 
 LOCK = threading.Lock()
 SLUGS = frozenset(json.loads(PROBLEMS_FILE.read_text(encoding="utf-8"))["problems"])
-PROGRESS = store.load_progress()
+PROGRESS = {}
 
 AUTOCOMMIT = False
+PUSH = False
 COMMIT_DELAY = 60
 _commit_timer = None
+_warned = False
+
+
+def _git(cwd, *args):
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
 
 
 def commit_now():
-    files = [str(store.LOG_FILE), str(store.SNAPSHOT_FILE)]
-    subprocess.run(["git", "add", "--"] + files, cwd=ROOT, capture_output=True)
-    staged = subprocess.run(["git", "diff", "--cached", "--quiet", "--"] + files,
-                            cwd=ROOT, capture_output=True)
-    if staged.returncode != 0:
-        subprocess.run(["git", "commit", "-q", "-m",
-                        f"progress backup {date.today().isoformat()}"],
-                       cwd=ROOT, capture_output=True)
-        print(f"[autocommit] progress committed ({date.today().isoformat()})")
+    """Commit (and optionally push) the progress files in their own data dir."""
+    global _warned
+    d = store.LOG_FILE.parent
+    files = [store.LOG_FILE.name, store.SNAPSHOT_FILE.name]
+    if _git(d, "rev-parse", "--git-dir").returncode != 0:
+        if not _warned:
+            print(f"[autocommit] {d} is not a git repository — progress not backed up.")
+            _warned = True
+        return
+    _git(d, "add", "--", *files)
+    if _git(d, "diff", "--cached", "--quiet", "--", *files).returncode == 0:
+        ignored = _git(d, "check-ignore", *files).stdout.strip()
+        if ignored and not _warned:
+            print(f"[autocommit] {ignored.splitlines()[0]} is gitignored here — "
+                  "point --data-dir at a separate private repo to back up progress.")
+            _warned = True
+        return
+    _git(d, "commit", "-q", "-m", f"progress backup {date.today().isoformat()}")
+    msg = f"[autocommit] progress committed ({date.today().isoformat()})"
+    if PUSH:
+        r = _git(d, "push")
+        msg += " and pushed" if r.returncode == 0 else f" (push failed: {r.stderr.strip()})"
+    print(msg)
 
 
 def schedule_commit():
@@ -120,16 +144,24 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main():
-    global AUTOCOMMIT
-    ap = argparse.ArgumentParser(description=__doc__)
+    global AUTOCOMMIT, PUSH, PROGRESS
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--data-dir", default=str(ROOT / "data"),
+                    help="directory for reviews.jsonl + progress.json (default: ./data)")
     ap.add_argument("--autocommit", action="store_true",
-                    help="git-commit progress files after review activity")
+                    help="git-commit progress files in the data dir after review activity")
+    ap.add_argument("--push", action="store_true",
+                    help="also git-push the data dir's repo after each autocommit")
     args = ap.parse_args()
-    AUTOCOMMIT = args.autocommit
+    AUTOCOMMIT, PUSH = args.autocommit, args.push
+    store.set_data_dir(args.data_dir)
+    PROGRESS = store.load_progress()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     print(f"Tracking {len(SLUGS)} problems — open http://localhost:{args.port}")
-    print(f"Event log: {store.LOG_FILE}" + ("  (autocommit on)" if AUTOCOMMIT else ""))
+    flags = "  (autocommit" + (" + push)" if PUSH else ")") if AUTOCOMMIT else ""
+    print(f"Event log: {store.LOG_FILE}" + flags)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

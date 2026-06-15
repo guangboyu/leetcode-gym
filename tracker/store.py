@@ -24,6 +24,16 @@ LOG_FILE = ROOT / "data" / "reviews.jsonl"
 SNAPSHOT_FILE = ROOT / "data" / "progress.json"
 
 
+def set_data_dir(data_dir):
+    """Point the event log and snapshot at an arbitrary directory (e.g. a
+    separate private repo used for backup). Call once at startup."""
+    global LOG_FILE, SNAPSHOT_FILE
+    data_dir = Path(data_dir).expanduser()
+    data_dir.mkdir(parents=True, exist_ok=True)
+    LOG_FILE = data_dir / "reviews.jsonl"
+    SNAPSHOT_FILE = data_dir / "progress.json"
+
+
 def replay(events):
     progress = {}
     for e in events:
