@@ -27,9 +27,10 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tracker import store
+from tracker.resources import resource_root
 from tracker.scheduler import ACTIONS, apply_action
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = resource_root()
 STATIC = ROOT / "tracker" / "static"
 PROBLEMS_FILE = ROOT / "data" / "problems.json"
 
@@ -143,8 +144,25 @@ class Handler(SimpleHTTPRequestHandler):
         pass  # keep the terminal quiet
 
 
-def main():
+def configure(data_dir=None, autocommit=False, push=False):
+    """Load progress and set backup options. Call once before make_server().
+
+    Shared by the CLI (main) and the desktop launcher so both go through the
+    same startup path. data_dir=None keeps store's default (./data)."""
     global AUTOCOMMIT, PUSH, PROGRESS
+    AUTOCOMMIT, PUSH = autocommit, push
+    if data_dir is not None:
+        store.set_data_dir(data_dir)
+    PROGRESS = store.load_progress()
+
+
+def make_server(port=8765, host="127.0.0.1"):
+    """Build (but don't start) the tracker HTTP server. Pass port=0 to let the
+    OS pick a free port; read the chosen port from server.server_address[1]."""
+    return ThreadingHTTPServer((host, port), Handler)
+
+
+def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--port", type=int, default=8765)
@@ -155,10 +173,8 @@ def main():
     ap.add_argument("--push", action="store_true",
                     help="also git-push the data dir's repo after each autocommit")
     args = ap.parse_args()
-    AUTOCOMMIT, PUSH = args.autocommit, args.push
-    store.set_data_dir(args.data_dir)
-    PROGRESS = store.load_progress()
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    configure(data_dir=args.data_dir, autocommit=args.autocommit, push=args.push)
+    server = make_server(port=args.port)
     print(f"Tracking {len(SLUGS)} problems — open http://localhost:{args.port}")
     flags = "  (autocommit" + (" + push)" if PUSH else ")") if AUTOCOMMIT else ""
     print(f"Event log: {store.LOG_FILE}" + flags)
