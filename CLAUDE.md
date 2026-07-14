@@ -20,10 +20,19 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
   a public repo); `--data-dir` puts them in a separate private repo that `--autocommit`
   / `--push` backs up off-machine.
   Possible next steps: review-history charts/heatmap, import of LeetCode submissions.
+- **Phase 2.5 — desktop packaging: DONE.** Optional native-window app for
+  Windows & macOS via `pywebview` + `PyInstaller` (`tracker/desktop.py`,
+  `desktop_app.py`, `packaging/`). Wraps the *same* stdlib server (imported
+  lazily, so the server stays dependency-free) in an OS webview window; builds
+  to a single double-click executable. Desktop progress lives in a persistent
+  per-user dir (`$LEETCODE_TRACKER_DATA` or `~/LeetCodeTracker`) — point it at a
+  cloud-synced folder to sync machines. Build per-OS (no cross-compile).
 
 ## Environment
 
-Linux/macOS with python3 (stdlib only). Network needed only to refresh snapshots.
+Linux/macOS/Windows with python3 (stdlib only) to run the server; network needed
+only to refresh snapshots. The optional desktop app additionally needs `pywebview`
++ `pyinstaller` (see `packaging/requirements.txt`) on the build machine only.
 
 ## Repository layout
 
@@ -35,8 +44,13 @@ tracker/               # Phase 2 app (no deps)
                        #   solved_help -> +2d ladder paused; forgotten -> due now,
                        #   ladder restarts; reset -> untouched
   store.py             #   data/reviews.jsonl event log (truth) -> replay -> snapshot
+  resources.py         #   resolve bundled assets (repo root, or _MEIPASS when frozen)
+  desktop.py           #   optional pywebview native window over the same server
   static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
                        #   route.js = pure 0x3F-route logic, node-testable
+desktop_app.py         # PyInstaller entry point (repo root so `tracker` imports clean)
+packaging/             # desktop build: LeetCodeTracker.spec, build_windows.ps1,
+                       #   build_macos.sh, requirements.txt (pywebview + pyinstaller)
 tests/                 # python3 -m unittest discover -s tests
 scripts/               # data pipeline (run from repo root, in this order to fully rebuild)
   fetch_catalog.py     #   leetcode.com API + zerotrac ratings -> source/data/catalog.json
