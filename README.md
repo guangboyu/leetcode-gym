@@ -10,8 +10,36 @@ problem lists into one table (2,676 problems), lets you mark each problem
 python3 tracker/server.py        # then open http://localhost:8765
 ```
 
-Requires only python3 (stdlib) on Linux/macOS. Your progress is saved to
+Requires only python3 (stdlib) on Linux, macOS, or Windows. Your progress is saved to
 `data/progress.json` — a plain JSON file you can commit to keep it safe across machines.
+
+## Desktop app (Windows & macOS)
+
+Prefer a double-click app in its own window instead of a browser tab? Build a standalone
+executable — no Python needed on the machine that runs it.
+
+```bash
+pip install -r packaging/requirements.txt      # pywebview + pyinstaller (build machine only)
+
+# Windows:
+powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1   # -> dist\LeetCodeTracker.exe
+# macOS:
+bash packaging/build_macos.sh                                          # -> dist/LeetCodeTracker.app
+```
+
+PyInstaller can't cross-compile, so build once on each OS. The app wraps the same stdlib
+server in a native window (via [pywebview](https://pywebview.flowlib.com); it uses the OS
+webview — WebView2 on Windows 10/11, WKWebView on macOS — so there's nothing extra to install).
+
+Run from source without building: `python -m tracker.desktop`.
+
+**Where progress is stored (desktop app):** a persistent per-user folder, resolved as
+`$LEETCODE_TRACKER_DATA` if set, else `~/LeetCodeTracker`. **Point `LEETCODE_TRACKER_DATA`
+at a folder inside Dropbox / iCloud / OneDrive to sync progress between your Windows and Mac
+automatically** — the append-only event log makes this safe (just don't study on both
+machines at the same instant, or the cloud drive makes a "conflicted copy"). Verify a build
+without opening a window: set `LEETCODE_TRACKER_SELFTEST=report.json` and run the app; it
+checks the bundle and exits 0/1.
 
 ## How reviewing works
 
