@@ -33,13 +33,21 @@ webview — WebView2 on Windows 10/11, WKWebView on macOS — so there's nothing
 
 Run from source without building: `python -m tracker.desktop`.
 
-**Where progress is stored (desktop app):** a persistent per-user folder, resolved as
-`$LEETCODE_TRACKER_DATA` if set, else `~/LeetCodeTracker`. **Point `LEETCODE_TRACKER_DATA`
-at a folder inside Dropbox / iCloud / OneDrive to sync progress between your Windows and Mac
-automatically** — the append-only event log makes this safe (just don't study on both
-machines at the same instant, or the cloud drive makes a "conflicted copy"). Verify a build
-without opening a window: set `LEETCODE_TRACKER_SELFTEST=report.json` and run the app; it
-checks the bundle and exits 0/1.
+### Syncing progress across machines
+
+Click the **⚙ button** (top-right) → **Choose folder…** and pick a folder inside **Dropbox /
+iCloud Drive / OneDrive**. Your progress moves there and the app remembers it. Do the same on
+your other machine, pointing at the *same* synced folder — the histories **merge losslessly**
+(the append-only event log is unioned, so adopting a folder that already has history keeps
+both sides). Only caveat: don't study on two machines in the same instant, or the cloud drive
+makes a "conflicted copy".
+
+The chosen folder is remembered in a small config file (`%APPDATA%\LeetCodeTracker` on Windows,
+`~/Library/Application Support/LeetCodeTracker` on macOS). Without a choice, progress defaults
+to `$LEETCODE_TRACKER_DATA` if set, else `~/LeetCodeTracker`.
+
+Verify a build without opening a window: set `LEETCODE_TRACKER_SELFTEST=report.json` and run
+the app; it checks the bundle and exits 0/1.
 
 ## How reviewing works
 

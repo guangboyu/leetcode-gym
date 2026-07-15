@@ -309,6 +309,54 @@ $("#cap-select").addEventListener("change", () => {
 });
 $("#f-search").addEventListener("input", () => { page = 0; renderBrowse(); });
 
+// ---------- settings: sync folder ----------
+let DATA_DIR = "";
+
+// Native folder picker only exists in the desktop app (pywebview bridge).
+const isDesktop = () =>
+  Boolean(window.pywebview && window.pywebview.api && window.pywebview.api.choose_folder);
+
+async function loadDataDir() {
+  try {
+    const r = await fetch("/api/data-dir");
+    if (!r.ok) return;
+    DATA_DIR = (await r.json()).path;
+    $("#cur-data-dir").textContent = DATA_DIR;
+  } catch (_) { /* older server without the endpoint — leave the dialog blank */ }
+}
+
+async function applyDataDir(path) {
+  const msg = $("#sync-msg");
+  if (!path) return;
+  msg.textContent = "Switching…";
+  const res = await fetch("/api/data-dir", { method: "POST", body: JSON.stringify({ path }) });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) { msg.textContent = `Failed: ${body.error || res.status}`; return; }
+  DATA_DIR = body.path;
+  PROGRESS = body.progress || {};
+  $("#cur-data-dir").textContent = DATA_DIR;
+  $("#manual-path").value = "";
+  msg.textContent = "Now syncing to this folder ✓";
+  renderAll();
+}
+
+$("#settings-btn").onclick = () => {
+  $("#sync-msg").textContent = "";
+  $("#picker-hint").textContent = isDesktop() ? "" : "(desktop app only)";
+  $("#settings-dlg").showModal();
+};
+$("#choose-folder").onclick = async () => {
+  if (isDesktop()) {
+    const path = await window.pywebview.api.choose_folder();
+    if (path) applyDataDir(path);
+  } else {
+    $("#sync-msg").textContent = "The native picker needs the desktop app — paste a folder path below instead.";
+    $("#manual-path").focus();
+  }
+};
+$("#set-path").onclick = () => applyDataDir($("#manual-path").value.trim());
+loadDataDir();
+
 async function init() {
   const [probs, prog] = await Promise.all([
     fetch("/data/problems.json").then((r) => r.json()),
