@@ -22,7 +22,7 @@ import threading
 import traceback
 from pathlib import Path
 
-from tracker import server
+from tracker import config, server
 
 APP_NAME = "LeetCode Study Tracker"
 WINDOW_SIZE = (1200, 860)
@@ -30,11 +30,37 @@ MIN_WINDOW_SIZE = (900, 600)
 
 
 def default_data_dir():
-    """Persistent per-user location for progress files."""
+    """Persistent per-user location for progress files (before any UI choice)."""
     env = os.environ.get("LEETCODE_TRACKER_DATA")
     if env:
         return Path(env).expanduser()
     return Path.home() / "LeetCodeTracker"
+
+
+def resolve_data_dir(arg=None):
+    """Where progress lives, most-intentional first:
+    explicit --data-dir  >  folder chosen in the UI (config)  >  default."""
+    if arg:
+        return Path(arg).expanduser()
+    saved = config.get_data_dir()
+    if saved:
+        return Path(saved).expanduser()
+    return default_data_dir()
+
+
+class _Api:
+    """Bridge exposed to the page as ``window.pywebview.api``. Lets the Settings
+    dialog open a real OS folder picker (the browser can't)."""
+
+    def __init__(self):
+        self.window = None
+
+    def choose_folder(self):
+        import webview
+        result = self.window.create_file_dialog(webview.FOLDER_DIALOG)
+        if not result:
+            return None
+        return result[0] if isinstance(result, (list, tuple)) else result
 
 
 def _log_crash(exc, data_dir):
@@ -87,16 +113,18 @@ def run(data_dir=None):
     the window is closed)."""
     import webview  # lazy: keeps the module importable without the GUI dep
 
-    data_dir = Path(data_dir) if data_dir else default_data_dir()
+    data_dir = resolve_data_dir(data_dir)
     server.configure(data_dir=str(data_dir))
     httpd = server.make_server(port=0)  # port 0 -> OS picks a free port
     port = httpd.server_address[1]
     threading.Thread(target=httpd.serve_forever, daemon=True,
                      name="tracker-http").start()
 
-    webview.create_window(APP_NAME, f"http://127.0.0.1:{port}/",
-                          width=WINDOW_SIZE[0], height=WINDOW_SIZE[1],
-                          min_size=MIN_WINDOW_SIZE)
+    api = _Api()
+    window = webview.create_window(APP_NAME, f"http://127.0.0.1:{port}/",
+                                   width=WINDOW_SIZE[0], height=WINDOW_SIZE[1],
+                                   min_size=MIN_WINDOW_SIZE, js_api=api)
+    api.window = window
     try:
         webview.start()
     finally:
@@ -112,7 +140,7 @@ def main():
                          "(default: $LEETCODE_TRACKER_DATA or ~/LeetCodeTracker)")
     # parse_known_args: tolerate stray args a frozen app may be launched with
     args, _ = ap.parse_known_args()
-    data_dir = Path(args.data_dir).expanduser() if args.data_dir else default_data_dir()
+    data_dir = resolve_data_dir(args.data_dir)
 
     report = os.environ.get("LEETCODE_TRACKER_SELFTEST")
     if report:  # build-verification mode: no window, just check + exit code

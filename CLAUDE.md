@@ -25,8 +25,13 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
   `desktop_app.py`, `packaging/`). Wraps the *same* stdlib server (imported
   lazily, so the server stays dependency-free) in an OS webview window; builds
   to a single double-click executable. Desktop progress lives in a persistent
-  per-user dir (`$LEETCODE_TRACKER_DATA` or `~/LeetCodeTracker`) — point it at a
-  cloud-synced folder to sync machines. Build per-OS (no cross-compile).
+  per-user dir; the in-app **⚙ Settings** dialog lets the user pick the folder
+  (native picker via pywebview's `js_api`), stored in `tracker/config.py`
+  (`%APPDATA%`/`Application Support`). Point it at a cloud-synced folder to sync
+  machines — `GET/POST /api/data-dir` + `server.switch_data_dir()` merge the two
+  logs losslessly (`store.merge_events`). Data-dir precedence: `--data-dir` >
+  config (UI choice) > `$LEETCODE_TRACKER_DATA` > `~/LeetCodeTracker`. Build
+  per-OS (no cross-compile).
 
 ## Environment
 
@@ -43,9 +48,12 @@ tracker/               # Phase 2 app (no deps)
   scheduler.py         #   Ebbinghaus ladder 1/2/4/7/15/30d; 6 successes -> mastered;
                        #   solved_help -> +2d ladder paused; forgotten -> due now,
                        #   ladder restarts; reset -> untouched
-  store.py             #   data/reviews.jsonl event log (truth) -> replay -> snapshot
+  store.py             #   data/reviews.jsonl event log (truth) -> replay -> snapshot;
+                       #   merge_events/write_events for lossless folder switching
+  config.py            #   per-user config (chosen sync folder) in the OS config dir
   resources.py         #   resolve bundled assets (repo root, or _MEIPASS when frozen)
-  desktop.py           #   optional pywebview native window over the same server
+  desktop.py           #   optional pywebview native window over the same server;
+                       #   native folder picker (js_api) + config-based data dir
   static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
                        #   route.js = pure 0x3F-route logic, node-testable
 desktop_app.py         # PyInstaller entry point (repo root so `tracker` imports clean)

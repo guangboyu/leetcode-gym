@@ -87,6 +87,33 @@ def append_event(slug, action, day, log_file=None):
                            ensure_ascii=False) + "\n")
 
 
+def merge_events(*event_lists):
+    """Union events from several logs, de-duplicated, ordered by date. Because
+    the log is append-only, unioning unique lines is a lossless merge — this is
+    what lets two diverged machines (or a switch to a cloud-synced folder that
+    already has history) reconcile without dropping any progress. The sort is
+    stable, so events sharing a date keep their original relative order."""
+    seen, merged = set(), []
+    for events in event_lists:
+        for e in events:
+            key = (e["date"], e["slug"], e["action"])
+            if key not in seen:
+                seen.add(key)
+                merged.append(e)
+    merged.sort(key=lambda e: e["date"])
+    return merged
+
+
+def write_events(events, log_file=None):
+    """Atomically overwrite the whole log with `events` (used after a merge)."""
+    log_file = log_file or LOG_FILE
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    tmp = log_file.with_suffix(".jsonl.tmp")
+    tmp.write_text("".join(json.dumps(e, ensure_ascii=False) + "\n" for e in events),
+                   encoding="utf-8")
+    os.replace(tmp, log_file)
+
+
 def save_snapshot(progress, snapshot_file=None):
     snapshot_file = snapshot_file or SNAPSHOT_FILE
     tmp = snapshot_file.with_suffix(".json.tmp")
