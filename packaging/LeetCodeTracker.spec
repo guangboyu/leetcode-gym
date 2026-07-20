@@ -45,36 +45,68 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.datas,
-    [],
-    name="LeetCodeTracker",
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=False,           # UPX often flags AV false-positives on Windows; skip it
-    runtime_tmpdir=None,
-    console=False,       # windowed app: no terminal window
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon=None,
-)
+# App icon (macOS .icns). Regenerate with: python3 packaging/make_icon.py
+ICON = os.path.join(REPO, "packaging", "AppIcon.icns")
 
-# On macOS, wrap the executable in a .app bundle so it launches like a native app.
 if sys.platform == "darwin":
-    app = BUNDLE(
+    # macOS -> ONEDIR .app: the Python runtime ships already-unpacked inside the
+    # bundle, so launch is fast (no per-start temp extraction) and it behaves like
+    # a normal folder-based Mac app. onefile + .app is deprecated by PyInstaller.
+    exe = EXE(
+        pyz,
+        a.scripts,
+        [],
+        exclude_binaries=True,        # binaries/datas go into COLLECT, not the exe
+        name="LeetCodeTracker",
+        debug=False,
+        bootloader_ignore_signals=False,
+        strip=False,
+        upx=False,
+        console=False,                # windowed app: no terminal window
+        disable_windowed_traceback=False,
+        argv_emulation=False,
+        target_arch=None,
+        codesign_identity=None,
+        entitlements_file=None,
+        icon=ICON,
+    )
+    coll = COLLECT(
         exe,
+        a.binaries,
+        a.datas,
+        strip=False,
+        upx=False,
+        name="LeetCodeTracker",
+    )
+    app = BUNDLE(
+        coll,
         name="LeetCodeTracker.app",
-        icon=None,
+        icon=ICON,
         bundle_identifier="io.github.leetcode-study-tracker",
         info_plist={
             "NSHighResolutionCapable": True,
             "LSBackgroundOnly": False,
         },
+    )
+else:
+    # Windows/Linux -> ONEFILE: a single double-click executable (dist/LeetCodeTracker.exe).
+    exe = EXE(
+        pyz,
+        a.scripts,
+        a.binaries,
+        a.datas,
+        [],
+        name="LeetCodeTracker",
+        debug=False,
+        bootloader_ignore_signals=False,
+        strip=False,
+        upx=False,           # UPX often flags AV false-positives on Windows; skip it
+        runtime_tmpdir=None,
+        console=False,       # windowed app: no terminal window
+        disable_windowed_traceback=False,
+        argv_emulation=False,
+        target_arch=None,
+        codesign_identity=None,
+        entitlements_file=None,
+        icon=None,
     )

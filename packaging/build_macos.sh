@@ -15,3 +15,6 @@ pyinstaller --noconfirm --clean --distpath dist --workpath build/pyi \
 echo ""
 echo "Built: $(pwd)/dist/LeetCodeTracker.app"
 echo "First launch: right-click -> Open (unsigned app; Gatekeeper asks once)."
+
+# Package it into a drag-to-install .dmg for handing out to other people.
+bash packaging/make_dmg.sh
