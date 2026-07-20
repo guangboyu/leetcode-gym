@@ -1,154 +1,185 @@
 # LeetCode Study Tracker
 
-A local, dependency-free study tracker for LeetCode interview prep. It merges four curated
-problem lists into one table (2,676 problems), lets you mark each problem
-**Solved / Forgot / Reset**, and schedules reviews on an **Ebbinghaus forgetting curve**.
+A desktop study tracker for LeetCode interview prep. It merges four curated problem
+lists into one searchable table of 2,676 problems, lets you mark each problem as
+Solved, Forgot, or Reset, and schedules reviews on an Ebbinghaus forgetting curve so
+you revisit each problem right before you would forget it.
 
-## Quick start
+The app runs in its own native window. There is nothing to install beyond the app itself.
+
+## Download
+
+Get the newest build from the [Releases page](https://github.com/guangboyu/leetcode-study-tracker/releases/latest),
+or download directly:
+
+| Platform | File | Download |
+|----------|------|----------|
+| macOS | `LeetCodeTracker.dmg` | [Download for macOS](https://github.com/guangboyu/leetcode-study-tracker/releases/latest/download/LeetCodeTracker.dmg) |
+| Windows | `LeetCodeTracker.exe` | [Download for Windows](https://github.com/guangboyu/leetcode-study-tracker/releases/latest/download/LeetCodeTracker.exe) |
+
+## Install
+
+### macOS
+
+1. Open `LeetCodeTracker.dmg`.
+2. Drag **LeetCodeTracker** onto the **Applications** folder.
+3. In Applications, right-click **LeetCodeTracker** and choose **Open**, then confirm once.
+
+The app is not code-signed, so the first launch needs right-click then Open. A plain
+double-click will not work the first time. If macOS reports that the app is damaged,
+clear the download flag once in Terminal:
 
 ```bash
-python3 tracker/server.py        # then open http://localhost:8765
+xattr -dr com.apple.quarantine /Applications/LeetCodeTracker.app
 ```
 
-Requires only python3 (stdlib) on Linux, macOS, or Windows. Your progress is saved to
-`data/progress.json` — a plain JSON file you can commit to keep it safe across machines.
+### Windows
 
-## Desktop app (Windows & macOS)
+1. Double-click `LeetCodeTracker.exe`.
+2. If SmartScreen appears, click **More info**, then **Run anyway**.
 
-Prefer a double-click app in its own window instead of a browser tab? Build a standalone
-executable — no Python needed on the machine that runs it.
+## Using the app
 
-```bash
-pip install -r packaging/requirements.txt      # pywebview + pyinstaller (build machine only)
+The app opens on the **Today** tab. Each tab covers one part of the workflow:
 
-# Windows:
-powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1   # -> dist\LeetCodeTracker.exe
-# macOS:
-bash packaging/build_macos.sh                                          # -> dist/LeetCodeTracker.app + .dmg
-```
+- **Today**: reviews that are due now, followed by the study route with the next problems to attempt in a recommended order.
+- **Browse**: filter by list, topic, difficulty, or status. Search by name and sort by rating.
+- **Drill**: a random unseen problem with its topic and difficulty hidden until you answer, which trains you to recognize problem types cold.
+- **Stats**: per-list progress and a data-range to time-complexity reference table.
 
-PyInstaller can't cross-compile, so build once on each OS. The app wraps the same stdlib
-server in a native window (via [pywebview](https://pywebview.flowlib.com); it uses the OS
-webview — WebView2 on Windows 10/11, WKWebView on macOS — so there's nothing extra to install).
+When you finish a problem, mark it:
 
-- **Windows** builds a single-file `LeetCodeTracker.exe`.
-- **macOS** builds a folder-based `LeetCodeTracker.app` (onedir — the runtime ships
-  unpacked, so it launches fast) with a custom app icon, then packages it into
-  `dist/LeetCodeTracker.dmg` for handing out. Regenerate the icon with
-  `python3 packaging/make_icon.py`; rebuild just the DMG with `bash packaging/make_dmg.sh`.
-
-Run from source without building: `python -m tracker.desktop`.
-
-### Installing (macOS) — for people you share the DMG with
-
-The app is **unsigned** (no paid Apple Developer ID), so macOS Gatekeeper needs a one-time
-nudge. Send recipients the `.dmg` and these steps:
-
-1. Open `LeetCodeTracker.dmg` and drag **LeetCodeTracker** onto the **Applications** shortcut.
-2. In `/Applications`, **right-click the app → Open**, then confirm once. (Double-clicking a
-   downloaded, unsigned app just bounces — right-click → Open is what lets it through.)
-3. If macOS instead says the app is *"damaged and can't be opened"* (the quarantine flag on
-   a downloaded DMG), clear it once in Terminal:
-   ```bash
-   xattr -dr com.apple.quarantine /Applications/LeetCodeTracker.app
-   ```
-
-On first launch the app creates `~/LeetCodeTracker/` and starts saving progress there on the
-first action — no setup. To remove all these warnings for a wide/non-technical audience,
-code-sign + notarize with an Apple Developer ID ($99/yr).
-
-### Syncing progress across machines
-
-Click the **⚙ button** (top-right) → **Choose folder…** and pick a folder inside **Dropbox /
-iCloud Drive / OneDrive**. Your progress moves there and the app remembers it. Do the same on
-your other machine, pointing at the *same* synced folder — the histories **merge losslessly**
-(the append-only event log is unioned, so adopting a folder that already has history keeps
-both sides). Only caveat: don't study on two machines in the same instant, or the cloud drive
-makes a "conflicted copy".
-
-The chosen folder is remembered in a small config file (`%APPDATA%\LeetCodeTracker` on Windows,
-`~/Library/Application Support/LeetCodeTracker` on macOS). Without a choice, progress defaults
-to `$LEETCODE_TRACKER_DATA` if set, else `~/LeetCodeTracker`.
-
-Verify a build without opening a window: set `LEETCODE_TRACKER_SELFTEST=report.json` and run
-the app; it checks the bundle and exits 0/1.
+- **Solved**: you solved it on your own. The next review moves further out along the curve.
+- **w/ help**: you solved it after reading the editorial. It returns in 2 days and the interval does not grow.
+- **Forgot**: you could not solve it at review time. It becomes due immediately and the interval restarts.
 
 ## How reviewing works
 
-- Mark a problem **Solved** each time you solve it (first time or on review). Reviews are
-  scheduled at growing intervals: **1 → 2 → 4 → 7 → 15 → 30 days**.
-- Clear all six intervals and the problem is **Mastered** (no more reviews).
-- Solved it only after reading the editorial? Mark **w/ help** — it comes back in 2 days
-  and the interval ladder doesn't climb.
-- Couldn't solve it at review time? Mark **Forgot** — it becomes due immediately and the
-  interval ladder restarts on your next solve.
+Reviews follow an Ebbinghaus forgetting curve. Each time you solve a problem on your own,
+the next review moves to the next interval:
 
-## Practice methodology (after 0x3F's "how to practice scientifically")
-
-- **Today** tab: reviews due now, then the **study route** — 0x3F's 7-stage beginner path
-  (sliding window → binary search → core data structures → binary tree DFS → grid DFS →
-  backtracking → DP ch. 1–6) suggesting the next problems in his recommended order.
-- **Rating cap** (header, default **1700**): spiral learning — finish everything at or
-  below the cap before raising it. The DP stage automatically widens to 2000.
-- **Drill** tab: random already-unseen problem in a rating range with its topic and
-  difficulty hidden until you mark it — trains recognizing problem types cold.
-- **Browse**: filter by list, 0x3F topic, difficulty, status, ≤cap; search; sort by rating.
-- **Stats**: per-list progress (incl. within-cap %) and the data-range → complexity table.
-
-## Storage
-
-Every action is appended to `data/reviews.jsonl` (the source of truth — append-only, so
-it's crash-proof and merges trivially across machines via git); `data/progress.json` is a
-derived snapshot rebuilt on server start.
-
-### Backing up your progress
-
-Your progress files are **gitignored** in this repo, so they're never committed here and
-this repo can be published without exposing what you've solved. To keep a git-backed,
-off-machine backup anyway, point the tracker at a **separate private repo**:
-
-```bash
-# one-time: a private repo just for your progress (set it Private on GitHub)
-git clone git@github.com:you/leetcode-progress.git ~/leetcode-progress
-
-python3 tracker/server.py --data-dir ~/leetcode-progress --autocommit --push
+```
+1 day  ->  2 days  ->  4 days  ->  7 days  ->  15 days  ->  30 days
 ```
 
-`--autocommit` commits the event log in that data dir a minute after each study burst and on
-shutdown; `--push` also pushes it. Nothing touches this (public) repo. Note: GitHub
-visibility is per-repository — a public repo has no "private branch", so a separate private
-repo is the way to keep code public and progress private.
+Clear all six intervals and the problem becomes **Mastered**, with no more reviews.
+Marking **Forgot** restarts the ladder. Marking **w/ help** holds the ladder in place and
+brings the problem back in 2 days.
+
+A **rating cap** in the header (default 1700) keeps you at one difficulty level until you
+finish everything at or below it, then you raise the cap. The dynamic programming stage
+widens to 2000 automatically.
+
+## Sync progress across machines
+
+Your progress is stored on your own computer. To sync it between machines:
+
+1. Click the **Settings** button (top right).
+2. Choose **Choose folder** and select a folder inside Dropbox, iCloud Drive, or OneDrive.
+3. Repeat on your other machine and pick the same synced folder.
+
+The two machines merge their histories without losing anything, because progress is stored
+as an append-only event log. Avoid studying on two machines at the same second, or the
+cloud drive may create a conflicted copy.
+
+The chosen folder is remembered in a small config file:
+
+- macOS: `~/Library/Application Support/LeetCodeTracker`
+- Windows: `%APPDATA%\LeetCodeTracker`
+
+Without a choice, progress is saved to `~/LeetCodeTracker`, or to the folder named in the
+`LEETCODE_TRACKER_DATA` environment variable if it is set.
 
 ## The lists
 
 | List | Problems | Notes |
 |------|----------|-------|
-| [LeetCode Hot 100](source/Hot100.md) | 100 | official study plan |
-| [LeetCode Top Interview 150](source/Leetcode150.md) | 150 | official study plan |
-| [NeetCode 250](source/Neetcode250.md) | 250 | NeetCode 150 + 100 more |
-| [灵茶山艾府 (0x3F)](source/ox3F/) | 2,346 curated | 12 topic lists, translated to English, competition-only sections omitted |
+| [LeetCode Hot 100](source/Hot100.md) | 100 | Official study plan |
+| [LeetCode Top Interview 150](source/Leetcode150.md) | 150 | Official study plan |
+| [NeetCode 250](source/Neetcode250.md) | 250 | NeetCode 150 plus 100 more |
+| [0x3F (灵茶山艾府)](source/ox3F/) | 2,346 curated | 12 topic lists translated to English, competition-only sections omitted |
 
-Problems are keyed by leetcode.com slug and tagged with the lists they belong to — the lists
-overlap heavily, so a single review counts for all of them. Most problems carry a numeric
-contest difficulty rating (~1000–3000+) for fine-grained ordering.
+Problems are keyed by their leetcode.com slug and tagged with the lists they belong to.
+The lists overlap heavily, so one review counts across all of them. Most problems carry a
+numeric contest rating (roughly 1000 to 3000) for fine-grained ordering.
 
-Sources, scraping/curation pipeline, and refresh instructions: [source/README.md](source/README.md).
-Attribution: lists by [LeetCode](https://leetcode.com), [NeetCode](https://neetcode.io), and
+Sources, the curation pipeline, and refresh instructions are in [source/README.md](source/README.md).
+Lists by [LeetCode](https://leetcode.com), [NeetCode](https://neetcode.io), and
 [灵茶山艾府 / EndlessCheng](https://github.com/EndlessCheng); ratings by
-[zerotrac](https://zerotrac.github.io/leetcode_problem_rating/). This repo redistributes
-factual list data only (IDs, titles, slugs, grouping) — no problem statements or solutions.
+[zerotrac](https://zerotrac.github.io/leetcode_problem_rating/). This project redistributes
+factual list data only (IDs, titles, slugs, grouping), with no problem statements or solutions.
 
-## License
+## Run from source
 
-The code in this repo (tracker, scripts) is [MIT](LICENSE). The problem-list data remains
-the work of its upstream curators (see attribution above) and is redistributed here as
-factual data with attribution, not under the MIT grant.
+You can run the tracker without downloading a release. This needs Python 3, standard
+library only, with no extra packages:
+
+```bash
+python3 tracker/server.py
+```
+
+Then open http://localhost:8765 in your browser. Progress is saved to `data/progress.json`.
+
+To open the same server in a native window instead of a browser tab:
+
+```bash
+python3 -m tracker.desktop
+```
+
+## Build the desktop app
+
+Building the standalone app needs two extra packages on the build machine only:
+
+```bash
+pip install -r packaging/requirements.txt
+```
+
+Then build for your platform. PyInstaller cannot cross-compile, so build on each operating
+system separately:
+
+```bash
+# macOS: produces dist/LeetCodeTracker.app and dist/LeetCodeTracker.dmg
+bash packaging/build_macos.sh
+
+# Windows: produces dist\LeetCodeTracker.exe
+powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1
+```
+
+The app wraps the same standard-library server in a native window using
+[pywebview](https://pywebview.flowlib.com), which uses the built-in OS webview: WebView2 on
+Windows 10 and 11, WKWebView on macOS. There is nothing extra for users to install.
+
+## Back up your progress
+
+Your progress files are gitignored, so they are never committed to this repository, and the
+repository can be published without exposing what you have solved. To keep a version-controlled
+backup, point the tracker at a separate private repository:
+
+```bash
+git clone git@github.com:you/leetcode-progress.git ~/leetcode-progress
+python3 tracker/server.py --data-dir ~/leetcode-progress --autocommit --push
+```
+
+`--autocommit` commits the event log a minute after each study session and on shutdown.
+`--push` also pushes it. Nothing touches this repository.
+
+## Storage
+
+Every action is appended to `data/reviews.jsonl`, which is the source of truth. It is
+append-only, so it is safe against crashes and merges cleanly across machines.
+`data/progress.json` is a snapshot rebuilt from the log when the server starts.
 
 ## Development
 
 ```bash
-python3 -m unittest discover -s tests   # scheduler tests
+python3 -m unittest discover -s tests
 ```
 
-Data pipeline (rebuild everything from the raw snapshots): see
+The data pipeline that rebuilds everything from raw snapshots is documented in
 [source/README.md](source/README.md#regenerating-from-the-repo-root-needs-python3-no-extra-deps).
+
+## License
+
+The code, meaning the tracker and scripts, is [MIT](LICENSE). The problem-list data remains
+the work of its upstream curators and is redistributed here as factual data with attribution,
+not under the MIT grant.
