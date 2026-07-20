@@ -24,14 +24,38 @@ pip install -r packaging/requirements.txt      # pywebview + pyinstaller (build 
 # Windows:
 powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1   # -> dist\LeetCodeTracker.exe
 # macOS:
-bash packaging/build_macos.sh                                          # -> dist/LeetCodeTracker.app
+bash packaging/build_macos.sh                                          # -> dist/LeetCodeTracker.app + .dmg
 ```
 
 PyInstaller can't cross-compile, so build once on each OS. The app wraps the same stdlib
 server in a native window (via [pywebview](https://pywebview.flowlib.com); it uses the OS
 webview — WebView2 on Windows 10/11, WKWebView on macOS — so there's nothing extra to install).
 
+- **Windows** builds a single-file `LeetCodeTracker.exe`.
+- **macOS** builds a folder-based `LeetCodeTracker.app` (onedir — the runtime ships
+  unpacked, so it launches fast) with a custom app icon, then packages it into
+  `dist/LeetCodeTracker.dmg` for handing out. Regenerate the icon with
+  `python3 packaging/make_icon.py`; rebuild just the DMG with `bash packaging/make_dmg.sh`.
+
 Run from source without building: `python -m tracker.desktop`.
+
+### Installing (macOS) — for people you share the DMG with
+
+The app is **unsigned** (no paid Apple Developer ID), so macOS Gatekeeper needs a one-time
+nudge. Send recipients the `.dmg` and these steps:
+
+1. Open `LeetCodeTracker.dmg` and drag **LeetCodeTracker** onto the **Applications** shortcut.
+2. In `/Applications`, **right-click the app → Open**, then confirm once. (Double-clicking a
+   downloaded, unsigned app just bounces — right-click → Open is what lets it through.)
+3. If macOS instead says the app is *"damaged and can't be opened"* (the quarantine flag on
+   a downloaded DMG), clear it once in Terminal:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/LeetCodeTracker.app
+   ```
+
+On first launch the app creates `~/LeetCodeTracker/` and starts saving progress there on the
+first action — no setup. To remove all these warnings for a wide/non-technical audience,
+code-sign + notarize with an Apple Developer ID ($99/yr).
 
 ### Syncing progress across machines
 

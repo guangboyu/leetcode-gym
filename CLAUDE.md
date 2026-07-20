@@ -23,8 +23,14 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
 - **Phase 2.5 — desktop packaging: DONE.** Optional native-window app for
   Windows & macOS via `pywebview` + `PyInstaller` (`tracker/desktop.py`,
   `desktop_app.py`, `packaging/`). Wraps the *same* stdlib server (imported
-  lazily, so the server stays dependency-free) in an OS webview window; builds
-  to a single double-click executable. Desktop progress lives in a persistent
+  lazily, so the server stays dependency-free) in an OS webview window. The spec
+  branches per-OS: Windows -> single-file `LeetCodeTracker.exe`; macOS -> onedir
+  `LeetCodeTracker.app` (runtime shipped unpacked = fast launch, folder-based)
+  with a custom icon (`packaging/AppIcon.icns`, drawn by `make_icon.py`), then
+  wrapped into a drag-to-install `dist/LeetCodeTracker.dmg` (`make_dmg.sh`, via
+  built-in `hdiutil`). Both unsigned — macOS recipients need right-click->Open
+  and, if the DMG is quarantined, `xattr -dr com.apple.quarantine` (README has
+  the install steps). Desktop progress lives in a persistent
   per-user dir; the in-app **⚙ Settings** dialog lets the user pick the folder
   (native picker via pywebview's `js_api`), stored in `tracker/config.py`
   (`%APPDATA%`/`Application Support`). Point it at a cloud-synced folder to sync
@@ -57,8 +63,10 @@ tracker/               # Phase 2 app (no deps)
   static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
                        #   route.js = pure 0x3F-route logic, node-testable
 desktop_app.py         # PyInstaller entry point (repo root so `tracker` imports clean)
-packaging/             # desktop build: LeetCodeTracker.spec, build_windows.ps1,
-                       #   build_macos.sh, requirements.txt (pywebview + pyinstaller)
+packaging/             # desktop build: LeetCodeTracker.spec (branches per-OS),
+                       #   build_windows.ps1, build_macos.sh (app -> icon -> dmg),
+                       #   make_icon.py (-> AppIcon.icns), make_dmg.sh (hdiutil),
+                       #   requirements.txt (pywebview + pyinstaller)
 tests/                 # python3 -m unittest discover -s tests
 scripts/               # data pipeline (run from repo root, in this order to fully rebuild)
   fetch_catalog.py     #   leetcode.com API + zerotrac ratings -> source/data/catalog.json
