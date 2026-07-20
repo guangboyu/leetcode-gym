@@ -51,6 +51,21 @@ class TestStore(unittest.TestCase):
             # replaying the new log again is stable
             self.assertEqual(store.replay(store.load_events(log_file=log)), old)
 
+    def test_merge_events_unions_dedupes_and_orders(self):
+        a = [{"date": "2026-06-01", "slug": "x", "action": "solved"},
+             {"date": "2026-06-03", "slug": "y", "action": "solved"}]
+        b = [{"date": "2026-06-01", "slug": "x", "action": "solved"},   # duplicate
+             {"date": "2026-06-02", "slug": "z", "action": "solved"}]
+        merged = store.merge_events(a, b)
+        self.assertEqual(len(merged), 3)                                # x deduped
+        self.assertEqual([e["slug"] for e in merged], ["x", "z", "y"])  # by date
+
+    def test_write_events_roundtrip(self):
+        with tempfile.TemporaryDirectory() as d:
+            log = Path(d) / "reviews.jsonl"
+            store.write_events(EVENTS, log_file=log)
+            self.assertEqual(store.load_events(log_file=log), EVENTS)
+
     def test_snapshot_is_sorted_and_stable(self):
         with tempfile.TemporaryDirectory() as d:
             snap = Path(d) / "progress.json"

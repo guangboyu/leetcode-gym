@@ -22,7 +22,29 @@
       <option>2200</option><option>2400</option><option value="none">none</option>
     </select>
   </label>
+  <button id="settings-btn" class="iconbtn" title="Sync folder / settings">⚙</button>
 </header>
+
+<dialog id="settings-dlg">
+  <form method="dialog" class="dlg">
+    <h2>Sync folder</h2>
+    <p class="sub">Your progress (reviews + review schedule) is stored in this folder. Point it
+      at a <b>Dropbox</b>, <b>iCloud Drive</b>, or <b>OneDrive</b> folder to sync across
+      machines. Switching to a folder that already has history merges the two — nothing is
+      lost either way.</p>
+    <p class="pathbox"><span id="cur-data-dir" class="path">…</span></p>
+    <div class="dlg-row">
+      <button type="button" id="choose-folder">Choose folder…</button>
+      <span class="sub" id="picker-hint"></span>
+    </div>
+    <div class="dlg-row">
+      <input id="manual-path" type="text" placeholder="…or paste a folder path">
+      <button type="button" id="set-path">Set</button>
+    </div>
+    <p id="sync-msg" class="sub"></p>
+    <menu class="dlg-menu"><button value="close">Close</button></menu>
+  </form>
+</dialog>
 <main>
   <section id="view-today"></section>
 

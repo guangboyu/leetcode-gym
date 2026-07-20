@@ -26,10 +26,11 @@ from pathlib import Path
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from tracker import store
+from tracker import config, store
+from tracker.resources import resource_root
 from tracker.scheduler import ACTIONS, apply_action
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = resource_root()
 STATIC = ROOT / "tracker" / "static"
 PROBLEMS_FILE = ROOT / "data" / "problems.json"
 
@@ -99,6 +100,8 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/progress":
             with LOCK:
                 self.send_json(PROGRESS)
+        elif self.path == "/api/data-dir":
+            self.send_json({"path": str(store.LOG_FILE.parent)})
         elif self.path == "/data/problems.json":
             body = PROBLEMS_FILE.read_bytes()
             self.send_response(200)
@@ -109,13 +112,21 @@ class Handler(SimpleHTTPRequestHandler):
         else:
             super().do_GET()
 
+    def _read_json(self):
+        length = int(self.headers.get("Content-Length", 0))
+        return json.loads(self.rfile.read(length))
+
     def do_POST(self):
-        if self.path != "/api/review":
+        if self.path == "/api/review":
+            self._handle_review()
+        elif self.path == "/api/data-dir":
+            self._handle_set_data_dir()
+        else:
             self.send_json({"error": "not found"}, 404)
-            return
+
+    def _handle_review(self):
         try:
-            length = int(self.headers.get("Content-Length", 0))
-            req = json.loads(self.rfile.read(length))
+            req = self._read_json()
             slug, action = req["slug"], req["action"]
         except (ValueError, KeyError, json.JSONDecodeError):
             self.send_json({"error": "bad request"}, 400)
@@ -139,26 +150,82 @@ class Handler(SimpleHTTPRequestHandler):
             schedule_commit()
         self.send_json({"slug": slug, "entry": entry})
 
+    def _handle_set_data_dir(self):
+        try:
+            path = str(self._read_json()["path"]).strip()
+        except (ValueError, KeyError, json.JSONDecodeError):
+            self.send_json({"error": "bad request"}, 400)
+            return
+        if not path:
+            self.send_json({"error": "empty path"}, 400)
+            return
+        try:
+            newpath = switch_data_dir(path)
+        except OSError as e:
+            self.send_json({"error": f"cannot use that folder: {e}"}, 400)
+            return
+        with LOCK:
+            self.send_json({"path": newpath, "progress": PROGRESS})
+
     def log_message(self, fmt, *args):
         pass  # keep the terminal quiet
 
 
-def main():
+def switch_data_dir(path):
+    """Point storage at `path`, merging any progress already there with the
+    current progress so nothing is lost in either direction (adopt a synced
+    folder's history AND keep local history), reload, and remember the choice.
+    Returns the new absolute path as a string. Raises OSError if unusable."""
+    global PROGRESS
+    target = Path(path).expanduser()
+    current_dir = store.LOG_FILE.parent
+    if target.resolve() == current_dir.resolve():
+        config.set_data_dir(str(target))  # same folder: just remember it
+        return str(target)
+    with LOCK:
+        current_events = store.load_events()          # from the old dir
+        store.set_data_dir(str(target))               # LOG_FILE now points at target
+        merged = store.merge_events(current_events, store.load_events())
+        store.write_events(merged)                    # lossless union in the new dir
+        PROGRESS = store.replay(merged)
+        store.save_snapshot(PROGRESS)
+    config.set_data_dir(str(target))
+    return str(target)
+
+
+def configure(data_dir=None, autocommit=False, push=False):
+    """Load progress and set backup options. Call once before make_server().
+
+    Shared by the CLI (main) and the desktop launcher so both go through the
+    same startup path. data_dir=None keeps store's default (./data)."""
     global AUTOCOMMIT, PUSH, PROGRESS
+    AUTOCOMMIT, PUSH = autocommit, push
+    if data_dir is not None:
+        store.set_data_dir(data_dir)
+    PROGRESS = store.load_progress()
+
+
+def make_server(port=8765, host="127.0.0.1"):
+    """Build (but don't start) the tracker HTTP server. Pass port=0 to let the
+    OS pick a free port; read the chosen port from server.server_address[1]."""
+    return ThreadingHTTPServer((host, port), Handler)
+
+
+def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--port", type=int, default=8765)
-    ap.add_argument("--data-dir", default=str(ROOT / "data"),
-                    help="directory for reviews.jsonl + progress.json (default: ./data)")
+    ap.add_argument("--data-dir", default=None,
+                    help="directory for reviews.jsonl + progress.json "
+                         "(default: last folder chosen in the UI, else ./data)")
     ap.add_argument("--autocommit", action="store_true",
                     help="git-commit progress files in the data dir after review activity")
     ap.add_argument("--push", action="store_true",
                     help="also git-push the data dir's repo after each autocommit")
     args = ap.parse_args()
-    AUTOCOMMIT, PUSH = args.autocommit, args.push
-    store.set_data_dir(args.data_dir)
-    PROGRESS = store.load_progress()
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    data_dir = args.data_dir or config.get_data_dir() or str(ROOT / "data")
+    configure(data_dir=data_dir, autocommit=args.autocommit, push=args.push)
+    server = make_server(port=args.port)
     print(f"Tracking {len(SLUGS)} problems — open http://localhost:{args.port}")
     flags = "  (autocommit" + (" + push)" if PUSH else ")") if AUTOCOMMIT else ""
     print(f"Event log: {store.LOG_FILE}" + flags)
