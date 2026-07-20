@@ -69,11 +69,66 @@ h2 { font-size: 1.05rem; margin: 1.4rem 0 .6rem; }
 .cap { margin-left: auto; color: var(--muted); font-size: .9rem; }
 .cap select { font: inherit; padding: .2rem .4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
 
-.route { margin: 1rem 0; color: var(--muted); }
+.route { margin: 1.2rem 0; color: var(--muted); }
 .route summary { cursor: pointer; }
 .route ol { margin: .5rem 0 0; padding-left: 1.4rem; }
 .route li.stage-done { color: var(--c-solved); }
 .route li.stage-current { color: var(--text); font-weight: 600; }
+.route li.route-stage { cursor: pointer; border-radius: 5px; padding: .05rem .3rem; }
+.route li.route-stage:hover { background: var(--card); color: var(--text); }
+.route li.route-stage.stage-current { background: #eef2ff; }
+
+/* Study-route subtopics, grouped by 0x3F chapter */
+.sec-list { margin: .5rem 0 .6rem; }
+.chap-group { margin: .35rem 0; }
+.chap-label { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); margin: .35rem 0 .25rem; }
+.chap-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.route-part { margin: .8rem 0 .2rem; font-weight: 600; color: var(--text); font-size: .9rem; }
+
+/* Guide card: chapter intro + template */
+.guide { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .6rem .9rem; margin: .6rem 0 .8rem; }
+.guide summary { cursor: pointer; color: var(--text); }
+.guide p { margin: .5rem 0; }
+.tmpl {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+  padding: .6rem .8rem; overflow-x: auto; font-size: .82rem; line-height: 1.45;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+.sec-chip {
+  display: inline-flex; align-items: center; gap: .35rem; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); border-radius: 999px;
+  padding: .15rem .35rem .15rem .7rem; font-size: .85rem; white-space: nowrap;
+}
+.sec-chip:hover { border-color: var(--accent); }
+.sec-chip.sec-current { background: #eef2ff; border-color: var(--accent); font-weight: 600; }
+.sec-chip.sec-done { color: var(--c-solved); }
+.sec-chip.sec-skipped { opacity: .55; text-decoration: line-through; }
+.sec-chip.sec-optional { border-style: dashed; }
+.sec-skip {
+  border: none; background: none; cursor: pointer; color: var(--muted);
+  font-size: .9rem; line-height: 1; padding: 0 .2rem;
+}
+.sec-skip:hover { color: var(--c-forgotten); }
+.opt-toggle { margin-left: .8rem; white-space: nowrap; }
+.practicing { margin: .2rem 0 .5rem; }
+
+/* Drill list + type filters */
+.pool-row { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: .2rem 0 .6rem; }
+.drill-topics { margin: -.2rem 0 .4rem; color: var(--muted); }
+.drill-topics summary { cursor: pointer; font-size: .9rem; }
+.topic-list { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 .2rem; }
+.topic-chip {
+  display: inline-flex; align-items: center; gap: .3rem; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); border-radius: 999px;
+  padding: .2rem .7rem; font-size: .85rem; color: var(--text); white-space: nowrap;
+}
+.topic-chip:hover { border-color: var(--accent); }
+.topic-actions { display: flex; gap: .5rem; margin-top: .5rem; }
+.topic-actions button {
+  font: inherit; font-size: .8rem; cursor: pointer; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--card); padding: .15rem .6rem;
+}
+.topic-actions button:hover { border-color: var(--accent); color: var(--accent); }
 
 .drillcard { background: var(--card); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1rem; }
 .drill-title { font-size: 1.15rem; margin: .2rem 0 .6rem; }
