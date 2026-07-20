@@ -12,9 +12,15 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
   `data/problems.json` (2,676 problems keyed by slug with list-membership tags).
 - **Phase 2 — tracker: DONE** (MVP + 0x3F-methodology features). Local web app, stdlib
   only: `python3 tracker/server.py [--autocommit]` → http://localhost:8765.
-  Tabs: Today (due reviews + 7-stage 0x3F study route), Browse, Drill (type-blind random
-  practice), Stats (+ complexity cheat-sheet). Global rating cap (default 1700, DP widens
-  to 2000). Actions: Solved / w-help (+2d, ladder paused) / Forgot / Reset.
+  Tabs: Today (due reviews + study route), Browse, Drill (type-blind random
+  practice; filters by source list pool and 0x3F type), Stats (+ complexity cheat-sheet).
+  Study route = 7-stage beginner route (Method A) + all 12 full 0x3F topic lists, every
+  stage/subtopic freely clickable. Subtopic chips are grouped under real 0x3F chapter
+  names; selecting one shows a guide card (intro + code template + link to his post) from
+  `static/guide.js`. Sections 0x3F marks "(optional)" and a small curated NICHE set
+  (route.js) hide behind a toggle; any subtopic can be skipped/restored (localStorage).
+  Global rating cap (default 1700, DP widens to 2000).
+  Actions: Solved / w-help (+2d, ladder paused) / Forgot / Reset.
   Storage: append-only `data/reviews.jsonl` is the source of truth (git-mergeable);
   `data/progress.json` is a derived snapshot. Both gitignored (don't leak progress from
   a public repo); `--data-dir` puts them in a separate private repo that `--autocommit`
@@ -61,7 +67,8 @@ tracker/               # Phase 2 app (no deps)
   desktop.py           #   optional pywebview native window over the same server;
                        #   native folder picker (js_api) + config-based data dir
   static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
-                       #   route.js = pure 0x3F-route logic, node-testable
+                       #   route.js = pure 0x3F-route/drill logic, node-testable;
+                       #   guide.js = per-chapter intro + template data (all 12 lists)
 desktop_app.py         # PyInstaller entry point (repo root so `tracker` imports clean)
 packaging/             # desktop build: LeetCodeTracker.spec (branches per-OS),
                        #   build_windows.ps1, build_macos.sh (app -> icon -> dmg),

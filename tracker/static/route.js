@@ -8,7 +8,7 @@
 (function (global) {
   "use strict";
 
-  const ROUTE = [
+  const BEGINNER = [
     { name: "Sliding window", topic: "Sliding Window & Two Pointers", chapters: [1, 2] },
     { name: "Binary search basics", topic: "Binary Search", chapters: [1] },
     { name: "Core data structures", topic: "Data Structures", chapters: [0, 1, 3, 4, 5] },
@@ -17,6 +17,20 @@
     { name: "Backtracking", topic: "Linked List, Tree & Backtracking", chapters: [4] },
     { name: "DP chapters 1–6", topic: "Dynamic Programming", chapters: [1, 2, 3, 4, 5, 6], minCap: 2000 },
   ];
+
+  /* Part 2: the 12 full 0x3F topic lists (every interview-tier chapter),
+   * in his list order — for practicing any type freely after (or alongside)
+   * the beginner route. chapters: null = all chapters. */
+  const TOPIC_NAMES = [
+    "Sliding Window & Two Pointers", "Binary Search", "Monotonic Stack",
+    "Grid Graph", "Bit Manipulation", "Graph Theory", "Dynamic Programming",
+    "Data Structures", "Math", "Greedy & Thinking",
+    "Linked List, Tree & Backtracking", "Strings",
+  ];
+  const ROUTE = BEGINNER.concat(TOPIC_NAMES.map((t) => ({
+    name: t, topic: t, chapters: null, part: "topics",
+    minCap: t === "Dynamic Programming" ? 2000 : 0,
+  })));
 
   // "§2.13 Binary Tree BFS" -> [2, 13]; "1. Grid DFS" -> [1]
   function secNum(section) {
@@ -32,9 +46,11 @@
   function stageMembership(stage, p) {
     return (p.lists.ox3f || []).find((m) => {
       if (m.topic !== stage.topic || m.tier !== "interview") return false;
-      const [c, s] = secNum(m.section);
-      if (!stage.chapters.includes(c)) return false;
-      if (stage.subMax && s !== undefined && s > stage.subMax) return false;
+      if (stage.chapters) {                       // null = every chapter
+        const [c, s] = secNum(m.section);
+        if (!stage.chapters.includes(c)) return false;
+        if (stage.subMax && s !== undefined && s > stage.subMax) return false;
+      }
       return true;
     });
   }
@@ -46,32 +62,105 @@
     return Boolean(stageMembership(stage, p));
   }
 
+  /* Interview-tier sections that are contest-flavored in practice (rarely asked
+   * in interviews); hidden from the route by default, revealed by the same
+   * toggle as 0x3F's own "(optional)" sections. Keys are "topic||section",
+   * exact strings from the data. Judgment call — edit freely. */
+  const NICHE = new Set([
+    "Data Structures||§1.3 Sum of Distances",
+    "Data Structures||§1.4 Bitmask Prefix Sums",
+    "Data Structures||§3.6 Two Opposing Stacks",
+    "Data Structures||§5.5 Regret Heap (Greedy with Undo)",
+  ]);
+
+  function sectionKey(stage, section) { return stage.topic + "||" + section; }
+  function isOptional(stage, section) {
+    return /\(optional\)/i.test(section) || NICHE.has(sectionKey(stage, section));
+  }
+
   /* rows: [slug, problem][]  isDone: (slug) => bool  cap: number|null
-   * -> [{stage, total, done, todo}] with todo in section order, then by rating. */
-  function routeState(rows, isDone, cap) {
+   * opts: {showOptional: bool, skipped: Set<sectionKey>}
+   * -> [{stage, sections, total, done, todo}] where sections (in 0x3F order,
+   *    problems by section then rating) = {section, key, optional, skipped,
+   *    probs, todo, total, done}. Optional/niche sections are dropped unless
+   *    showOptional; skipped sections stay listed but are excluded from the
+   *    stage's total/done/todo so route progress and the recommended-next
+   *    computation move past them. */
+  function routeState(rows, isDone, cap, opts) {
+    const showOptional = Boolean(opts && opts.showOptional);
+    const skipped = (opts && opts.skipped) || new Set();
     return ROUTE.map((stage) => {
+      // Un-numbered sections ("Special Topic: …") sort after every chapter.
+      const key = (row) => {
+        const k = secNum(stageMembership(stage, row[1]).section);
+        return k.length ? k : [Infinity];
+      };
       const probs = rows
         .filter(([, p]) => stageHas(stage, p, cap))
         .sort((a, b) => {
-          const ka = secNum(stageMembership(stage, a[1]).section);
-          const kb = secNum(stageMembership(stage, b[1]).section);
+          const ka = key(a), kb = key(b);
           for (let i = 0; i < Math.max(ka.length, kb.length); i++) {
             const d = (ka[i] ?? 0) - (kb[i] ?? 0);
             if (d) return d;
           }
           return (a[1].rating ?? 0) - (b[1].rating ?? 0);
         });
-      const todo = probs.filter(([slug]) => !isDone(slug));
-      return { stage, total: probs.length, done: probs.length - todo.length, todo };
+
+      const sections = [];
+      const bySec = new Map();
+      for (const row of probs) {
+        const sec = stageMembership(stage, row[1]).section;
+        let s = bySec.get(sec);
+        if (!s) {
+          const key = sectionKey(stage, sec);
+          s = { section: sec, key, optional: isOptional(stage, sec),
+                skipped: skipped.has(key), probs: [], todo: [] };
+          bySec.set(sec, s);
+          sections.push(s);
+        }
+        s.probs.push(row);
+        if (!isDone(row[0])) s.todo.push(row);
+      }
+      sections.forEach((s) => { s.total = s.probs.length; s.done = s.total - s.todo.length; });
+
+      const visible = sections.filter((s) => showOptional || !s.optional);
+      const active = visible.filter((s) => !s.skipped);
+      return {
+        stage,
+        sections: visible,
+        total: active.reduce((n, s) => n + s.total, 0),
+        done: active.reduce((n, s) => n + s.done, 0),
+        todo: active.flatMap((s) => s.todo),
+      };
     });
   }
 
-  function drillPool(rows, isNew, lo, hi) {
-    return rows.filter(([slug, p]) =>
-      isNew(slug) && !p.paid_only && p.rating && p.rating >= lo && p.rating <= hi);
+  /* Does p belong to any of the selected problem pools? pools: Set of list keys
+   * ("hot100" | "interview150" | "neetcode250" | "ox3f") or null = no filter.
+   * ox3f membership counts only at interview tier (as everywhere else). */
+  function inPool(p, pools) {
+    if (!pools) return true;
+    if (pools.has("hot100") && p.lists.hot100) return true;
+    if (pools.has("interview150") && p.lists.interview150) return true;
+    if (pools.has("neetcode250") && p.lists.neetcode250) return true;
+    if (pools.has("ox3f") && (p.lists.ox3f || []).some((m) => m.tier === "interview")) return true;
+    return false;
   }
 
-  const api = { ROUTE, secNum, stageHas, routeState, drillPool };
+  /* Untouched, rated, non-paid problems in [lo, hi]. `topics` (Set of 0x3F
+   * interview topics) narrows by problem TYPE; `pools` (see inPool) narrows by
+   * source LIST — e.g. Hot 100 + Interview 150 + NeetCode 250 covers most
+   * companies. Pass null for either to leave that axis unfiltered. */
+  function drillPool(rows, isNew, lo, hi, topics, pools) {
+    return rows.filter(([slug, p]) => {
+      if (!isNew(slug) || p.paid_only || !p.rating || p.rating < lo || p.rating > hi) return false;
+      if (!inPool(p, pools)) return false;
+      if (!topics) return true;
+      return (p.lists.ox3f || []).some((m) => m.tier === "interview" && topics.has(m.topic));
+    });
+  }
+
+  const api = { ROUTE, secNum, stageHas, routeState, drillPool, inPool, sectionKey, isOptional };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.Route = api;
 })(this);

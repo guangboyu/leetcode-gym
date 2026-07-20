@@ -15,7 +15,7 @@ or download directly:
 | Platform | File | Download |
 |----------|------|----------|
 | macOS | `LeetCodeTracker.dmg` | [Download for macOS](https://github.com/guangboyu/leetcode-study-tracker/releases/latest/download/LeetCodeTracker.dmg) |
-| Windows | `LeetCodeTracker.exe` | [Download for Windows](https://github.com/guangboyu/leetcode-study-tracker/releases/latest/download/LeetCodeTracker.exe) |
+| Windows | `LeetCodeTracker.exe` | [Download for Windows](https://github.com/guangboyu/leetcode-study-tracker/releases/download/v0.1.0/LeetCodeTracker.exe) (v0.1.0; a rebuild on Windows is needed per release) |
 
 ## Install
 
@@ -42,10 +42,24 @@ xattr -dr com.apple.quarantine /Applications/LeetCodeTracker.app
 
 The app opens on the **Today** tab. Each tab covers one part of the workflow:
 
-- **Today**: reviews that are due now, followed by the study route with the next problems to attempt in a recommended order.
+- **Today**: reviews that are due now, followed by the study route.
 - **Browse**: filter by list, topic, difficulty, or status. Search by name and sort by rating.
-- **Drill**: a random unseen problem with its topic and difficulty hidden until you answer, which trains you to recognize problem types cold.
+- **Drill**: a random unseen problem with its topic and difficulty hidden until you answer, which trains you to recognize problem types cold. Narrow the draw by source list (for most companies Hot 100 + Top Interview 150 + NeetCode 250 is plenty) and by problem type (skip types your target companies rarely ask, or focus on one to reinforce it).
 - **Stats**: per-list progress and a data-range to time-complexity reference table.
+
+The study route has two parts, both clickable so you can practice any type at any time:
+
+- **Beginner route**: 0x3F's 7-stage Method A order (sliding window, binary search, core data
+  structures, tree DFS, grid DFS, backtracking, DP). The recommended next stage is marked.
+- **Full topic lists**: all 12 of 0x3F's topic lists with every interview-tier chapter, so
+  monotonic stack, bit manipulation, graph theory, greedy, math, and strings are covered too.
+
+Inside a type, subtopics are grouped under their real chapter names (fixed-length window,
+knapsack, topological sort, and so on). Selecting a subtopic shows a short guide card: what the
+technique is, when to use it, a compact code template where a canonical one exists, and a link
+to the original 0x3F list. Subtopics you consider irrelevant can be skipped with one click
+(restorable); rarely-interviewed sections are hidden by default behind a
+"show optional &amp; niche subtopics" toggle.
 
 When you finish a problem, mark it:
 

@@ -11,6 +11,9 @@ const LIST_BADGES = { hot100: "H100", interview150: "I150", neetcode250: "NC250"
 let tab = "today";
 let page = 0;
 let drill = { slug: null, revealed: false };
+let routeStage = null;   // study-route stage the user picked; null = follow the recommended one
+let routeSection = null; // section key picked within the stage; null = recommended section
+let ALL_TOPICS = [];     // every 0x3F interview topic (for the Drill type filter)
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -22,6 +25,16 @@ function cap() {
 }
 const isDone = (slug) => Boolean(PROGRESS[slug]) && PROGRESS[slug].status !== "forgotten";
 const isNew = (slug) => !PROGRESS[slug];
+
+// Study-route personalization: optional/niche subtopic visibility + skipped subtopics.
+const showOptionalSections = () => localStorage.getItem("routeShowOptional") === "1";
+const guideOpen = () => localStorage.getItem("guideOpen") !== "0";  // guide card open by default
+const skippedSections = () => new Set(JSON.parse(localStorage.getItem("routeSkipped") || "[]"));
+function toggleSkipped(key) {
+  const set = skippedSections();
+  if (set.has(key)) set.delete(key); else set.add(key);
+  localStorage.setItem("routeSkipped", JSON.stringify([...set]));
+}
 
 // ---------- status ----------
 function dstatus(slug) {
@@ -90,23 +103,99 @@ function renderToday() {
     ? `<h2>Reviews due (${due.length})</h2>` + tableHtml(due)
     : `<p class="empty">No reviews due 🎉${upcoming ? ` — next on ${upcoming}` : ""}</p>`;
 
-  const states = Route.routeState(ROWS, isDone, cap());
-  const current = states.find((st) => st.todo.length > 0);
-  const overview = states.map((st) => {
-    const doneMark = st.todo.length === 0 ? "✓ " : st === current ? "▶ " : "";
-    return `<li class="${st.todo.length === 0 ? "stage-done" : st === current ? "stage-current" : ""}">
-      ${doneMark}${esc(st.stage.name)} <span class="sub">${st.done}/${st.total}</span></li>`;
-  }).join("");
+  const states = Route.routeState(ROWS, isDone, cap(),
+    { showOptional: showOptionalSections(), skipped: skippedSections() });
+  const recIdx = states.findIndex((st) => st.todo.length > 0);  // 0x3F's recommended next stage
+  // Show the stage the user picked; fall back to the recommended one (or the last if all done).
+  let selIdx = routeStage;
+  if (selIdx == null || selIdx < 0 || selIdx >= states.length) selIdx = recIdx;
+  const sel = selIdx >= 0 ? states[selIdx] : null;
 
-  const routeHtml = current
-    ? `<h2>Study route — ${esc(current.stage.name)} <span class="sub">${current.done}/${current.total} done${current.stage.minCap && cap() != null ? ` · cap ${Math.max(cap(), current.stage.minCap)}` : ""}</span></h2>
-       ${tableHtml(current.todo.slice(0, SUGGEST))}
-       <details class="route"><summary>Route overview (0x3F Method A, rating cap ${cap() ?? "none"})</summary><ol>${overview}</ol></details>`
-    : `<h2>Study route</h2><p class="empty">Beginner route complete at cap ${cap() ?? "none"} 🏆 —
-       raise the cap, practice the full lists in <b>Browse</b>, or test yourself in <b>Drill</b>.</p>
-       <details class="route"><summary>Route overview</summary><ol>${overview}</ol></details>`;
+  const stageLi = (st, i) => {
+    const complete = st.todo.length === 0;
+    const cls = [complete ? "stage-done" : "", i === selIdx ? "stage-current" : ""].filter(Boolean).join(" ");
+    const mark = complete ? "✓ " : i === recIdx ? "▶ " : "";
+    const star = i === recIdx ? ` <span class="sub">recommended</span>` : "";
+    return `<li class="route-stage ${cls}" data-stage="${i}" title="Practice this type">
+      ${mark}${esc(st.stage.name)} <span class="sub">${st.done}/${st.total}</span>${star}</li>`;
+  };
+  const beginnerLis = states.map((st, i) => st.stage.part === "topics" ? "" : stageLi(st, i)).join("");
+  const topicLis = states.map((st, i) => st.stage.part === "topics" ? stageLi(st, i) : "").join("");
+  const optToggle = `<label class="opt-toggle"><input type="checkbox" id="route-opt"${showOptionalSections() ? " checked" : ""}>
+    show optional &amp; niche subtopics</label>`;
+  const overviewBlock = `<div class="route"><p class="sub">Click any type to practice it (rating cap ${cap() ?? "none"}). ${optToggle}</p>
+    <p class="route-part">Beginner route — 0x3F Method A, in order:</p><ol>${beginnerLis}</ol>
+    <p class="route-part">Full topic lists — all 12, interview-tier sections:</p><ol>${topicLis}</ol></div>`;
+
+  let routeHtml;
+  if (!sel) {
+    routeHtml = `<h2>Study route</h2><p class="empty">Beginner route complete at cap ${cap() ?? "none"} 🏆.
+       Raise the cap, practice the full lists in <b>Browse</b>, or test yourself in <b>Drill</b>.</p>${overviewBlock}`;
+  } else {
+    // Subtopic (section) chips: click to practice one, × to skip it, ↩ to restore.
+    // Grouped under their 0x3F chapter names (定长/不定长/背包/... in English).
+    const secs = sel.sections;
+    const recSec = secs.find((s) => !s.skipped && s.todo.length > 0);
+    const cur = secs.find((s) => s.key === routeSection) || recSec || secs[0];
+    const chapOf = (s) => { const k = Route.secNum(s.section); return k.length ? k[0] : null; };
+    const chipHtmlFor = (s) => {
+      const cls = ["sec-chip",
+        s === cur ? "sec-current" : "",
+        s.skipped ? "sec-skipped" : "",
+        s.optional ? "sec-optional" : "",
+        !s.skipped && s.todo.length === 0 ? "sec-done" : ""].filter(Boolean).join(" ");
+      const skipBtn = `<button class="sec-skip" data-skip="${esc(s.key)}"
+        title="${s.skipped ? "Restore this subtopic" : "Skip this subtopic (exclude from your plan)"}">${s.skipped ? "↩" : "×"}</button>`;
+      return `<span class="${cls}" data-sec="${esc(s.key)}" title="Practice this subtopic">
+        ${!s.skipped && s.todo.length === 0 ? "✓ " : ""}${esc(s.section)} <span class="sub">${s.done}/${s.total}</span>${skipBtn}</span>`;
+    };
+    const groups = [];
+    for (const s of secs) {
+      const c = chapOf(s);
+      if (!groups.length || groups[groups.length - 1].chap !== c) groups.push({ chap: c, chips: [] });
+      groups[groups.length - 1].chips.push(s);
+    }
+    const secList = groups.map((gr) => {
+      const gi = Guide.chapter(sel.stage.topic, gr.chap, gr.chips[0].section);
+      const label = gr.chap == null ? "Special topics"
+        : gi ? `${gr.chap}. ${gi.name}` : `Chapter ${gr.chap}`;
+      return `<div class="chap-group"><div class="chap-label">${esc(label)}</div>
+        <div class="chap-chips">${gr.chips.map(chipHtmlFor).join("")}</div></div>`;
+    }).join("");
+
+    // Guide card: what this subtopic's technique is + its template.
+    const tg = Guide.topic(sel.stage.topic);
+    const gcur = cur ? Guide.chapter(sel.stage.topic, chapOf(cur), cur.section) : null;
+    const guideCard = gcur ? `<details class="guide"${guideOpen() ? " open" : ""}>
+        <summary><b>${esc(gcur.name)}</b> · ${esc(gcur.zh)} — what &amp; how</summary>
+        <p>${esc(gcur.intro)}</p>
+        ${gcur.tmpl ? `<pre class="tmpl">${esc(gcur.tmpl)}</pre>` : ""}
+        <p class="sub">From <a href="${tg ? tg.post : "#"}" target="_blank" rel="noopener">0x3F's ${esc(sel.stage.topic)} list（${esc(tg ? tg.zh : "")}）↗</a></p>
+      </details>` : "";
+
+    const capNote = sel.stage.minCap && cap() != null ? ` · cap ${Math.max(cap(), sel.stage.minCap)}` : "";
+    const body = !cur
+      ? `<p class="empty">Nothing to practice here at cap ${cap() ?? "none"}.</p>`
+      : cur.todo.length
+        ? tableHtml(cur.todo.slice(0, SUGGEST))
+        : `<p class="empty">Every problem in ${esc(cur.section)} is done at cap ${cap() ?? "none"} ✓ — pick another subtopic.</p>`;
+    const practicing = cur
+      ? `<p class="sub practicing">Practicing: <b>${esc(cur.section)}</b> ${cur.done}/${cur.total}${cur === recSec ? " · recommended next" : ""}</p>`
+      : "";
+    routeHtml = `<h2>Study route: ${esc(sel.stage.name)} <span class="sub">${sel.done}/${sel.total} done${capNote}</span></h2>
+       <div class="sec-list">${secList}</div>
+       ${practicing}${guideCard}${body}${overviewBlock}`;
+  }
 
   $("#view-today").innerHTML = dueHtml + routeHtml;
+  const opt = $("#route-opt");
+  if (opt) opt.onchange = () => {
+    localStorage.setItem("routeShowOptional", opt.checked ? "1" : "0");
+    renderToday();
+  };
+  const gd = $(".guide");
+  if (gd) gd.addEventListener("toggle", () =>
+    localStorage.setItem("guideOpen", gd.open ? "1" : "0"));
 }
 
 // ---------- Browse ----------
@@ -151,12 +240,56 @@ function renderBrowse() {
 }
 
 // ---------- Drill (0x3F Method B: type-blind practice) ----------
+// Which problem pools (source lists) Drill draws from. Default: all four.
+// Hot 100 + Interview 150 + NeetCode 250 is plenty for most companies;
+// the 0x3F lists are the deep pool.
+const POOLS = [
+  ["hot100", "Hot 100"],
+  ["interview150", "Top Interview 150"],
+  ["neetcode250", "NeetCode 250"],
+  ["ox3f", "0x3F lists"],
+];
+
+function selectedPools() {
+  const saved = JSON.parse(localStorage.getItem("drillPools") || "null");
+  const keys = POOLS.map(([k]) => k);
+  if (!Array.isArray(saved)) return keys;
+  return keys.filter((k) => saved.includes(k));
+}
+
+function savePools(keys) {
+  localStorage.setItem("drillPools", JSON.stringify(keys));
+}
+
+// Which 0x3F topics the drill pool is limited to. Default: all of them.
+function selectedTopics() {
+  const saved = JSON.parse(localStorage.getItem("drillTopics") || "null");
+  if (!Array.isArray(saved)) return ALL_TOPICS.slice();
+  // Drop any topics that no longer exist, then intersect with the known set.
+  return ALL_TOPICS.filter((t) => saved.includes(t));
+}
+
+function saveTopics(topics) {
+  localStorage.setItem("drillTopics", JSON.stringify(topics));
+  const s = $("#drill-topics > summary");
+  if (s) s.textContent = topicsLabel(topics);
+}
+
+function topicsLabel(topics) {
+  return `Types: ${topics.length >= ALL_TOPICS.length ? "all" : `${topics.length} of ${ALL_TOPICS.length}`}`;
+}
+
 function drawDrill() {
   const lo = Number($("#drill-lo")?.value ?? localStorage.getItem("drillLo") ?? (cap() ? cap() - 300 : 1400));
   const hi = Number($("#drill-hi")?.value ?? localStorage.getItem("drillHi") ?? (cap() ?? 1700));
   localStorage.setItem("drillLo", lo);
   localStorage.setItem("drillHi", hi);
-  const pool = Route.drillPool(ROWS, isNew, lo, hi);
+  const topics = selectedTopics();
+  // All types selected -> no filter (also keeps problems that aren't in any 0x3F list).
+  const topicSet = topics.length >= ALL_TOPICS.length ? null : new Set(topics);
+  const pools = selectedPools();
+  const poolSet = pools.length >= POOLS.length ? null : new Set(pools);
+  const pool = Route.drillPool(ROWS, isNew, lo, hi, topicSet, poolSet);
   drill = pool.length
     ? { slug: pool[Math.floor(Math.random() * pool.length)][0], revealed: false }
     : { slug: null, revealed: false, empty: true };
@@ -167,7 +300,7 @@ function renderDrill() {
   const lo = localStorage.getItem("drillLo") ?? (cap() ? cap() - 300 : 1400);
   const hi = localStorage.getItem("drillHi") ?? (cap() ?? 1700);
   let card = "";
-  if (drill.empty) card = `<p class="empty">No untouched rated problems in that range — widen it.</p>`;
+  if (drill.empty) card = `<p class="empty">No untouched rated problems match. Widen the rating range, or select more lists / types.</p>`;
   else if (drill.slug) {
     const p = PROBLEMS[drill.slug];
     const url = `https://leetcode.com/problems/${drill.slug}/`;
@@ -183,22 +316,54 @@ function renderDrill() {
            <button id="drill-skip">Skip</button></p>`}
     </div>`;
   }
+  const topics = selectedTopics();
+  const chosen = new Set(topics);
+  const topicBoxes = ALL_TOPICS.map((t) =>
+    `<label class="topic-chip"><input type="checkbox" class="drill-topic" value="${esc(t)}" ${chosen.has(t) ? "checked" : ""}> ${esc(t)}</label>`).join("");
+  const pools = new Set(selectedPools());
+  const poolBoxes = POOLS.map(([k, label]) =>
+    `<label class="topic-chip"><input type="checkbox" class="drill-pool" value="${k}" ${pools.has(k) ? "checked" : ""}> ${label}</label>`).join("");
+
   $("#view-drill").innerHTML = `
     <h2>Random drill</h2>
-    <p class="sub">0x3F's Method B: after the beginner route, occasionally practice without knowing the
-    problem type — contests and interviews won't tell you it's DP. Topic and difficulty stay hidden
-    until you mark the problem.</p>
+    <p class="sub">0x3F's Method B: practice without knowing the problem type, since contests and
+    interviews won't tell you it's DP. The specific problem's type and difficulty stay hidden until
+    you mark it. Narrow by list and by type below — for most companies Hot 100 + Top Interview 150 +
+    NeetCode 250 is plenty.</p>
     <div id="filters">
       <label>Rating <input id="drill-lo" type="number" step="50" value="${lo}"> –
       <input id="drill-hi" type="number" step="50" value="${hi}"></label>
       <button id="drill-draw">Draw a problem</button>
     </div>
+    <div class="pool-row"><span class="sub">Draw from:</span> ${poolBoxes}</div>
+    <details id="drill-topics" class="drill-topics"${topics.length < ALL_TOPICS.length ? " open" : ""}>
+      <summary>${topicsLabel(topics)}</summary>
+      <div class="topic-actions">
+        <button type="button" id="topics-all">Select all</button>
+        <button type="button" id="topics-none">Clear</button>
+      </div>
+      <div id="drill-topic-list" class="topic-list">${topicBoxes}</div>
+    </details>
     ${card}`;
   $("#drill-draw").onclick = drawDrill;
   const skip = $("#drill-skip");
   if (skip) skip.onclick = drawDrill;
   const next = $("#drill-next");
   if (next) next.onclick = drawDrill;
+
+  const readTopics = () => [...document.querySelectorAll(".drill-topic:checked")].map((b) => b.value);
+  document.querySelectorAll(".drill-topic").forEach((b) => { b.onchange = () => saveTopics(readTopics()); });
+  document.querySelectorAll(".drill-pool").forEach((b) => {
+    b.onchange = () => savePools([...document.querySelectorAll(".drill-pool:checked")].map((x) => x.value));
+  });
+  $("#topics-all").onclick = () => {
+    document.querySelectorAll(".drill-topic").forEach((b) => { b.checked = true; });
+    saveTopics(ALL_TOPICS.slice());
+  };
+  $("#topics-none").onclick = () => {
+    document.querySelectorAll(".drill-topic").forEach((b) => { b.checked = false; });
+    saveTopics([]);
+  };
 }
 
 // ---------- Stats ----------
@@ -278,7 +443,13 @@ async function mark(slug, action) {
 // ---------- wiring ----------
 document.addEventListener("click", (ev) => {
   const b = ev.target.closest("button[data-action]");
-  if (b) mark(b.dataset.slug, b.dataset.action);
+  if (b) { mark(b.dataset.slug, b.dataset.action); return; }
+  const skipBtn = ev.target.closest("button[data-skip]");
+  if (skipBtn) { toggleSkipped(skipBtn.dataset.skip); renderToday(); return; }
+  const secChip = ev.target.closest("[data-sec]");
+  if (secChip) { routeSection = secChip.dataset.sec; renderToday(); return; }
+  const stageLi = ev.target.closest("li[data-stage]");
+  if (stageLi) { routeStage = Number(stageLi.dataset.stage); routeSection = null; renderToday(); }
 });
 
 document.querySelectorAll("#tabs button").forEach((b) => {
@@ -366,6 +537,9 @@ async function init() {
   PROGRESS = prog;
   ROWS = Object.entries(PROBLEMS).sort((a, b) => a[1].id - b[1].id);
   const topics = [...new Set(ROWS.flatMap(([, p]) => (p.lists.ox3f || []).map((m) => m.topic)))];
+  // Interview-tier topics only, for the Drill type filter (matches the route/stats view).
+  ALL_TOPICS = [...new Set(ROWS.flatMap(([, p]) =>
+    (p.lists.ox3f || []).filter((m) => m.tier === "interview").map((m) => m.topic)))].sort();
   $("#f-topic").innerHTML = `<option value="">All topics</option>` +
     topics.map((t) => `<option>${esc(t)}</option>`).join("");
   renderAll();
