@@ -1,0 +1,5 @@
+# Build/runtime deps for the DESKTOP app only.
+# The tracker server (tracker/server.py) itself needs no third-party packages;
+# these are required solely to build and run the native-window bundle.
+pywebview>=5,<7    # native OS webview window (runtime)
+pyinstaller>=6,<7  # bundles everything into a standalone executable (build only)

@@ -20,10 +20,30 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
   a public repo); `--data-dir` puts them in a separate private repo that `--autocommit`
   / `--push` backs up off-machine.
   Possible next steps: review-history charts/heatmap, import of LeetCode submissions.
+- **Phase 2.5 — desktop packaging: DONE.** Optional native-window app for
+  Windows & macOS via `pywebview` + `PyInstaller` (`tracker/desktop.py`,
+  `desktop_app.py`, `packaging/`). Wraps the *same* stdlib server (imported
+  lazily, so the server stays dependency-free) in an OS webview window. The spec
+  branches per-OS: Windows -> single-file `LeetCodeTracker.exe`; macOS -> onedir
+  `LeetCodeTracker.app` (runtime shipped unpacked = fast launch, folder-based)
+  with a custom icon (`packaging/AppIcon.icns`, drawn by `make_icon.py`), then
+  wrapped into a drag-to-install `dist/LeetCodeTracker.dmg` (`make_dmg.sh`, via
+  built-in `hdiutil`). Both unsigned — macOS recipients need right-click->Open
+  and, if the DMG is quarantined, `xattr -dr com.apple.quarantine` (README has
+  the install steps). Desktop progress lives in a persistent
+  per-user dir; the in-app **⚙ Settings** dialog lets the user pick the folder
+  (native picker via pywebview's `js_api`), stored in `tracker/config.py`
+  (`%APPDATA%`/`Application Support`). Point it at a cloud-synced folder to sync
+  machines — `GET/POST /api/data-dir` + `server.switch_data_dir()` merge the two
+  logs losslessly (`store.merge_events`). Data-dir precedence: `--data-dir` >
+  config (UI choice) > `$LEETCODE_TRACKER_DATA` > `~/LeetCodeTracker`. Build
+  per-OS (no cross-compile).
 
 ## Environment
 
-Linux/macOS with python3 (stdlib only). Network needed only to refresh snapshots.
+Linux/macOS/Windows with python3 (stdlib only) to run the server; network needed
+only to refresh snapshots. The optional desktop app additionally needs `pywebview`
++ `pyinstaller` (see `packaging/requirements.txt`) on the build machine only.
 
 ## Repository layout
 
@@ -34,9 +54,19 @@ tracker/               # Phase 2 app (no deps)
   scheduler.py         #   Ebbinghaus ladder 1/2/4/7/15/30d; 6 successes -> mastered;
                        #   solved_help -> +2d ladder paused; forgotten -> due now,
                        #   ladder restarts; reset -> untouched
-  store.py             #   data/reviews.jsonl event log (truth) -> replay -> snapshot
+  store.py             #   data/reviews.jsonl event log (truth) -> replay -> snapshot;
+                       #   merge_events/write_events for lossless folder switching
+  config.py            #   per-user config (chosen sync folder) in the OS config dir
+  resources.py         #   resolve bundled assets (repo root, or _MEIPASS when frozen)
+  desktop.py           #   optional pywebview native window over the same server;
+                       #   native folder picker (js_api) + config-based data dir
   static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
                        #   route.js = pure 0x3F-route logic, node-testable
+desktop_app.py         # PyInstaller entry point (repo root so `tracker` imports clean)
+packaging/             # desktop build: LeetCodeTracker.spec (branches per-OS),
+                       #   build_windows.ps1, build_macos.sh (app -> icon -> dmg),
+                       #   make_icon.py (-> AppIcon.icns), make_dmg.sh (hdiutil),
+                       #   requirements.txt (pywebview + pyinstaller)
 tests/                 # python3 -m unittest discover -s tests
 scripts/               # data pipeline (run from repo root, in this order to fully rebuild)
   fetch_catalog.py     #   leetcode.com API + zerotrac ratings -> source/data/catalog.json

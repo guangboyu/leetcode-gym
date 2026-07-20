@@ -10,8 +10,68 @@ problem lists into one table (2,676 problems), lets you mark each problem
 python3 tracker/server.py        # then open http://localhost:8765
 ```
 
-Requires only python3 (stdlib) on Linux/macOS. Your progress is saved to
+Requires only python3 (stdlib) on Linux, macOS, or Windows. Your progress is saved to
 `data/progress.json` — a plain JSON file you can commit to keep it safe across machines.
+
+## Desktop app (Windows & macOS)
+
+Prefer a double-click app in its own window instead of a browser tab? Build a standalone
+executable — no Python needed on the machine that runs it.
+
+```bash
+pip install -r packaging/requirements.txt      # pywebview + pyinstaller (build machine only)
+
+# Windows:
+powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1   # -> dist\LeetCodeTracker.exe
+# macOS:
+bash packaging/build_macos.sh                                          # -> dist/LeetCodeTracker.app + .dmg
+```
+
+PyInstaller can't cross-compile, so build once on each OS. The app wraps the same stdlib
+server in a native window (via [pywebview](https://pywebview.flowlib.com); it uses the OS
+webview — WebView2 on Windows 10/11, WKWebView on macOS — so there's nothing extra to install).
+
+- **Windows** builds a single-file `LeetCodeTracker.exe`.
+- **macOS** builds a folder-based `LeetCodeTracker.app` (onedir — the runtime ships
+  unpacked, so it launches fast) with a custom app icon, then packages it into
+  `dist/LeetCodeTracker.dmg` for handing out. Regenerate the icon with
+  `python3 packaging/make_icon.py`; rebuild just the DMG with `bash packaging/make_dmg.sh`.
+
+Run from source without building: `python -m tracker.desktop`.
+
+### Installing (macOS) — for people you share the DMG with
+
+The app is **unsigned** (no paid Apple Developer ID), so macOS Gatekeeper needs a one-time
+nudge. Send recipients the `.dmg` and these steps:
+
+1. Open `LeetCodeTracker.dmg` and drag **LeetCodeTracker** onto the **Applications** shortcut.
+2. In `/Applications`, **right-click the app → Open**, then confirm once. (Double-clicking a
+   downloaded, unsigned app just bounces — right-click → Open is what lets it through.)
+3. If macOS instead says the app is *"damaged and can't be opened"* (the quarantine flag on
+   a downloaded DMG), clear it once in Terminal:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/LeetCodeTracker.app
+   ```
+
+On first launch the app creates `~/LeetCodeTracker/` and starts saving progress there on the
+first action — no setup. To remove all these warnings for a wide/non-technical audience,
+code-sign + notarize with an Apple Developer ID ($99/yr).
+
+### Syncing progress across machines
+
+Click the **⚙ button** (top-right) → **Choose folder…** and pick a folder inside **Dropbox /
+iCloud Drive / OneDrive**. Your progress moves there and the app remembers it. Do the same on
+your other machine, pointing at the *same* synced folder — the histories **merge losslessly**
+(the append-only event log is unioned, so adopting a folder that already has history keeps
+both sides). Only caveat: don't study on two machines in the same instant, or the cloud drive
+makes a "conflicted copy".
+
+The chosen folder is remembered in a small config file (`%APPDATA%\LeetCodeTracker` on Windows,
+`~/Library/Application Support/LeetCodeTracker` on macOS). Without a choice, progress defaults
+to `$LEETCODE_TRACKER_DATA` if set, else `~/LeetCodeTracker`.
+
+Verify a build without opening a window: set `LEETCODE_TRACKER_SELFTEST=report.json` and run
+the app; it checks the bundle and exits 0/1.
 
 ## How reviewing works
 
