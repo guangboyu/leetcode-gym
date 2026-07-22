@@ -89,6 +89,9 @@ h2 { font-size: 1.05rem; margin: 1.4rem 0 .6rem; }
 .guide { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .6rem .9rem; margin: .6rem 0 .8rem; }
 .guide summary { cursor: pointer; color: var(--text); }
 .guide p { margin: .5rem 0; }
+.guide .signals { margin: .5rem 0 .3rem; padding-left: 1.2rem; }
+.guide .signals li { margin: .15rem 0; }
+.est { color: var(--muted); font-size: .85em; }
 .tmpl {
   background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
   padding: .6rem .8rem; overflow-x: auto; font-size: .82rem; line-height: 1.45;

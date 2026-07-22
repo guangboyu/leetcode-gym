@@ -49,16 +49,19 @@ The app opens on the **Today** tab. Each tab covers one part of the workflow:
 
 The study route has two parts, both clickable so you can practice any type at any time:
 
-- **Beginner route**: 0x3F's 7-stage Method A order (sliding window, binary search, core data
-  structures, tree DFS, grid DFS, backtracking, DP). The recommended next stage is marked.
-- **Full topic lists**: all 12 of 0x3F's topic lists with every interview-tier chapter, so
-  monotonic stack, bit manipulation, graph theory, greedy, math, and strings are covered too.
+- **Beginner route**: 17 pattern stages built from the union of Hot 100, Top Interview 150,
+  and NeetCode 250 (302 problems, each assigned to exactly one pattern). The order goes
+  foundations first: arrays and hashing, two pointers, sliding window, stack, binary search,
+  linked list, trees, heap, backtracking, tries, graphs, dynamic programming, greedy,
+  intervals, math and bits. Each stage splits into Warm-up (Easy), Core (Medium), and
+  Advanced (Hard) tiers, and its guide card teaches recognition first: the phrases in a
+  problem statement that signal the pattern, then a compact code template.
+- **Go deeper**: all 12 of 0x3F's topic lists with every interview-tier chapter, grouped
+  under their real chapter names (fixed-length window, knapsack, topological sort, and so
+  on), each with its own guide card and a link to the original list.
 
-Inside a type, subtopics are grouped under their real chapter names (fixed-length window,
-knapsack, topological sort, and so on). Selecting a subtopic shows a short guide card: what the
-technique is, when to use it, a compact code template where a canonical one exists, and a link
-to the original 0x3F list. Subtopics you consider irrelevant can be skipped with one click
-(restorable); rarely-interviewed sections are hidden by default behind a
+Any tier or subtopic you consider irrelevant can be skipped with one click (restorable);
+rarely-interviewed 0x3F sections are hidden by default behind a
 "show optional &amp; niche subtopics" toggle.
 
 When you finish a problem, mark it:
@@ -80,9 +83,14 @@ Clear all six intervals and the problem becomes **Mastered**, with no more revie
 Marking **Forgot** restarts the ladder. Marking **w/ help** holds the ladder in place and
 brings the problem back in 2 days.
 
-A **rating cap** in the header (default 1700) keeps you at one difficulty level until you
-finish everything at or below it, then you raise the cap. The dynamic programming stage
-widens to 2000 automatically.
+A **rating cap** in the header (default 1700) keeps you at one difficulty level in the 0x3F
+topic lists until you finish everything at or below it, then you raise the cap. The dynamic
+programming list widens to 2000 automatically. The beginner route ignores the cap; its
+difficulty tiers do the pacing instead.
+
+Classic problems mostly predate contest ratings, so unrated problems count as an estimated
+1250 (Easy), 1650 (Medium), or 2150 (Hard) in the Drill rating range and sort order. Estimates
+show as ≈ values in the tables.
 
 ## Sync progress across machines
 

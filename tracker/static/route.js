@@ -1,22 +1,116 @@
-/* 0x3F's beginner route (Method A in his "how to practice scientifically" post)
- * and drill-pool logic. Pure functions, no DOM — also loadable from node for tests.
+/* Study-route and drill-pool logic. Pure functions, no DOM — also loadable
+ * from node for tests.
  *
- * Stages reference 0x3F topic chapters (the leading number in each section name).
- * His rules: within a stage, finish problems rated <= the cap first (default 1700);
- * for DP the cap widens to 2000 because easy DP problems are sparse.
+ * Part 1 (beginner route): a curated pattern-by-pattern curriculum drawn from
+ * Hot 100 + Top Interview 150 + NeetCode 250 — the union most interviews are
+ * hired on. Each problem is assigned ONE pattern (NeetCode's category first,
+ * then Hot 100 / Interview 150 group), so the stages partition the union.
+ * Part 2: the 12 full 0x3F topic lists for going deep on any single type,
+ * with his rating-cap rule (finish problems <= the cap first, default 1700;
+ * DP widens to 2000 because easy DP problems are sparse).
  */
 (function (global) {
   "use strict";
 
-  const BEGINNER = [
-    { name: "Sliding window", topic: "Sliding Window & Two Pointers", chapters: [1, 2] },
-    { name: "Binary search basics", topic: "Binary Search", chapters: [1] },
-    { name: "Core data structures", topic: "Data Structures", chapters: [0, 1, 3, 4, 5] },
-    { name: "Binary tree DFS", topic: "Linked List, Tree & Backtracking", chapters: [2], subMax: 12 },
-    { name: "Grid DFS", topic: "Grid Graph", chapters: [1] },
-    { name: "Backtracking", topic: "Linked List, Tree & Backtracking", chapters: [4] },
-    { name: "DP chapters 1–6", topic: "Dynamic Programming", chapters: [1, 2, 3, 4, 5, 6], minCap: 2000 },
+  /* Most classic-list problems predate contest ratings (zerotrac only rates
+   * contest problems), so unrated problems get a difficulty-based estimate:
+   * the median rating of all rated problems of that difficulty. */
+  const FALLBACK_RATING = { Easy: 1250, Medium: 1650, Hard: 2150 };
+  function effRating(p) {
+    return p.rating || FALLBACK_RATING[p.difficulty] || 0;
+  }
+
+  /* ---- Part 1: curated beginner route (pattern -> problems) ---- */
+
+  // list category/group -> canonical pattern stage
+  const NC_PATTERN = {
+    "Arrays & Hashing": "Arrays & Hashing",
+    "Two Pointers": "Two Pointers",
+    "Sliding Window": "Sliding Window",
+    "Stack": "Stack & Monotonic Stack",
+    "Binary Search": "Binary Search",
+    "Linked List": "Linked List",
+    "Trees": "Trees & BSTs",
+    "Heap / Priority Queue": "Heap / Priority Queue",
+    "Backtracking": "Backtracking",
+    "Tries": "Tries",
+    "Graphs": "Graphs",
+    "Advanced Graphs": "Advanced Graphs",
+    "1-D Dynamic Programming": "1-D Dynamic Programming",
+    "2-D Dynamic Programming": "2-D Dynamic Programming",
+    "Greedy": "Greedy",
+    "Intervals": "Intervals",
+    "Math & Geometry": "Math & Bit Manipulation",
+    "Bit Manipulation": "Math & Bit Manipulation",
+  };
+  const H1_PATTERN = {
+    "Hashing": "Arrays & Hashing",
+    "Misc": "Arrays & Hashing",
+    "Two Pointers": "Two Pointers",
+    "Sliding Window": "Sliding Window",
+    "Stack": "Stack & Monotonic Stack",
+    "Binary Search": "Binary Search",
+    "Linked Lists": "Linked List",
+    "Binary Tree": "Trees & BSTs",
+    "Heap": "Heap / Priority Queue",
+    "Backtracking": "Backtracking",
+    "Trie": "Tries",
+    "Graph": "Graphs",
+    "Dynamic Programming": "1-D Dynamic Programming",
+    "Greedy": "Greedy",
+    "Matrix": "Math & Bit Manipulation",
+  };
+  const I150_PATTERN = {
+    "Hashmap": "Arrays & Hashing",
+    "Array / String": "Arrays & Hashing",
+    "Divide & Conquer": "Arrays & Hashing",
+    "Two Pointers": "Two Pointers",
+    "Sliding Window": "Sliding Window",
+    "Stack": "Stack & Monotonic Stack",
+    "Binary Search": "Binary Search",
+    "Linked List": "Linked List",
+    "Binary Tree General": "Trees & BSTs",
+    "Binary Tree BFS": "Trees & BSTs",
+    "Binary Search Tree": "Trees & BSTs",
+    "Heap": "Heap / Priority Queue",
+    "Backtracking": "Backtracking",
+    "Trie": "Tries",
+    "Graph General": "Graphs",
+    "Graph BFS": "Graphs",
+    "1D DP": "1-D Dynamic Programming",
+    "Kadane's Algorithm": "1-D Dynamic Programming",
+    "Multidimensional DP": "2-D Dynamic Programming",
+    "Intervals": "Intervals",
+    "Math": "Math & Bit Manipulation",
+    "Bit Manipulation": "Math & Bit Manipulation",
+    "Matrix": "Math & Bit Manipulation",
+  };
+  // Hot 100 fallthroughs whose group is not their real pattern.
+  const PATTERN_OVERRIDES = {
+    31: "Two Pointers",     // Next Permutation (H1 "Misc")
+    240: "Binary Search",   // Search a 2D Matrix II (H1 "Matrix")
+  };
+  function patternOf(p) {
+    if (PATTERN_OVERRIDES[p.id]) return PATTERN_OVERRIDES[p.id];
+    const L = p.lists;
+    if (L.neetcode250) return NC_PATTERN[L.neetcode250.category] || null;
+    if (L.hot100) return H1_PATTERN[L.hot100.group] || null;
+    if (L.interview150) return I150_PATTERN[L.interview150.group] || null;
+    return null;
+  }
+
+  // Foundations -> pointer patterns -> data structures -> recursion ->
+  // graphs -> DP -> the rest. Difficulty tiers inside a stage do the pacing,
+  // so the rating cap does not apply to these stages.
+  const PATTERN_ORDER = [
+    "Arrays & Hashing", "Two Pointers", "Sliding Window",
+    "Stack & Monotonic Stack", "Binary Search", "Linked List", "Trees & BSTs",
+    "Heap / Priority Queue", "Backtracking", "Tries", "Graphs",
+    "Advanced Graphs", "1-D Dynamic Programming", "2-D Dynamic Programming",
+    "Greedy", "Intervals", "Math & Bit Manipulation",
   ];
+  const TIER = { Easy: "1. Warm-up (Easy)", Medium: "2. Core (Medium)", Hard: "3. Advanced (Hard)" };
+  const BEGINNER = PATTERN_ORDER.map((name) => ({ name, pattern: name, part: "beginner" }));
 
   /* Part 2: the 12 full 0x3F topic lists (every interview-tier chapter),
    * in his list order — for practicing any type freely after (or alongside)
@@ -44,6 +138,10 @@
   }
 
   function stageMembership(stage, p) {
+    if (stage.pattern) {                          // curated beginner stage
+      if (patternOf(p) !== stage.pattern) return null;
+      return { section: TIER[p.difficulty] || TIER.Medium };
+    }
     return (p.lists.ox3f || []).find((m) => {
       if (m.topic !== stage.topic || m.tier !== "interview") return false;
       if (stage.chapters) {                       // null = every chapter
@@ -57,8 +155,10 @@
 
   function stageHas(stage, p, cap) {
     if (p.paid_only) return false;
-    const limit = stageCap(stage, cap);
-    if (limit && p.rating && p.rating > limit) return false;
+    if (!stage.pattern) {  // cap is an 0x3F-route knob; tiers pace the beginner route
+      const limit = stageCap(stage, cap);
+      if (limit && p.rating && p.rating > limit) return false;
+    }
     return Boolean(stageMembership(stage, p));
   }
 
@@ -73,7 +173,7 @@
     "Data Structures||§5.5 Regret Heap (Greedy with Undo)",
   ]);
 
-  function sectionKey(stage, section) { return stage.topic + "||" + section; }
+  function sectionKey(stage, section) { return (stage.topic || stage.name) + "||" + section; }
   function isOptional(stage, section) {
     return /\(optional\)/i.test(section) || NICHE.has(sectionKey(stage, section));
   }
@@ -103,7 +203,7 @@
             const d = (ka[i] ?? 0) - (kb[i] ?? 0);
             if (d) return d;
           }
-          return (a[1].rating ?? 0) - (b[1].rating ?? 0);
+          return effRating(a[1]) - effRating(b[1]);
         });
 
       const sections = [];
@@ -147,20 +247,23 @@
     return false;
   }
 
-  /* Untouched, rated, non-paid problems in [lo, hi]. `topics` (Set of 0x3F
+  /* Untouched, non-paid problems whose rating (real, or the difficulty-based
+   * estimate for unrated classics) falls in [lo, hi]. `topics` (Set of 0x3F
    * interview topics) narrows by problem TYPE; `pools` (see inPool) narrows by
    * source LIST — e.g. Hot 100 + Interview 150 + NeetCode 250 covers most
    * companies. Pass null for either to leave that axis unfiltered. */
   function drillPool(rows, isNew, lo, hi, topics, pools) {
     return rows.filter(([slug, p]) => {
-      if (!isNew(slug) || p.paid_only || !p.rating || p.rating < lo || p.rating > hi) return false;
+      const r = effRating(p);
+      if (!isNew(slug) || p.paid_only || !r || r < lo || r > hi) return false;
       if (!inPool(p, pools)) return false;
       if (!topics) return true;
       return (p.lists.ox3f || []).some((m) => m.tier === "interview" && topics.has(m.topic));
     });
   }
 
-  const api = { ROUTE, secNum, stageHas, routeState, drillPool, inPool, sectionKey, isOptional };
+  const api = { ROUTE, secNum, stageHas, routeState, drillPool, inPool, sectionKey,
+                isOptional, effRating, patternOf };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.Route = api;
 })(this);

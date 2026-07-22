@@ -78,7 +78,7 @@ function rowHtml(slug, p) {
     <td class="num">${p.id}</td>
     <td><a href="${url}" target="_blank" rel="noopener">${esc(p.title)}</a>${p.paid_only ? " 🔒" : ""}${badges(p)}</td>
     <td class="diff-${p.difficulty}">${p.difficulty}</td>
-    <td class="num">${p.rating ?? ""}</td>
+    <td class="num">${p.rating ?? `<span class="est" title="No contest rating — estimated from difficulty">≈${Route.effRating(p)}</span>`}</td>
     <td>${chipHtml(slug)}</td>
     <td class="actions">${actionsHtml(slug)}</td>
   </tr>`;
@@ -123,14 +123,14 @@ function renderToday() {
   const topicLis = states.map((st, i) => st.stage.part === "topics" ? stageLi(st, i) : "").join("");
   const optToggle = `<label class="opt-toggle"><input type="checkbox" id="route-opt"${showOptionalSections() ? " checked" : ""}>
     show optional &amp; niche subtopics</label>`;
-  const overviewBlock = `<div class="route"><p class="sub">Click any type to practice it (rating cap ${cap() ?? "none"}). ${optToggle}</p>
-    <p class="route-part">Beginner route — 0x3F Method A, in order:</p><ol>${beginnerLis}</ol>
-    <p class="route-part">Full topic lists — all 12, interview-tier sections:</p><ol>${topicLis}</ol></div>`;
+  const overviewBlock = `<div class="route"><p class="sub">Click any type to practice it. ${optToggle}</p>
+    <p class="route-part">Beginner route — one pattern at a time, from Hot 100 · Top Interview 150 · NeetCode 250:</p><ol>${beginnerLis}</ol>
+    <p class="route-part">Go deeper — the 12 full 0x3F topic lists, interview-tier sections (rating cap ${cap() ?? "none"}):</p><ol>${topicLis}</ol></div>`;
 
   let routeHtml;
   if (!sel) {
-    routeHtml = `<h2>Study route</h2><p class="empty">Beginner route complete at cap ${cap() ?? "none"} 🏆.
-       Raise the cap, practice the full lists in <b>Browse</b>, or test yourself in <b>Drill</b>.</p>${overviewBlock}`;
+    routeHtml = `<h2>Study route</h2><p class="empty">Route complete 🏆 — every pattern and every
+       0x3F list at cap ${cap() ?? "none"}. Raise the cap, or test yourself in <b>Drill</b>.</p>${overviewBlock}`;
   } else {
     // Subtopic (section) chips: click to practice one, × to skip it, ↩ to restore.
     // Grouped under their 0x3F chapter names (定长/不定长/背包/... in English).
@@ -149,36 +149,51 @@ function renderToday() {
       return `<span class="${cls}" data-sec="${esc(s.key)}" title="Practice this subtopic">
         ${!s.skipped && s.todo.length === 0 ? "✓ " : ""}${esc(s.section)} <span class="sub">${s.done}/${s.total}</span>${skipBtn}</span>`;
     };
-    const groups = [];
-    for (const s of secs) {
-      const c = chapOf(s);
-      if (!groups.length || groups[groups.length - 1].chap !== c) groups.push({ chap: c, chips: [] });
-      groups[groups.length - 1].chips.push(s);
-    }
-    const secList = groups.map((gr) => {
-      const gi = Guide.chapter(sel.stage.topic, gr.chap, gr.chips[0].section);
-      const label = gr.chap == null ? "Special topics"
-        : gi ? `${gr.chap}. ${gi.name}` : `Chapter ${gr.chap}`;
-      return `<div class="chap-group"><div class="chap-label">${esc(label)}</div>
-        <div class="chap-chips">${gr.chips.map(chipHtmlFor).join("")}</div></div>`;
-    }).join("");
+    let secList, guideCard;
+    if (sel.stage.pattern) {
+      // Curated pattern stage: difficulty tiers as chips, one guide per pattern.
+      secList = `<div class="chap-group"><div class="chap-chips">${secs.map(chipHtmlFor).join("")}</div></div>`;
+      const g = Guide.pattern(sel.stage.name);
+      guideCard = g ? `<details class="guide"${guideOpen() ? " open" : ""}>
+          <summary><b>${esc(sel.stage.name)}</b> — how to recognize &amp; solve</summary>
+          <ul class="signals">${g.signals.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
+          <p>${esc(g.intro)}</p>
+          ${g.tmpl ? `<pre class="tmpl">${esc(g.tmpl)}</pre>` : ""}
+          <p class="sub">Curated from NeetCode 250 + LeetCode Hot 100 / Top Interview 150.</p>
+        </details>` : "";
+    } else {
+      const groups = [];
+      for (const s of secs) {
+        const c = chapOf(s);
+        if (!groups.length || groups[groups.length - 1].chap !== c) groups.push({ chap: c, chips: [] });
+        groups[groups.length - 1].chips.push(s);
+      }
+      secList = groups.map((gr) => {
+        const gi = Guide.chapter(sel.stage.topic, gr.chap, gr.chips[0].section);
+        const label = gr.chap == null ? "Special topics"
+          : gi ? `${gr.chap}. ${gi.name}` : `Chapter ${gr.chap}`;
+        return `<div class="chap-group"><div class="chap-label">${esc(label)}</div>
+          <div class="chap-chips">${gr.chips.map(chipHtmlFor).join("")}</div></div>`;
+      }).join("");
 
-    // Guide card: what this subtopic's technique is + its template.
-    const tg = Guide.topic(sel.stage.topic);
-    const gcur = cur ? Guide.chapter(sel.stage.topic, chapOf(cur), cur.section) : null;
-    const guideCard = gcur ? `<details class="guide"${guideOpen() ? " open" : ""}>
-        <summary><b>${esc(gcur.name)}</b> · ${esc(gcur.zh)} — what &amp; how</summary>
-        <p>${esc(gcur.intro)}</p>
-        ${gcur.tmpl ? `<pre class="tmpl">${esc(gcur.tmpl)}</pre>` : ""}
-        <p class="sub">From <a href="${tg ? tg.post : "#"}" target="_blank" rel="noopener">0x3F's ${esc(sel.stage.topic)} list（${esc(tg ? tg.zh : "")}）↗</a></p>
-      </details>` : "";
+      // Guide card: what this subtopic's technique is + its template.
+      const tg = Guide.topic(sel.stage.topic);
+      const gcur = cur ? Guide.chapter(sel.stage.topic, chapOf(cur), cur.section) : null;
+      guideCard = gcur ? `<details class="guide"${guideOpen() ? " open" : ""}>
+          <summary><b>${esc(gcur.name)}</b> · ${esc(gcur.zh)} — what &amp; how</summary>
+          <p>${esc(gcur.intro)}</p>
+          ${gcur.tmpl ? `<pre class="tmpl">${esc(gcur.tmpl)}</pre>` : ""}
+          <p class="sub">From <a href="${tg ? tg.post : "#"}" target="_blank" rel="noopener">0x3F's ${esc(sel.stage.topic)} list（${esc(tg ? tg.zh : "")}）↗</a></p>
+        </details>` : "";
+    }
 
     const capNote = sel.stage.minCap && cap() != null ? ` · cap ${Math.max(cap(), sel.stage.minCap)}` : "";
+    const capTxt = sel.stage.pattern ? "" : ` at cap ${cap() ?? "none"}`;
     const body = !cur
-      ? `<p class="empty">Nothing to practice here at cap ${cap() ?? "none"}.</p>`
+      ? `<p class="empty">Nothing to practice here${capTxt}.</p>`
       : cur.todo.length
         ? tableHtml(cur.todo.slice(0, SUGGEST))
-        : `<p class="empty">Every problem in ${esc(cur.section)} is done at cap ${cap() ?? "none"} ✓ — pick another subtopic.</p>`;
+        : `<p class="empty">Every problem in ${esc(cur.section)} is done${capTxt} ✓ — pick another subtopic.</p>`;
     const practicing = cur
       ? `<p class="sub practicing">Practicing: <b>${esc(cur.section)}</b> ${cur.done}/${cur.total}${cur === recSec ? " · recommended next" : ""}</p>`
       : "";
@@ -300,14 +315,14 @@ function renderDrill() {
   const lo = localStorage.getItem("drillLo") ?? (cap() ? cap() - 300 : 1400);
   const hi = localStorage.getItem("drillHi") ?? (cap() ?? 1700);
   let card = "";
-  if (drill.empty) card = `<p class="empty">No untouched rated problems match. Widen the rating range, or select more lists / types.</p>`;
+  if (drill.empty) card = `<p class="empty">No untouched problems match. Widen the rating range, or select more lists / types.</p>`;
   else if (drill.slug) {
     const p = PROBLEMS[drill.slug];
     const url = `https://leetcode.com/problems/${drill.slug}/`;
     card = `<div class="drillcard">
       <p class="drill-title"><a href="${url}" target="_blank" rel="noopener">${p.id}. ${esc(p.title)}</a></p>
       ${drill.revealed
-        ? `<p><span class="diff-${p.difficulty}">${p.difficulty}</span> · rating ${p.rating} ${badges(p)}</p>
+        ? `<p><span class="diff-${p.difficulty}">${p.difficulty}</span> · rating ${p.rating ?? `≈${Route.effRating(p)} (est.)`} ${badges(p)}</p>
            <ul class="sub">${(p.lists.ox3f || []).map((m) => `<li>${esc(m.topic)} — ${esc(m.section)}</li>`).join("") || "<li>not in the 0x3F lists</li>"}</ul>
            <p>${chipHtml(drill.slug)}</p>
            <button id="drill-next">Draw next →</button>`
@@ -329,7 +344,8 @@ function renderDrill() {
     <p class="sub">0x3F's Method B: practice without knowing the problem type, since contests and
     interviews won't tell you it's DP. The specific problem's type and difficulty stay hidden until
     you mark it. Narrow by list and by type below — for most companies Hot 100 + Top Interview 150 +
-    NeetCode 250 is plenty.</p>
+    NeetCode 250 is plenty. Classics without a contest rating count as ≈1250 (Easy), ≈1650 (Medium),
+    or ≈2150 (Hard).</p>
     <div id="filters">
       <label>Rating <input id="drill-lo" type="number" step="50" value="${lo}"> –
       <input id="drill-hi" type="number" step="50" value="${hi}"></label>

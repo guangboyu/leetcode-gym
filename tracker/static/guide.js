@@ -409,8 +409,231 @@ for i in range(1, m):
     },
   };
 
+  /* Guides for the curated beginner route (one per pattern stage). `signals`
+   * lists the problem-statement cues that should trigger the pattern —
+   * interviews are won by recognition, so read the signals before the code. */
+  const PATTERNS = {
+    "Arrays & Hashing": {
+      signals: ["“have I seen this element before?” → hash set",
+        "pair/count/group lookups → hash map keyed by value, count, or a canonical form (sorted string, tuple)",
+        "“sum of a range” many times → prefix sums"],
+      intro: "The toolbox everything else builds on: trade memory for O(1) lookups. Most “clever” array problems are a hash map with the right key, or a prefix-sum identity like sum(i..j) = pre[j+1] - pre[i].",
+      tmpl: `# two-sum shape: one pass, check the complement before inserting
+seen = {}                       # value -> index
+for i, x in enumerate(a):
+    if target - x in seen:
+        return [seen[target - x], i]
+    seen[x] = i`,
+    },
+    "Two Pointers": {
+      signals: ["sorted array + “find a pair/triple” → opposite ends, move the pointer that helps",
+        "in-place remove/partition → slow writer + fast reader",
+        "linked-list cycle or middle → fast & slow pointers"],
+      intro: "Two indices replace a nested loop because moving one pointer can never help the other side: O(n²) → O(n). Ask “when I look at a[l] and a[r], which side is provably useless now?”",
+      tmpl: `l, r = 0, len(a) - 1        # opposite-ends shape
+while l < r:
+    s = a[l] + a[r]
+    if s == target: ...
+    elif s < target: l += 1     # a[l] can never pair with anything -> drop it
+    else: r -= 1`,
+    },
+    "Sliding Window": {
+      signals: ["“longest/shortest contiguous subarray or substring such that …”",
+        "“max/min/count over every window of size k”",
+        "needs monotonicity: growing the window only makes the condition worse (or better)"],
+      intro: "A moving window whose stats update incrementally: add the new right element, shrink from the left while the window is broken. Never recompute a window from scratch.",
+      tmpl: `l = 0
+for r, x in enumerate(a):
+    add(x)                      # extend right
+    while window_broken():
+        remove(a[l]); l += 1    # shrink left
+    ans = max(ans, r - l + 1)   # window [l, r] is valid`,
+    },
+    "Stack & Monotonic Stack": {
+      signals: ["matching/nesting (parentheses, undo, calculators) → plain stack",
+        "“next/previous greater (or smaller) element” → monotonic stack",
+        "“largest rectangle / trapped water / visible items” → monotonic stack"],
+      intro: "A stack remembers what is still waiting to be resolved. Keep it monotonic and each element is pushed and popped once: every “nearest element beating me” question in O(n).",
+      tmpl: `st = []                     # indices, values decreasing
+for i, x in enumerate(a):
+    while st and a[st[-1]] < x:
+        j = st.pop()            # x is the next greater element of a[j]
+        ans[j] = i - j
+    st.append(i)`,
+    },
+    "Binary Search": {
+      signals: ["sorted (or rotated-sorted) input → search for a boundary, not just equality",
+        "“minimize the maximum / maximize the minimum / least k such that …” → binary search the answer",
+        "check(x) is monotonic: if x works, so does every larger x"],
+      intro: "Binary search needs monotonicity, not a sorted array. Frame everything as “first index where check() flips from false to true” and the off-by-ones disappear.",
+      tmpl: `lo, hi = 0, n               # first x with check(x) true
+while lo < hi:
+    mid = (lo + hi) // 2
+    if check(mid): hi = mid
+    else: lo = mid + 1
+return lo`,
+    },
+    "Linked List": {
+      signals: ["reverse / reorder / splice in place → prev-cur pointer surgery with a dummy head",
+        "cycle detection, middle, k-th from end → fast & slow pointers",
+        "“merge k lists” → heap of heads"],
+      intro: "Almost every list problem is careful pointer surgery. A dummy node kills the empty-list and head edge cases; draw the before/after arrows before coding.",
+      tmpl: `dummy = ListNode(0, head)   # reverse shape
+prev, cur = None, head
+while cur:
+    nxt = cur.next
+    cur.next = prev
+    prev, cur = cur, nxt
+return prev`,
+    },
+    "Trees & BSTs": {
+      signals: ["“for every node …” / path sums / depth / diameter → DFS returning info upward",
+        "“level by level / zigzag / rightmost per level” → BFS with a queue",
+        "BST → inorder is sorted; prune by comparing with the root"],
+      intro: "Trust the recursion: assume the recursive call already solves the subtree, then combine the children's answers at the root. Distinguish “answer passes through this node” from “answer returned to the parent”.",
+      tmpl: `def dfs(node):              # post-order combine
+    if not node: return 0
+    left, right = dfs(node.left), dfs(node.right)
+    ans = max(ans, left + right)   # path through node
+    return max(left, right) + 1    # best chain up to parent`,
+    },
+    "Heap / Priority Queue": {
+      signals: ["“top-k / k-th largest / k closest” → heap of size k",
+        "“running median” → two heaps balanced around the middle",
+        "repeatedly “take the smallest, put back something” → heap-driven simulation"],
+      intro: "A heap gives the current min (or max) in O(log n) without full sorting. For top-k, keep a min-heap of size k: the root is the k-th largest so far.",
+      tmpl: `import heapq                # k largest
+h = []
+for x in a:
+    heapq.heappush(h, x)
+    if len(h) > k:
+        heapq.heappop(h)        # root of h = k-th largest`,
+    },
+    "Backtracking": {
+      signals: ["“generate ALL combinations / permutations / partitions”",
+        "constraint satisfaction on a small n (n ≤ ~20): boards, digits, words",
+        "decision tree where each level chooses one element or position"],
+      intro: "Systematic exhaustive search: choose, explore, un-choose. Define what one level of the tree decides, then prune branches that already violate the constraints.",
+      tmpl: `def dfs(start, path):
+    if done(path):
+        ans.append(path[:]); return
+    for i in range(start, n):
+        if not valid(i): continue   # prune
+        path.append(a[i])
+        dfs(i + 1, path)
+        path.pop()                  # un-choose`,
+    },
+    "Tries": {
+      signals: ["many words + “starts with / prefix” queries",
+        "search a board or stream against a whole dictionary at once",
+        "wildcard letters → DFS over trie children"],
+      intro: "A tree keyed by characters: shared prefixes are stored once, so prefix queries cost O(len(word)) regardless of dictionary size.",
+      tmpl: `trie = {}
+for w in words:
+    node = trie
+    for c in w:
+        node = node.setdefault(c, {})
+    node['$'] = True            # end-of-word marker`,
+    },
+    "Graphs": {
+      signals: ["“islands / connected regions / spread” on a grid → flood-fill DFS/BFS",
+        "shortest path with unit steps → BFS level by level",
+        "“prerequisites / build order” → topological sort",
+        "“are these connected / merge groups” → union-find"],
+      intro: "Model the entities as nodes and relations as edges, then pick the traversal the question implies. A grid is just a graph whose neighbors are the 4 directions. Always mark visited when enqueuing, not when popping.",
+      tmpl: `from collections import deque   # BFS shortest steps
+q, seen = deque([start]), {start}
+d = 0
+while q:
+    for _ in range(len(q)):
+        u = q.popleft()
+        if u == goal: return d
+        for v in neighbors(u):
+            if v not in seen:
+                seen.add(v); q.append(v)
+    d += 1`,
+    },
+    "Advanced Graphs": {
+      signals: ["shortest path with weighted edges → Dijkstra (no negatives)",
+        "“connect everything at minimum cost” → minimum spanning tree",
+        "≤ k stops / negative edges → Bellman-Ford style relaxation"],
+      intro: "Same graphs, weighted questions. Dijkstra is BFS with a priority queue: settle the closest unsettled node, relax its edges; stale heap entries are skipped when popped.",
+      tmpl: `import heapq                # Dijkstra
+dist = {s: 0}
+h = [(0, s)]
+while h:
+    d, u = heapq.heappop(h)
+    if d > dist.get(u, inf): continue   # stale
+    for v, w in adj[u]:
+        if d + w < dist.get(v, inf):
+            dist[v] = d + w
+            heapq.heappush(h, (d + w, v))`,
+    },
+    "1-D Dynamic Programming": {
+      signals: ["“how many ways / min cost / max value” over a sequence → not the ways themselves",
+        "current choice depends on a few previous positions (climb stairs, rob houses)",
+        "“best subarray ending here” → Kadane"],
+      intro: "Define f[i] = answer for the prefix ending at i, write the transition from smaller states, set base cases. If the recursive version overlaps subproblems, memoize it — that IS the DP.",
+      tmpl: `# house-robber shape: take a[i] + f[i-2], or skip -> f[i-1]
+f0, f1 = 0, 0
+for x in a:
+    f0, f1 = f1, max(f1, f0 + x)
+return f1`,
+    },
+    "2-D Dynamic Programming": {
+      signals: ["two sequences compared (edit distance, LCS, interleaving) → f[i][j] on two prefixes",
+        "grid paths with costs/counts → f[r][c] from top/left",
+        "“pick items under a budget” → knapsack over (item, capacity)"],
+      intro: "State = a pair of prefixes (or position + resource). Fill the table so every transition reads already-computed cells; for 0-1 knapsack compress to 1-D by looping capacity downward.",
+      tmpl: `# LCS shape
+for i in range(1, m + 1):
+    for j in range(1, n + 1):
+        if s[i-1] == t[j-1]:
+            f[i][j] = f[i-1][j-1] + 1
+        else:
+            f[i][j] = max(f[i-1][j], f[i][j-1])`,
+    },
+    "Greedy": {
+      signals: ["“minimum number of jumps/refuels/removals” where one obvious best move exists",
+        "sorting the input first makes the choice safe",
+        "an exchange argument shows a local choice never hurts the global optimum"],
+      intro: "Commit to the locally best choice and never look back — valid only when you can argue no future regret (exchange argument). If you cannot argue it, it is probably DP.",
+      tmpl: `# jump-game shape: furthest reachable frontier
+far = 0
+for i, x in enumerate(a):
+    if i > far: return False    # gap we can never cross
+    far = max(far, i + x)
+return True`,
+    },
+    "Intervals": {
+      signals: ["“merge / insert / count overlapping intervals”",
+        "“minimum rooms / arrows / removals” over ranges",
+        "events with start & end → sort by one endpoint and sweep"],
+      intro: "Sort, then sweep: after sorting by start, an interval overlaps the current merged block iff its start ≤ the block's end. For min-removals style questions, sort by END and greedily keep the earliest-ending interval.",
+      tmpl: `ivs.sort()
+merged = []
+for s, e in ivs:
+    if merged and s <= merged[-1][1]:
+        merged[-1][1] = max(merged[-1][1], e)   # overlap -> extend
+    else:
+        merged.append([s, e])`,
+    },
+    "Math & Bit Manipulation": {
+      signals: ["“without using +/×”, single number among pairs → XOR tricks",
+        "count bits / powers of two → n & (n-1) drops the lowest set bit",
+        "rotate/spiral/simulate a matrix → index mapping, layer by layer"],
+      intro: "A small bag of identities does the work: x ^ x = 0 (pairs cancel), n & (n-1) clears the lowest set bit, rotate = transpose + reverse rows. Simulation problems reward careful index bookkeeping over cleverness.",
+      tmpl: `# single number: everything paired cancels
+acc = 0
+for x in a:
+    acc ^= x
+return acc`,
+    },
+  };
+
   const api = {
     topic(t) { return G[t] || null; },
+    pattern(name) { return PATTERNS[name] || null; },
     /* Look up a chapter by number, falling back to the raw section name for
      * 0x3F's un-numbered "Special Topic" sections. */
     chapter(t, num, sectionName) {
