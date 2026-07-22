@@ -17,8 +17,12 @@ problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition revie
   Study route part 1 = curated beginner route: 17 pattern stages partitioning the union of
   Hot 100 + Interview 150 + NeetCode 250 (302 problems; one pattern per problem via
   NC category → H1 group → I150 group priority + 2 overrides, see route.js patternOf).
-  Stages split into Easy/Medium/Hard tiers; guide cards (guide.js PATTERNS) lead with
-  recognition signals (algo-sensei style), then a template. Cap does NOT apply here.
+  Stages split into ~70 hand-curated semantic subtopics (curriculum.js: name + recognize +
+  solve + template + explicit id list; every union problem assigned exactly once — keep the
+  partition complete when the data snapshot changes; unassigned ids fall into a visible
+  "99. More practice" section). Two guide cards per stage: pattern mental map (guide.js
+  PATTERNS: signals + intro) and the selected subtopic's recognize/solve/template.
+  Cap does NOT apply here.
   Part 2 = all 12 full 0x3F topic lists, every stage/subtopic freely clickable. Subtopic
   chips are grouped under real 0x3F chapter names; selecting one shows a guide card
   (intro + code template + link to his post) from `static/guide.js`. Sections 0x3F marks
@@ -76,8 +80,10 @@ tracker/               # Phase 2 app (no deps)
   static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
                        #   route.js = pure route/drill logic (pattern route + 0x3F
                        #   lists + effRating fallbacks), node-testable;
-                       #   guide.js = pattern guides (PATTERNS, signals + templates)
-                       #   and per-chapter 0x3F intro + template data (all 12 lists)
+                       #   curriculum.js = beginner-route subtopics: recognize/solve/
+                       #   template + explicit problem-id partition (global, no UMD);
+                       #   guide.js = pattern mental maps (PATTERNS) and per-chapter
+                       #   0x3F intro + template data (all 12 lists)
 desktop_app.py         # PyInstaller entry point (repo root so `tracker` imports clean)
 packaging/             # desktop build: LeetCodeTracker.spec (branches per-OS),
                        #   build_windows.ps1, build_macos.sh (app -> icon -> dmg),

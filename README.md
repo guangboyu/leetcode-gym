@@ -53,9 +53,11 @@ The study route has two parts, both clickable so you can practice any type at an
   and NeetCode 250 (302 problems, each assigned to exactly one pattern). The order goes
   foundations first: arrays and hashing, two pointers, sliding window, stack, binary search,
   linked list, trees, heap, backtracking, tries, graphs, dynamic programming, greedy,
-  intervals, math and bits. Each stage splits into Warm-up (Easy), Core (Medium), and
-  Advanced (Hard) tiers, and its guide card teaches recognition first: the phrases in a
-  problem statement that signal the pattern, then a compact code template.
+  intervals, math and bits. Each stage splits into semantic subtopics — sliding window, for
+  example, becomes fixed-size window, longest window (shrink when invalid), shortest window
+  (shrink while valid), and window max/min with a monotonic deque. Two guide cards teach
+  recognition first: the pattern's mental map (the statement phrases that signal it), then
+  the selected subtopic's recognize, solve, and code template.
 - **Go deeper**: all 12 of 0x3F's topic lists with every interview-tier chapter, grouped
   under their real chapter names (fixed-length window, knapsack, topological sort, and so
   on), each with its own guide card and a link to the original list.
@@ -86,7 +88,7 @@ brings the problem back in 2 days.
 A **rating cap** in the header (default 1700) keeps you at one difficulty level in the 0x3F
 topic lists until you finish everything at or below it, then you raise the cap. The dynamic
 programming list widens to 2000 automatically. The beginner route ignores the cap; its
-difficulty tiers do the pacing instead.
+subtopic progression does the pacing instead.
 
 Classic problems mostly predate contest ratings, so unrated problems count as an estimated
 1250 (Easy), 1650 (Medium), or 2150 (Hard) in the Drill rating range and sort order. Estimates

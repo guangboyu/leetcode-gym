@@ -100,7 +100,7 @@
   }
 
   // Foundations -> pointer patterns -> data structures -> recursion ->
-  // graphs -> DP -> the rest. Difficulty tiers inside a stage do the pacing,
+  // graphs -> DP -> the rest. Subtopics (curriculum.js) pace each stage,
   // so the rating cap does not apply to these stages.
   const PATTERN_ORDER = [
     "Arrays & Hashing", "Two Pointers", "Sliding Window",
@@ -109,7 +109,6 @@
     "Advanced Graphs", "1-D Dynamic Programming", "2-D Dynamic Programming",
     "Greedy", "Intervals", "Math & Bit Manipulation",
   ];
-  const TIER = { Easy: "1. Warm-up (Easy)", Medium: "2. Core (Medium)", Hard: "3. Advanced (Hard)" };
   const BEGINNER = PATTERN_ORDER.map((name) => ({ name, pattern: name, part: "beginner" }));
 
   /* Part 2: the 12 full 0x3F topic lists (every interview-tier chapter),
@@ -140,7 +139,10 @@
   function stageMembership(stage, p) {
     if (stage.pattern) {                          // curated beginner stage
       if (patternOf(p) !== stage.pattern) return null;
-      return { section: TIER[p.difficulty] || TIER.Medium };
+      // Subtopic assignment lives in curriculum.js; problems added by a future
+      // data snapshot but not yet curated fall into a catch-all section.
+      const sub = global.Curriculum && global.Curriculum.subtopicFor(stage.pattern, p.id);
+      return { section: sub ? sub.name : "99. More practice" };
     }
     return (p.lists.ox3f || []).find((m) => {
       if (m.topic !== stage.topic || m.tier !== "interview") return false;

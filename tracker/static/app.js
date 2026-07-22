@@ -151,16 +151,24 @@ function renderToday() {
     };
     let secList, guideCard;
     if (sel.stage.pattern) {
-      // Curated pattern stage: difficulty tiers as chips, one guide per pattern.
+      // Curated pattern stage: semantic subtopics as chips; two cards — the
+      // pattern's mental map, then the selected subtopic's recognize/solve.
       secList = `<div class="chap-group"><div class="chap-chips">${secs.map(chipHtmlFor).join("")}</div></div>`;
       const g = Guide.pattern(sel.stage.name);
-      guideCard = g ? `<details class="guide"${guideOpen() ? " open" : ""}>
-          <summary><b>${esc(sel.stage.name)}</b> — how to recognize &amp; solve</summary>
+      const mapCard = g ? `<details class="guide"${guideOpen() ? " open" : ""}>
+          <summary><b>${esc(sel.stage.name)}</b> — the mental map</summary>
           <ul class="signals">${g.signals.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
           <p>${esc(g.intro)}</p>
-          ${g.tmpl ? `<pre class="tmpl">${esc(g.tmpl)}</pre>` : ""}
           <p class="sub">Curated from NeetCode 250 + LeetCode Hot 100 / Top Interview 150.</p>
         </details>` : "";
+      const sub = cur && (Curriculum.SUB[sel.stage.name] || []).find((s) => s.name === cur.section);
+      const subCard = sub ? `<details class="guide"${guideOpen() ? " open" : ""}>
+          <summary><b>${esc(sub.name)}</b> — recognize &amp; solve</summary>
+          <p><b>Recognize:</b> ${esc(sub.recognize)}</p>
+          <p><b>Solve:</b> ${esc(sub.solve)}</p>
+          ${sub.tmpl ? `<pre class="tmpl">${esc(sub.tmpl)}</pre>` : ""}
+        </details>` : "";
+      guideCard = mapCard + subCard;
     } else {
       const groups = [];
       for (const s of secs) {
@@ -208,9 +216,9 @@ function renderToday() {
     localStorage.setItem("routeShowOptional", opt.checked ? "1" : "0");
     renderToday();
   };
-  const gd = $(".guide");
-  if (gd) gd.addEventListener("toggle", () =>
-    localStorage.setItem("guideOpen", gd.open ? "1" : "0"));
+  document.querySelectorAll(".guide").forEach((gd) =>
+    gd.addEventListener("toggle", () =>
+      localStorage.setItem("guideOpen", gd.open ? "1" : "0")));
 }
 
 // ---------- Browse ----------
