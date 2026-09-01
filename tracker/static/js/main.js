@@ -356,5 +356,5 @@ async function boot() {
 keys.install();
 installGlobalKeys();
 installClicks();
-window.Gym = Object.assign(window.Gym || {}, { store, router, mark, ctx, version: "0.2.0" });
+window.Gym = Object.assign(window.Gym || {}, { store, router, mark, ctx, version: "0.3.0" });
 boot();

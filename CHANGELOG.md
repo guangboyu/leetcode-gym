@@ -3,7 +3,7 @@
 All notable changes to LeetCode Gym. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow SemVer.
 
-## [Unreleased]
+## [0.3.0] — 2026-09-01
 
 ### Added
 - **Learn tab** — one ordered route of 21 patterns. Hand-written tutorials
@@ -36,6 +36,10 @@ All notable changes to LeetCode Gym. The format follows
 - The two-part study route (beginner + "go deeper") and the duplicated code
   templates that came with it; `curriculum.js`/`guide.js` moved to `scripts/legacy/`
   as the provenance of `data/patterns.json`.
+
+## [0.2.0] — 2026-07-20
+- Study route with the full 0x3F taxonomy, guide cards per chapter, Drill list/type filters,
+  curated beginner route with recognize/solve subtopics.
 
 ## [0.1.0] — 2026-07-22
 - First desktop release: Today / Browse / Drill / Stats, Ebbinghaus scheduling,

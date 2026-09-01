@@ -3,4 +3,4 @@
 The version lives here (not in packaging/) so the server's /api/about, the
 desktop About panel and the PyInstaller spec all read one number.
 """
-__version__ = "0.2.0"
+__version__ = "0.3.0"
