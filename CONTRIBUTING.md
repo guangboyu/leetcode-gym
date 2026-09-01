@@ -29,7 +29,7 @@ served as plain ES modules.
 | `data/problems.json` | 2,678 problems keyed by slug with list memberships (generated) |
 | `data/patterns.json` | the 21-pattern taxonomy + the 0x3F chapter/section mapping (hand-curated, drafted by `scripts/draft_patterns.py`) |
 | `data/tutorials.json` | parsed from `tutorials/*.md` by `scripts/build_tutorials.py` (generated, never edit by hand) |
-| `tutorials/` | the hand-written pattern tutorials, their GIFs, and the animation generator |
+| `tutorials/` | the pattern tutorials, their GIFs, and the animation generator |
 | `scripts/` | the data pipeline (see `source/README.md` for the full refresh) |
 | `packaging/` | PyInstaller spec, build scripts, icon |
 

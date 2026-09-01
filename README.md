@@ -5,7 +5,7 @@ Learn a pattern, drill it cold, keep it on a forgetting curve.
 A native macOS / Windows app for LeetCode interview prep:
 
 - 2,678 problems from Hot 100, Top Interview 150, NeetCode 250 and 0x3F's topic lists
-- hand-written pattern tutorials with step-by-step animations
+- pattern tutorials with animations
 - a spaced-repetition scheduler that brings each problem back before you forget it
 
 > **Under construction.** The app works end to end. Tutorials are being written one
@@ -53,8 +53,9 @@ A native macOS / Windows app for LeetCode interview prep:
 
 **3. Review on the forgetting curve**
 
-- Everything you mark comes back in *Today*: 1, 2, 4, 7, 15, then 30 days after each
-  clean solve. After that the problem is mastered.
+- Reviews follow the Ebbinghaus forgetting curve: a problem comes back in *Today*
+  right before you would forget it, at 1, 2, 4, 7, 15, then 30 days after each clean
+  solve. After that it is mastered.
 - **Forgot** restarts the ladder. **Help** holds it and brings the problem back in two days.
 - Any mark can be undone (⌘Z).
 
