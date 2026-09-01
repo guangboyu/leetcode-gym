@@ -1,4 +1,14 @@
-"""Locating bundled, read-only assets (static files + problems.json).
+"""Locating bundled, read-only assets.
+
+Shipped assets, all resolved relative to ``resource_root()``:
+    tracker/static/**          the SPA (incl. static/vendor/)
+    data/problems.json         the problem table
+    data/tutorials.json        parsed tutorials (scripts/build_tutorials.py)
+    data/patterns.json         the pattern taxonomy + 0x3F mapping
+    tutorials/*.md             tutorial markdown rendered by the Learn tab
+    tutorials/assets/**        the tutorial GIFs
+(``tutorials/anim/`` — the GIF generator — is NOT shipped; see the PyInstaller
+spec's ``datas`` list, whose layout must mirror this one.)
 
 Works both when running from source and when packaged by PyInstaller. In a
 frozen one-file build the bundled data is unpacked to a temp dir exposed as
@@ -20,7 +30,7 @@ def is_frozen() -> bool:
 
 
 def resource_root() -> Path:
-    """Directory holding shipped assets: ``tracker/static`` and ``data/problems.json``."""
+    """Directory holding the shipped assets listed in the module docstring."""
     if is_frozen():
         return Path(sys._MEIPASS)  # type: ignore[attr-defined]
     return Path(__file__).resolve().parent.parent
