@@ -19,7 +19,7 @@ let current = null;                 // {file, patternId, root, observer, cursor,
 /** Toolbar for reading mode: back link + tutorial title. */
 export function readToolbar(sel) {
   const p = sel.pattern;
-  return html`<a class="btn ghost" href="#/learn/${p.id}/${sel.sub || ""}">← Back to practice</a><h1>${p.name}</h1><span class="sub">tutorial</span>`;
+  return html`<h1>${p.name}</h1><span class="sub">tutorial</span>`;
 }
 
 /** Headings worth a TOC entry: H2 and H3, minus the H1 title. */

@@ -34,7 +34,8 @@ export function ringOffset(done, total, c = RING_C) {
 
 /** Subtopics a viewer can pick from chips (everything but hidden ones). */
 export function chipModel(pattern) {
-  return pattern.subtopics.map((s) => ({
+  // 0x3F fallback groups with nothing inside the cap would only add noise.
+  return pattern.subtopics.filter((s) => !(s.kind === "ox3f" && s.total === 0)).map((s) => ({
     id: s.id, key: s.key, kind: s.kind, name: s.name,
     done: s.done, total: s.total, skipped: s.skipped,
     complete: s.total > 0 && s.done >= s.total,
@@ -164,7 +165,7 @@ function subtopicCard(pattern, sub) {
     ? html`<div class="links"><span class="sub">Worked in the tutorial:</span>${sub.worked.map((w) => html`<a href="#/learn/${pattern.id}/read/${w.anchor}" title="${w.title}">LC ${w.id}${/^\d/.test(w.title) || w.title.length > 40 ? "" : ` · ${w.title}`}</a>`)}</div>`
     : "";
   const body = sub.kind === "shape"
-    ? html`${sub.blurb ? html`<p>${sub.blurb}</p>` : ""}${codeBlock(sub.template)}${worked}`
+    ? html`${sub.blurb ? html`<p>${raw(noteHtml(sub.blurb))}</p>` : ""}${codeBlock(sub.template)}${worked}`
     : html`<div class="recognize"><div><h4>Recognize</h4><p>${sub.recognize || "—"}</p></div><div><h4>Solve</h4><p>${sub.solve || "—"}</p></div></div>${codeBlock(sub.template)}`;
   return html`<section class="card subcard${gif ? "" : " nofig"}">
     <div class="txt"><h3>${sub.label ? sub.label.replace(/^Shape (\d+): (.*)$/, (m, n, t) => `Shape ${n} · ${titleCase(t)}`) : sub.name}</h3>${body}</div>
