@@ -45,10 +45,16 @@ jobs:
       - name: Self-test the bundle
         shell: pwsh
         run: |
-          $env:LEETCODE_TRACKER_SELFTEST = "$env:RUNNER_TEMP\selftest.json"
-          & "dist\LeetCode Gym.exe"
-          Get-Content "$env:RUNNER_TEMP\selftest.json"
-          if (-not (Select-String -Path "$env:RUNNER_TEMP\selftest.json" -Pattern '"ok": true')) { exit 1 }
+          $report = "$env:RUNNER_TEMP\selftest.json"
+          $env:LEETCODE_TRACKER_SELFTEST = $report
+          # A windowed exe returns to the shell at once; wait for the process, then for the file
+          # (a one-file build unpacks itself on first launch, which takes a few seconds).
+          Start-Process -FilePath "dist\LeetCode Gym.exe" -Wait
+          $tries = 0
+          while (-not (Test-Path $report) -and $tries -lt 60) { Start-Sleep -Seconds 1; $tries++ }
+          if (-not (Test-Path $report)) { Write-Error "no self-test report after 60 s"; exit 1 }
+          Get-Content $report
+          if (-not (Select-String -Path $report -Pattern '"ok": true')) { exit 1 }
       - uses: actions/upload-artifact@v4
         with:
           name: LeetCode-Gym-Windows

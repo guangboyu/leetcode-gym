@@ -33,7 +33,7 @@ jobs:
       - name: Server smoke test
         run: |
           python3 tracker/server.py --data-dir "${RUNNER_TEMP}/gym" &
-          sleep 2
+          for i in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8765/api/about && break; sleep 1; done
           curl -fsS -o "${RUNNER_TEMP}/index.html" http://127.0.0.1:8765/
           grep -q "<title>" "${RUNNER_TEMP}/index.html"
           curl -fsS -o "${RUNNER_TEMP}/problems.json" http://127.0.0.1:8765/data/problems.json
