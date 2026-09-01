@@ -3,93 +3,79 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LeetCode Study Tracker</title>
-<link rel="stylesheet" href="style.css">
+<meta name="color-scheme" content="light dark">
+<title>LeetCode Gym</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/shell.css">
+<link rel="stylesheet" href="css/views.css">
 </head>
 <body>
-<header>
-  <h1>LeetCode Study Tracker</h1>
-  <nav id="tabs">
-    <button data-tab="today" class="active">Today <span id="due-count" class="count"></span></button>
-    <button data-tab="browse">Browse</button>
-    <button data-tab="drill">Drill</button>
-    <button data-tab="stats">Stats</button>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.2c1.8-.8 3.6-.8 5.5.4 1.9-1.2 3.7-1.2 5.5-.4v9.3c-1.8-.8-3.6-.8-5.5.4-1.9-1.2-3.7-1.2-5.5-.4z"/><path d="M8 3.6v9.3"/></symbol>
+  <symbol id="i-today" viewBox="0 0 16 16"><circle cx="8" cy="8.5" r="5.5"/><path d="M8 5.5v3l2 1.3"/><path d="M5 2.2 3 3.4M11 2.2l2 1.2"/></symbol>
+  <symbol id="i-browse" viewBox="0 0 16 16"><path d="M3 4.5h10M3 8h10M3 11.5h6"/></symbol>
+  <symbol id="i-drill" viewBox="0 0 16 16"><path d="M1.5 8h2M12.5 8h2M4.5 5v6M11.5 5v6M4.5 8h7"/><rect x="2.5" y="5.8" width="2" height="4.4" rx=".6"/><rect x="11.5" y="5.8" width="2" height="4.4" rx=".6"/></symbol>
+  <symbol id="i-stats" viewBox="0 0 16 16"><path d="M3 13V8M7.5 13V3M12 13V6"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1M11.3 4.7l1.1-1.1"/></symbol>
+  <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2 13.5 13.5"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 16 16"><path d="M7 3.5H3.5v9h9V9"/><path d="M9.5 2.5h4v4M13.3 2.7 8 8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 16 16"><path d="M5 6.5 8 9.5l3-3"/></symbol>
+  <symbol id="i-chevr" viewBox="0 0 16 16"><path d="M6.5 5 9.5 8l-3 3"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 16 16"><path d="M9.5 5 6.5 8l3 3"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 16 16"><path d="M2 8s2.2-4 6-4 6 4 6 4-2.2 4-6 4-6-4-6-4z"/><path d="M3 3l10 10"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 16 16"><path d="M6 4.5 3 7.5l3 3"/><path d="M3.5 7.5H10a3 3 0 0 1 0 6H7"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 16 16"><path d="M8 3l3.5 4h-7z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V4a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 16 16"><path d="M2.5 4.5A1.5 1.5 0 0 1 4 3h2.6l1.5 1.5H12A1.5 1.5 0 0 1 13.5 6v5.5A1.5 1.5 0 0 1 12 13H4a1.5 1.5 0 0 1-1.5-1.5z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.5 14 13H2z"/><path d="M8 6.5v3M8 11.5v.2"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 16 16"><path d="M8 2c1 2.5 4 3.5 4 7a4 4 0 0 1-8 0c0-1.5.7-2.5 1.5-3.2.2 1 .8 1.6 1.5 1.8C7 5.7 7 3.6 8 2z"/></symbol>
+</svg>
+
+<div id="app">
+  <nav class="sidebar" aria-label="Sections">
+    <div class="drag pywebview-drag-region"></div>
+    <div class="brand"><svg class="icon"><use href="#i-drill"></use></svg><span>LeetCode Gym</span></div>
+    <a class="nav" href="#/learn" data-nav="learn"><svg class="icon"><use href="#i-book"></use></svg>Learn</a>
+    <a class="nav" href="#/today" data-nav="today"><svg class="icon"><use href="#i-today"></use></svg>Today<span class="pill due" id="due-pill" hidden></span></a>
+    <a class="nav" href="#/browse" data-nav="browse"><svg class="icon"><use href="#i-browse"></use></svg>Browse</a>
+    <a class="nav" href="#/drill" data-nav="drill"><svg class="icon"><use href="#i-drill"></use></svg>Drill</a>
+    <a class="nav" href="#/stats" data-nav="stats"><svg class="icon"><use href="#i-stats"></use></svg>Stats</a>
+    <div class="spacer"></div>
+    <a class="nav" href="#/settings" data-nav="settings"><svg class="icon"><use href="#i-gear"></use></svg>Settings<span class="dot off" id="sync-dot" title="Progress folder"></span></a>
   </nav>
-  <label class="cap">Rating cap
-    <select id="cap-select">
-      <option>1400</option><option>1500</option><option>1600</option>
-      <option selected>1700</option><option>1800</option><option>2000</option>
-      <option>2200</option><option>2400</option><option value="none">none</option>
-    </select>
-  </label>
-  <button id="settings-btn" class="iconbtn" title="Sync folder / settings">⚙</button>
-</header>
 
-<dialog id="settings-dlg">
-  <form method="dialog" class="dlg">
-    <h2>Sync folder</h2>
-    <p class="sub">Your progress (reviews + review schedule) is stored in this folder. Point it
-      at a <b>Dropbox</b>, <b>iCloud Drive</b>, or <b>OneDrive</b> folder to sync across
-      machines. Switching to a folder that already has history merges the two — nothing is
-      lost either way.</p>
-    <p class="pathbox"><span id="cur-data-dir" class="path">…</span></p>
-    <div class="dlg-row">
-      <button type="button" id="choose-folder">Choose folder…</button>
-      <span class="sub" id="picker-hint"></span>
-    </div>
-    <div class="dlg-row">
-      <input id="manual-path" type="text" placeholder="…or paste a folder path">
-      <button type="button" id="set-path">Set</button>
-    </div>
-    <p id="sync-msg" class="sub"></p>
-    <menu class="dlg-menu"><button value="close">Close</button></menu>
-  </form>
+  <div class="content">
+    <div class="drag pywebview-drag-region"></div>
+    <div class="toolbar" id="toolbar"><div class="drag pywebview-drag-region"></div><h1 id="boot-title">LeetCode Gym</h1></div>
+    <main class="views" id="views">
+      <section id="view-learn" class="scroll" tabindex="-1" data-scroll data-view="learn" hidden></section>
+      <section id="view-today" class="scroll" tabindex="-1" data-scroll data-view="today" hidden></section>
+      <section id="view-browse" class="scroll" tabindex="-1" data-scroll data-view="browse" hidden></section>
+      <section id="view-drill" class="scroll" tabindex="-1" data-scroll data-view="drill" hidden></section>
+      <section id="view-stats" class="scroll" tabindex="-1" data-scroll data-view="stats" hidden></section>
+      <section id="view-settings" class="scroll" tabindex="-1" data-scroll data-view="settings" hidden></section>
+      <section id="view-boot" class="scroll" data-scroll>
+        <div class="view"><div class="card skeleton" aria-busy="true" aria-label="Loading"><i style="width:40%"></i><i style="width:70%"></i><i style="width:55%"></i><i style="width:65%"></i><i style="width:45%"></i></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div id="toast-root"></div>
+
+<dialog id="shortcuts" class="sheet" aria-labelledby="shortcuts-title">
+  <div class="hd"><span id="shortcuts-title">Keyboard shortcuts</span><span class="grow"></span><button type="button" class="btn ghost sm" data-act="close-sheet" aria-label="Close"><svg class="icon"><use href="#i-x"></use></svg></button></div>
+  <div class="bd shortcuts" id="shortcuts-body"></div>
 </dialog>
-<main>
-  <section id="view-today"></section>
 
-  <section id="view-browse" hidden>
-    <div id="filters">
-      <select id="f-list">
-        <option value="all">All lists</option>
-        <option value="hot100">Hot 100</option>
-        <option value="interview150">Interview 150</option>
-        <option value="neetcode250">NeetCode 250</option>
-        <option value="ox3f">0x3F</option>
-      </select>
-      <select id="f-topic" hidden><option value="">All topics</option></select>
-      <select id="f-diff">
-        <option value="">Any difficulty</option>
-        <option>Easy</option><option>Medium</option><option>Hard</option>
-      </select>
-      <select id="f-status">
-        <option value="">Any status</option>
-        <option value="new">New</option>
-        <option value="solved">Scheduled</option>
-        <option value="due">Due</option>
-        <option value="forgotten">Forgotten</option>
-        <option value="mastered">Mastered</option>
-      </select>
-      <input id="f-search" type="search" placeholder="Search title or #id">
-      <select id="f-sort">
-        <option value="id">Sort: ID</option>
-        <option value="rating">Sort: Rating</option>
-        <option value="due">Sort: Due date</option>
-      </select>
-      <label><input type="checkbox" id="f-cap"> &le; cap</label>
-      <label id="comp-label" hidden><input type="checkbox" id="f-comp"> competition tier</label>
-    </div>
-    <div id="browse-table"></div>
-    <div id="pager"></div>
-  </section>
-
-  <section id="view-drill" hidden></section>
-
-  <section id="view-stats" hidden></section>
-</main>
-<script src="curriculum.js"></script>
+<script src="vendor/marked.umd.js"></script>
 <script src="route.js"></script>
-<script src="guide.js"></script>
-<script src="app.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>

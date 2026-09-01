@@ -7,3 +7,8 @@
 # Treat JSON/markdown as text (they contain UTF-8 incl. Chinese).
 *.json text
 *.md text
+
+# Tutorial assets and bundled fonts are binary; never line-ending convert them.
+*.gif binary
+*.png binary
+*.ttf binary

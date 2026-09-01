@@ -23,3 +23,9 @@ __pycache__/
 .venv/
 dist/
 build/
+
+# IDE
+.idea/
+
+# Claude Code worktrees
+.claude/worktrees/

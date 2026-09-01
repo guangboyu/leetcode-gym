@@ -1,138 +1,118 @@
-# LeetCode Study Tracker
+# LeetCode Gym
 
-A study tracker that pulls problems from four curated LeetCode lists, lets you mark each
-problem **Solved / Unsolved / Forgotten**, and schedules spaced-repetition reviews using an
-**Ebbinghaus forgetting curve**.
+A LeetCode interview-prep app: **Learn** one pattern at a time from hand-written
+tutorials, **Drill** random type-blind problems, and review on an **Ebbinghaus
+forgetting curve**. Stdlib-only Python server + vanilla-JS SPA, packaged as a native
+macOS/Windows app with pywebview + PyInstaller. Formerly "LeetCode Study Tracker".
 
 ## Status
 
-- **Phase 1 — scrape source lists: DONE** (snapshot 2026-06-09). All four lists under `source/`.
-- **Phase 1.5 — normalize & curate: DONE.** Python pipeline in `scripts/` (no extra deps);
-  0x3F lists translated to English and curated for interviews; everything merged into
-  `data/problems.json` (2,676 problems keyed by slug with list-membership tags).
-- **Phase 2 — tracker: DONE** (MVP + 0x3F-methodology features). Local web app, stdlib
-  only: `python3 tracker/server.py [--autocommit]` → http://localhost:8765.
-  Tabs: Today (due reviews + study route), Browse, Drill (type-blind random
-  practice; filters by source list pool and 0x3F type), Stats (+ complexity cheat-sheet).
-  Study route part 1 = curated beginner route: 17 pattern stages partitioning the union of
-  Hot 100 + Interview 150 + NeetCode 250 (302 problems; one pattern per problem via
-  NC category → H1 group → I150 group priority + 2 overrides, see route.js patternOf).
-  Stages split into ~70 hand-curated semantic subtopics (curriculum.js: name + recognize +
-  solve + template + explicit id list; every union problem assigned exactly once — keep the
-  partition complete when the data snapshot changes; unassigned ids fall into a visible
-  "99. More practice" section). Two guide cards per stage: pattern mental map (guide.js
-  PATTERNS: signals + intro) and the selected subtopic's recognize/solve/template.
-  Cap does NOT apply here.
-  Part 2 = all 12 full 0x3F topic lists, every stage/subtopic freely clickable. Subtopic
-  chips are grouped under real 0x3F chapter names; selecting one shows a guide card
-  (intro + code template + link to his post) from `static/guide.js`. Sections 0x3F marks
-  "(optional)" and a small curated NICHE set (route.js) hide behind a toggle; any
-  subtopic can be skipped/restored (localStorage).
-  Global rating cap (default 1700, DP widens to 2000) applies to the 0x3F lists only.
-  Unrated problems get difficulty-based rating estimates (route.js effRating:
-  E 1250 / M 1650 / H 2150) used by Drill's range filter and sort; shown as ≈ in tables.
-  Actions: Solved / w-help (+2d, ladder paused) / Forgot / Reset.
-  Storage: append-only `data/reviews.jsonl` is the source of truth (git-mergeable);
-  `data/progress.json` is a derived snapshot. Both gitignored (don't leak progress from
-  a public repo); `--data-dir` puts them in a separate private repo that `--autocommit`
-  / `--push` backs up off-machine.
-  Possible next steps: review-history charts/heatmap, import of LeetCode submissions.
-- **Phase 2.5 — desktop packaging: DONE.** Optional native-window app for
-  Windows & macOS via `pywebview` + `PyInstaller` (`tracker/desktop.py`,
-  `desktop_app.py`, `packaging/`). Wraps the *same* stdlib server (imported
-  lazily, so the server stays dependency-free) in an OS webview window. The spec
-  branches per-OS: Windows -> single-file `LeetCodeTracker.exe`; macOS -> onedir
-  `LeetCodeTracker.app` (runtime shipped unpacked = fast launch, folder-based)
-  with a custom icon (`packaging/AppIcon.icns`, drawn by `make_icon.py`), then
-  wrapped into a drag-to-install `dist/LeetCodeTracker.dmg` (`make_dmg.sh`, via
-  built-in `hdiutil`). Both unsigned — macOS recipients need right-click->Open
-  and, if the DMG is quarantined, `xattr -dr com.apple.quarantine` (README has
-  the install steps). Desktop progress lives in a persistent
-  per-user dir; the in-app **⚙ Settings** dialog lets the user pick the folder
-  (native picker via pywebview's `js_api`), stored in `tracker/config.py`
-  (`%APPDATA%`/`Application Support`). Point it at a cloud-synced folder to sync
-  machines — `GET/POST /api/data-dir` + `server.switch_data_dir()` merge the two
-  logs losslessly (`store.merge_events`). Data-dir precedence: `--data-dir` >
-  config (UI choice) > `$LEETCODE_TRACKER_DATA` > `~/LeetCodeTracker`. Build
-  per-OS (no cross-compile).
+- **Phase 1 — scrape source lists: DONE** (snapshot 2026-06-09), `source/`.
+- **Phase 1.5 — normalize & curate: DONE.** `scripts/` pipeline → `data/problems.json`
+  (2,678 problems keyed by slug, list memberships incl. `tutorial`).
+- **Phase 2 — tracker: DONE.** Server, event-log storage, scheduler, folder sync.
+- **Phase 2.5 — desktop packaging: DONE.** `tracker/desktop.py`, `packaging/`.
+- **Phase 3 — LeetCode Gym (Aug 31–Sep 1 2026): DONE on branch `gym`.**
+  Rename; design system from the tutorial GIF palette; sidebar shell with hash routes;
+  Learn tab driven by `tutorials/*.md`; one unified 21-pattern route with 0x3F as a
+  per-subtopic "Extend" attribute; undo; settings.json; heatmap; native menu/title bar;
+  CI + tag-triggered release builds. Details in `CHANGELOG.md`.
+- Next: more tutorials (user writes them; the pipeline picks them up), Windows build
+  verification via CI, code-signing if ever wanted.
 
-## Environment
+## Run / test
 
-Linux/macOS/Windows with python3 (stdlib only) to run the server; network needed
-only to refresh snapshots. The optional desktop app additionally needs `pywebview`
-+ `pyinstaller` (see `packaging/requirements.txt`) on the build machine only.
+```bash
+python3 tracker/server.py [--port 8765] [--data-dir DIR] [--autocommit] [--push]
+python3 -m tracker.desktop                  # native window (pywebview)
+python3 -m unittest discover -s tests       # Python + JS (JS via macOS jsc, or node)
+python3 scripts/build_tutorials.py --check  # data/tutorials.json fresh?
+```
+
+No build step. `node` is not installed on the dev Mac; JS tests run on
+`/System/Library/Frameworks/JavaScriptCore.framework/.../jsc -m` (see `tests/js/README.md`).
+Headless Chrome is available for screenshots:
+`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --screenshot=… "http://127.0.0.1:8765/?shell=mac#/learn"`.
 
 ## Repository layout
 
 ```
-tracker/               # Phase 2 app (no deps)
-  server.py            #   ThreadingHTTPServer: static files, GET /api/progress,
-                       #   POST /api/review {slug, action}; --autocommit
-  scheduler.py         #   Ebbinghaus ladder 1/2/4/7/15/30d; 6 successes -> mastered;
-                       #   solved_help -> +2d ladder paused; forgotten -> due now,
-                       #   ladder restarts; reset -> untouched
-  store.py             #   data/reviews.jsonl event log (truth) -> replay -> snapshot;
-                       #   merge_events/write_events for lossless folder switching
-  config.py            #   per-user config (chosen sync folder) in the OS config dir
-  resources.py         #   resolve bundled assets (repo root, or _MEIPASS when frozen)
-  desktop.py           #   optional pywebview native window over the same server;
-                       #   native folder picker (js_api) + config-based data dir
-  static/              #   vanilla JS SPA (Today+route / Browse / Drill / Stats);
-                       #   route.js = pure route/drill logic (pattern route + 0x3F
-                       #   lists + effRating fallbacks), node-testable;
-                       #   curriculum.js = beginner-route subtopics: recognize/solve/
-                       #   template + explicit problem-id partition (global, no UMD);
-                       #   guide.js = pattern mental maps (PATTERNS) and per-chapter
-                       #   0x3F intro + template data (all 12 lists)
-desktop_app.py         # PyInstaller entry point (repo root so `tracker` imports clean)
-packaging/             # desktop build: LeetCodeTracker.spec (branches per-OS),
-                       #   build_windows.ps1, build_macos.sh (app -> icon -> dmg),
-                       #   make_icon.py (-> AppIcon.icns), make_dmg.sh (hdiutil),
-                       #   requirements.txt (pywebview + pyinstaller)
-tests/                 # python3 -m unittest discover -s tests
-scripts/               # data pipeline (run from repo root, in this order to fully rebuild)
-  fetch_catalog.py     #   leetcode.com API + zerotrac ratings -> source/data/catalog.json
-  gen_lists.py         #   source/data/*.json -> the 3 western .md tables
-  extract_0x3f.py      #   saved leetcode.cn post HTML -> raw Chinese markdown
-  parse_0x3f.py        #   source/ox3F/raw-zh/*.md -> source/data/ox3f.json
-  gen_0x3f_md.py       #   ox3f.json + catalog + sections-meta -> English ox3F lists
-  build_problems.py    #   merge all four lists -> data/problems.json
+tracker/
+  server.py            ThreadingHTTPServer: static, /api/{progress,review,settings,activity,about,data-dir},
+                       /data/{problems,tutorials,patterns}.json (in-memory, ETag+gzip),
+                       /tutorials/<Name>.md + /tutorials/assets/** (whitelisted, cached)
+  store.py             reviews.jsonl (truth, append-only, events carry ts; "undo" pops the
+                       slug's last effective event) -> replay -> progress.json; settings.json;
+                       merge_events for lossless folder switching; activity() for the heatmap
+  scheduler.py         ladder 1/2/4/7/15/30d; 6 successes -> mastered; solved_help +2d paused;
+                       forgotten -> due now, restart; reset -> untouched (pure, no undo here)
+  config.py            APP_NAME="LeetCode Gym"; per-user config dir (migrates from LeetCodeTracker);
+                       window geometry
+  desktop.py           pywebview window: private_mode=False, text_select, ?shell=mac|win,
+                       hidden-inset title bar (NSToolbar UnifiedCompact via AppKit on `loaded`),
+                       geometry memory, native menus (MENU_SPEC) dispatching window.Gym.dispatch(),
+                       _Api {choose_folder, zoom, open_path, reveal_log, platform}, selftest
+  resources.py         resource_root(): repo root or sys._MEIPASS
+  static/
+    index.html         shell skeleton + inline icon sprite; loads vendor/marked.umd.js, route.js
+                       (classic) then js/main.js (module)
+    route.js           pure logic, global `Route`: effRating, patternOf, resolveOx3f (section ->
+                       chapter -> topic default), learnState(patterns, tutorials, rows, isDone, cap,
+                       opts), nextUp, drillPool/inPool. Tested by tests/js/route.test.js
+    css/               tokens.css (from tutorials/anim/dsaviz/theme.py; light+dark+data-theme),
+                       base, components, shell, views
+    js/                main.js (boot, router wiring, mark()+undo toast, shortcuts, Gym.dispatch),
+                       store/api/router/keys/toast/format/heatmap/pyhl/md/h/desktop,
+                       components/{status,problem-table}.js, views/{learn,learn-read,today,browse,
+                       drill,stats,settings}.js  (view contract: id/title/routes/deps/mount/render/
+                       toolbar/unmount; ctx = store, api, navigate, toast, keys, mark, patchRows,
+                       settings, learn(), effRating)
+    vendor/            marked 15.0.12, mermaid 11.6.0 (lazy), JetBrains Mono — README has checksums
 data/
-  problems.json        # THE TRACKER INPUT: slug -> {id, title, difficulty, rating,
-                       #   paid_only, lists{hot100, interview150, neetcode250, ox3f[]}}
-  progress.json        # user review state (derived snapshot; gitignored — see below)
-source/
-  README.md            # map of all four lists + data-source details + attribution
-  Hot100.md            # LeetCode Hot 100 (100)        generated table
-  Leetcode150.md       # LeetCode Top Interview 150 (150)
-  Neetcode250.md       # NeetCode 250 (250)
-  data/                # machine-readable JSON
-    hot100.json        #   raw LeetCode GraphQL response (grouped by topic)
-    interview150.json  #   raw LeetCode GraphQL response
-    neetcode250.json   #   curated 250 dataset (⚠ its `slug` field is the NeetCode slug;
-                       #   canonical slug comes from `leetcode_url` — differs for 74/250)
-    catalog.json       #   all 3,958 leetcode.com problems: title/difficulty/premium/rating
-    ox3f.json          #   full parsed 0x3F lists (sections, tiers, incl. cn-only problems)
-  ox3F/                # 灵茶山艾府 (0x3F) lists, curated English editions
-    README.md          #   pipeline, curation rules, attribution
-    sections-meta.json #   hand-curated zh header -> {en, tier: interview|competition}
-    01-…12-*.md        #   12 English topic lists (competition sections & cn-only omitted)
-    raw-zh/            #   unmodified Chinese snapshots (12 posts + syllabus.md)
+  problems.json        generated (build_problems.py); slug -> {id,title,difficulty,rating,paid_only,
+                       lists{hot100,interview150,neetcode250,ox3f[],tutorial[]}}
+  patterns.json        HAND-CURATED taxonomy: order (17 + insight/strings/number-theory/
+                       fenwick-segment), per-pattern signals/one_liner/template/subtopics(core_ids)/
+                       legacy_core_ids; ox3f {topics{zh,post,default}, chapters, sections
+                       ("topic||2.1.1" numeric keys), hidden}. Drafted once by scripts/draft_patterns.py
+                       from scripts/legacy/{curriculum,guide}.js
+  tutorials.json       GENERATED by scripts/build_tutorials.py from tutorials/*.md — never edit
+tutorials/             the user's hand-written tutorials (SlidingWindow.md, TwoPointers.md), GIFs in
+                       assets/<pattern>/, generator in anim/ (Pillow; not bundled). README.md carries
+                       the auto-generated status table
+scripts/               fetch_catalog, gen_lists, extract/parse/gen_0x3f, build_tutorials,
+                       build_problems (in that order), draft_patterns (one-shot), _patternof (mirror
+                       of route.js patternOf), legacy/
+tests/                 unittest: server/store/scheduler/config/desktop/tutorials/patterns/pyhl parity;
+                       test_js.py + test_js_modules.py run tests/js/* on jsc (node fallback)
+packaging/             LeetCodeGym.spec (datas: static, data/*.json, tutorials/*.md, tutorials/assets),
+                       build_macos.sh -> "LeetCode Gym.app" + LeetCode-Gym.dmg, build_windows.ps1,
+                       make_icon.py -> AppIcon.icns + static/favicon.svg
+.github/workflows/     ci.yml (ubuntu+macos, py3.12/3.13, node), release.yml (tag v* -> DMG + exe)
+docs/screenshots/      README images (1280×820, taken with headless Chrome + seeded data)
 ```
 
-## Design decisions for the tracker
+## Design decisions & invariants
 
-- **Canonical ID = leetcode.com problem slug** (e.g. `two-sum`); `.com`/`.cn` share slugs.
-  The four lists overlap heavily — problems are one table with list-membership tags
-  (see `data/problems.json`), not four disjoint sets.
-- **Difficulty**: Easy/Medium/Hard everywhere, plus numeric **contest ratings**
-  (~1000–3000+, from zerotrac, in `catalog.json` and `problems.json`) — finer-grained,
-  good for ordering reviews. ~63% of problems have one.
-- **Interview curation**: every 0x3F section is tiered `interview` or `competition` in
-  `sections-meta.json` (judgment call, editable). Competition-only sections are excluded
-  from the English lists but kept in `ox3f.json`, and carried as `tier` on ox3f memberships
-  in `problems.json` so the tracker can filter.
-- **Ebbinghaus scheduling**: on a Solved review, push the next review out along the curve
-  (e.g. 1d → 2d → 4d → 7d → 15d → 30d); on Forgotten, reset the interval.
-- Upstream lists are actively maintained; all data is a 2026-06-09 snapshot. Refresh
-  instructions: `source/README.md` and `source/ox3F/README.md`.
+- **Canonical id = leetcode.com slug.** Lists overlap; one table with membership tags.
+- **Tutorial = source of truth for its pattern.** `build_tutorials.py` parses heading text
+  (`## Shape N:`, `### Na.`, `### Title (LC n)`, `### … problems` + `| LC | Title | Diff |
+  [State] | Freq | Note |`). Shape ids (`shape-2`, `shape-2a`) are the subtopic ids. The
+  user writes the prose — **do not edit tutorial text**; report problems instead.
+- **Coverage invariant** (tests/test_patterns.py): every Hot100 ∪ I150 ∪ NC250 problem is in
+  some pattern's `core_ids`, `legacy_core_ids`, or a tutorial table. Patterns with a
+  tutorial have no `subtopics`. Every 0x3F interview-tier section resolves via the three
+  tiers; only `hidden` keys may fall through to the topic default.
+- **Keep `data/tutorials.json` and `data/problems.json` fresh** after touching tutorials
+  (`build_tutorials.py` then `build_problems.py`); CI checks freshness.
+- **0x3F stays as-is with attribution** (user's decision after discussing compilation
+  copyright); his chapter intros were retired, only names/post links remain.
+- **Storage:** append-only log is truth; `undo` is an event, never a client-side inverse;
+  dedupe key `(date, slug, action, ts)`. Preferences in `settings.json` next to progress.
+- **Rating cap** applies to the 0x3F extension only; unrated problems use estimates
+  (E 1250 / M 1650 / H 2150) for Drill and sort, shown as `≈`.
+- **UI:** tokens only (no literal colors outside tokens.css); status = verdict axis
+  (blue/amber/red/purple), difficulty = pointer family (teal/indigo/pink); every clickable
+  is a `<button>`/`<a>`; views render only their own section; marks patch rows.
+- Desktop data dir precedence: `--data-dir` > config (UI choice) > `$LEETCODE_TRACKER_DATA`
+  > existing `~/LeetCodeTracker` > `<app support>/LeetCode Gym/data`.

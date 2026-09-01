@@ -1,0 +1,169 @@
+/* Design tokens — the single source of truth for color, type, spacing, radii,
+ * shadows and motion. Every hex value below comes from the tutorial GIF palette
+ * (tutorials/anim/dsaviz/theme.py); dark values are the same hues lifted for a
+ * #1C1C1E ground. Rationale carried over from theme.py: BLUE = kept/valid,
+ * RED = failed/discarded (the verdict axis), AMBER = look here now, PURPLE = the
+ * answer, SLATE = in scope. Status colors use the verdict axis; difficulty uses
+ * the pointer family (teal / indigo / pink) so a row never shows green/amber/red
+ * meaning two different things.
+ *
+ * Theme states: bare :root = light; the media query covers "system" viewers
+ * (guarded so an explicit light choice wins); [data-theme="dark"] covers the
+ * explicit toggle. Components only ever reference tokens. */
+:root {
+  color-scheme: light dark;
+
+  /* grounds */
+  --bg: #FFFFFF;
+  --bg-sidebar: #F4F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #F8F9FB;
+  --surface-3: #F4F5F7;
+
+  /* ink + rules */
+  --text: #171A1F;
+  --text-2: #6B7280;
+  --text-3: #9AA1AB;
+  --line: #E4E8ED;
+  --line-strong: #D3D9E0;
+
+  /* accent (verdict axis) */
+  --accent: #2563EB;
+  --accent-fill: #2563EB;
+  --on-accent: #FFFFFF;
+  --accent-soft: #DBEAFE;
+  --focus: rgb(37 99 235 / .35);
+  --danger: #E5484D;
+
+  /* review status: ink + soft fill */
+  --st-new: #9AA1AB;        --st-new-soft: #F4F5F7;
+  --st-sched: #2563EB;      --st-sched-soft: #DBEAFE;
+  --st-due: #C98A04;        --st-due-soft: #FEF1CD;
+  --st-forgot: #E5484D;     --st-forgot-soft: #FDE3E2;
+  --st-master: #9333EA;     --st-master-soft: #F1E6FE;
+  --st-help: #0D9488;       --st-help-soft: #CDEFF6;
+  --slate: #263449;         --slate-soft: #E6EBF4;
+
+  /* difficulty (pointer family, text only) */
+  --diff-e: #0D9488;
+  --diff-m: #4F46E5;
+  --diff-h: #DB2777;
+
+  /* code (One Light) */
+  --code-bg: #FAFBFC;
+  --code-hl: #EAF1FE;
+  --code-hl-bar: #3B82F6;
+  --code-gutter: #B4BAC3;
+  --syn-kw: #A626A4;
+  --syn-str: #3D8F3D;
+  --syn-num: #9A6100;
+  --syn-com: #A0A6AF;
+  --syn-fn: #3B6FD4;
+  --syn-op: #4B5563;
+  --syn-txt: #2B2F36;
+
+  /* heatmap: one blue ramp */
+  --heat-1: #DBEAFE;
+  --heat-2: #93C5FD;
+  --heat-3: #3B82F6;
+  --heat-4: #1D4ED8;
+
+  /* macOS traffic lights (drawn only in browser preview; the real window has its own) */
+  --tl-red: #FF5F57; --tl-yellow: #FEBC2E; --tl-green: #28C840;
+
+  /* type */
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 17px;
+  --fs-2xl: 22px;
+  --fs-3xl: 28px;
+  --fs-mono: 12px;
+
+  /* spacing (4px grid) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px;
+  --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+
+  /* layout */
+  --sidebar-w: 200px;
+  --plist-w: 232px;
+  --titlebar-h: 12px;          /* browser: a slim strip; the desktop shell sets 38px */
+  --toolbar-h: 52px;
+  --content-max: 1040px;
+  --row-h: 40px;
+  --ctl-h: 28px;
+
+  /* radii */
+  --r-sm: 4px; --r-md: 6px; --r-lg: 10px; --r-xl: 14px; --r-full: 999px;
+
+  /* elevation */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .05), 0 0 0 1px var(--line);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / .12), 0 0 0 1px var(--line);
+  --shadow-3: 0 24px 60px rgb(0 0 0 / .22);
+
+  /* motion */
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --dur-slow: 260ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1C1C1E; --bg-sidebar: #232326; --surface: #2A2A2D; --surface-2: #313135; --surface-3: #3A3A3E;
+    --text: #E8EAED; --text-2: #9AA0A6; --text-3: #6E7378; --line: #3A3A3E; --line-strong: #4A4A50;
+    --accent: #60A5FA; --accent-fill: #3B82F6; --on-accent: #0B1220; --accent-soft: rgb(96 165 250 / .18);
+    --focus: rgb(96 165 250 / .45); --danger: #F2555A;
+    --st-new: #6E7378;    --st-new-soft: rgb(154 161 171 / .15);
+    --st-sched: #60A5FA;  --st-sched-soft: rgb(96 165 250 / .18);
+    --st-due: #E0A82E;    --st-due-soft: rgb(224 168 46 / .18);
+    --st-forgot: #F2555A; --st-forgot-soft: rgb(242 85 90 / .18);
+    --st-master: #B470F5; --st-master-soft: rgb(180 112 245 / .18);
+    --st-help: #2DD4BF;   --st-help-soft: rgb(45 212 191 / .18);
+    --slate: #C7D0DE;     --slate-soft: rgb(124 144 174 / .22);
+    --diff-e: #2DD4BF; --diff-m: #818CF8; --diff-h: #F472B6;
+    --code-bg: #1E1E21; --code-hl: #1E2A3F; --code-gutter: #5C6066;
+    --syn-kw: #C678DD; --syn-str: #98C379; --syn-num: #D19A66; --syn-com: #7F848E;
+    --syn-fn: #61AFEF; --syn-op: #ABB2BF; --syn-txt: #DCDFE4;
+    --heat-1: #1E3A8A; --heat-2: #1D4ED8; --heat-3: #3B82F6; --heat-4: #93C5FD;
+    --shadow-1: 0 0 0 1px var(--line);
+    --shadow-2: 0 8px 24px rgb(0 0 0 / .5), 0 0 0 1px var(--line-strong);
+    --shadow-3: 0 24px 60px rgb(0 0 0 / .7), 0 0 0 1px var(--line-strong);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #1C1C1E; --bg-sidebar: #232326; --surface: #2A2A2D; --surface-2: #313135; --surface-3: #3A3A3E;
+  --text: #E8EAED; --text-2: #9AA0A6; --text-3: #6E7378; --line: #3A3A3E; --line-strong: #4A4A50;
+  --accent: #60A5FA; --accent-fill: #3B82F6; --on-accent: #0B1220; --accent-soft: rgb(96 165 250 / .18);
+  --focus: rgb(96 165 250 / .45); --danger: #F2555A;
+  --st-new: #6E7378;    --st-new-soft: rgb(154 161 171 / .15);
+  --st-sched: #60A5FA;  --st-sched-soft: rgb(96 165 250 / .18);
+  --st-due: #E0A82E;    --st-due-soft: rgb(224 168 46 / .18);
+  --st-forgot: #F2555A; --st-forgot-soft: rgb(242 85 90 / .18);
+  --st-master: #B470F5; --st-master-soft: rgb(180 112 245 / .18);
+  --st-help: #2DD4BF;   --st-help-soft: rgb(45 212 191 / .18);
+  --slate: #C7D0DE;     --slate-soft: rgb(124 144 174 / .22);
+  --diff-e: #2DD4BF; --diff-m: #818CF8; --diff-h: #F472B6;
+  --code-bg: #1E1E21; --code-hl: #1E2A3F; --code-gutter: #5C6066;
+  --syn-kw: #C678DD; --syn-str: #98C379; --syn-num: #D19A66; --syn-com: #7F848E;
+  --syn-fn: #61AFEF; --syn-op: #ABB2BF; --syn-txt: #DCDFE4;
+  --heat-1: #1E3A8A; --heat-2: #1D4ED8; --heat-3: #3B82F6; --heat-4: #93C5FD;
+  --shadow-1: 0 0 0 1px var(--line);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / .5), 0 0 0 1px var(--line-strong);
+  --shadow-3: 0 24px 60px rgb(0 0 0 / .7), 0 0 0 1px var(--line-strong);
+}
+
+/* The desktop shell (pywebview) loads /?shell=mac and main.js stamps this. */
+html[data-shell="mac"] { --titlebar-h: 38px; }
+html[data-shell="win"] { --titlebar-h: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur: 0ms; --dur-slow: 0ms; }
+}
+@media (prefers-contrast: more) {
+  :root { --line: var(--line-strong); }
+}

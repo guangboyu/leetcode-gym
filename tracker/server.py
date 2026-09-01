@@ -1,13 +1,26 @@
 #!/usr/bin/env python3
-"""LeetCode study tracker — local web UI. Stdlib only.
+"""LeetCode Gym — local web UI. Stdlib only.
 
     python3 tracker/server.py [--port 8765] [--data-dir DIR] [--autocommit] [--push]
 
 Serves tracker/static/ plus:
-    GET  /data/problems.json   the merged problem table (read-only input)
+    GET  /data/problems.json   the merged problem table (read-only input; served
+                               from memory with an ETag and gzip)
+    GET  /data/tutorials.json  parsed tutorials (shapes, tables, anchors) — same caching
+    GET  /data/patterns.json   the unified pattern taxonomy + 0x3F mapping — same caching
+    GET  /tutorials/<Name>.md  a tutorial's markdown for the Learn tab (README excluded)
+    GET  /tutorials/assets/<pattern>/<file>.gif|png|svg|webp   its animations
+                               (both with a size+mtime ETag and a day of caching;
+                               nothing else under /tutorials is reachable)
     GET  /api/progress         all progress entries (derived from the event log)
-    POST /api/review           {"slug": ..., "action": "solved"|"solved_help"|"forgotten"|"reset"}
-                               -> {"slug": ..., "entry": <updated entry or null>}
+    POST /api/review           {"slug": ..., "action": "solved"|"solved_help"|"forgotten"|"reset"|"undo"}
+                               -> {"slug": ..., "entry": <updated entry or null>, "undoable": bool}
+                               "undo" cancels the slug's most recent effective event.
+    GET  /api/activity         {"days": {"YYYY-MM-DD": {action: n}}, "first": date|null}
+    GET  /api/settings         UI preferences (rating cap, skips, drill defaults, theme)
+    POST /api/settings         partial patch of the same, or {"reset": true} -> full settings
+    GET  /api/data-dir         {"path": ...}          POST /api/data-dir {"path": ...}
+    GET  /api/about            name, version, python, dataDir, configFile, problemsSnapshot, desktop
 
 --data-dir   where reviews.jsonl + progress.json live (default: ./data, which is
              gitignored). To git-back-up your progress without leaking it from a
@@ -17,26 +30,67 @@ Serves tracker/static/ plus:
 --push       after each autocommit, also `git push` the data dir's repo.
 """
 import argparse
+import gzip
+import hashlib
 import json
+import mimetypes
+import platform
+import re
 import subprocess
 import threading
 from datetime import date
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from tracker import config, store
+from tracker import __version__, config, store
 from tracker.resources import resource_root
 from tracker.scheduler import ACTIONS, apply_action
 
 ROOT = resource_root()
 STATIC = ROOT / "tracker" / "static"
-PROBLEMS_FILE = ROOT / "data" / "problems.json"
+DATA_DIR = ROOT / "data"
+PROBLEMS_FILE = DATA_DIR / "problems.json"
+TUTORIALS_DIR = ROOT / "tutorials"
 
 LOCK = threading.Lock()
-SLUGS = frozenset(json.loads(PROBLEMS_FILE.read_text(encoding="utf-8"))["problems"])
+
+
+class _CachedJSON:
+    """A read-only JSON data file served from memory: raw bytes, a gzip copy
+    and a strong ETag, so the SPA revalidates with a 304 after the first
+    launch. problems.json is ~1 MB (≈150 KB gzipped); the others are small."""
+
+    def __init__(self, path):
+        self.raw = path.read_bytes() if path.exists() else b"{}"
+        self.gz = gzip.compress(self.raw, compresslevel=6)
+        self.etag = '"' + hashlib.sha1(self.raw).hexdigest() + '"'
+
+
+# The three data files the SPA loads at startup. tutorials.json / patterns.json
+# are optional at import time so a checkout mid-pipeline still serves.
+DATA_FILES = {
+    "/data/problems.json": _CachedJSON(PROBLEMS_FILE),
+    "/data/tutorials.json": _CachedJSON(DATA_DIR / "tutorials.json"),
+    "/data/patterns.json": _CachedJSON(DATA_DIR / "patterns.json"),
+}
+_PROBLEMS_RAW = DATA_FILES["/data/problems.json"].raw
+_PROBLEMS_DATA = json.loads(_PROBLEMS_RAW)
+
+# Tutorials are served straight from the repo (or the bundle): the markdown
+# the Learn tab renders and the GIFs it embeds. Only these two shapes are
+# reachable — tutorials/anim/**, README.md and anything with a path separator
+# in a segment (../) never match, and _send_file re-checks containment.
+TUT_MD = re.compile(r"^/tutorials/([A-Za-z0-9_-]+\.md)$")
+TUT_ASSET = re.compile(r"^/tutorials/assets/([a-z0-9-]+)/([A-Za-z0-9._-]+\.(?:gif|png|svg|webp|jpe?g))$")
+SLUGS = frozenset(_PROBLEMS_DATA["problems"])
+PROBLEMS_SNAPSHOT = _PROBLEMS_DATA.get("snapshot")
 PROGRESS = {}
+SETTINGS = dict(store.DEFAULT_SETTINGS)
+_ACTIVITY = None            # cached /api/activity payload; None = recompute
+DESKTOP = False             # set by the desktop launcher for /api/about
 
 AUTOCOMMIT = False
 PUSH = False
@@ -84,9 +138,92 @@ def schedule_commit():
     _commit_timer.start()
 
 
+# Validation for POST /api/settings: key -> predicate on the JSON value.
+def _is_int_or_none(v):
+    return v is None or (isinstance(v, int) and not isinstance(v, bool))
+
+
+def _is_str_list(v):
+    return isinstance(v, list) and all(isinstance(x, str) for x in v)
+
+
+SETTING_RULES = {
+    "cap": _is_int_or_none,
+    "routeShowOptional": lambda v: isinstance(v, bool),
+    "routeSkipped": _is_str_list,
+    "drillPools": _is_str_list,
+    "drillTopics": lambda v: v is None or _is_str_list(v),
+    "drillLo": _is_int_or_none,
+    "drillHi": _is_int_or_none,
+    "lastView": lambda v: isinstance(v, str),
+    "lastPattern": lambda v: v is None or isinstance(v, str),
+    "lastSection": lambda v: v is None or isinstance(v, str),
+    "theme": lambda v: v in ("system", "light", "dark"),
+}
+assert set(SETTING_RULES) == set(store.DEFAULT_SETTINGS)
+
+
+def _validate_settings_patch(patch):
+    """Return (clean_patch, error). Unknown keys and wrong types are errors so
+    a client bug never silently poisons the shared settings file."""
+    if not isinstance(patch, dict):
+        return None, "bad request"
+    clean = {}
+    for k, v in patch.items():
+        rule = SETTING_RULES.get(k)
+        if rule is None:
+            return None, f"unknown setting: {k}"
+        if not rule(v):
+            return None, f"bad value for {k}"
+        clean[k] = v
+    return clean, None
+
+
+def _activity_payload():
+    """Heatmap data, cached until the next review action."""
+    global _ACTIVITY
+    if _ACTIVITY is None:
+        days = store.activity(store.load_events())
+        _ACTIVITY = {"days": days, "first": min(days) if days else None}
+    return _ACTIVITY
+
+
 class Handler(SimpleHTTPRequestHandler):
+    # Trust our own table over the OS registry: on Windows, `mimetypes` can map
+    # .js to text/plain, which makes browsers refuse ES modules.
+    extensions_map = {
+        **SimpleHTTPRequestHandler.extensions_map,
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+        ".css": "text/css",
+        ".svg": "image/svg+xml",
+        ".json": "application/json",
+        ".md": "text/markdown; charset=utf-8",
+        ".woff2": "font/woff2",
+        ".woff": "font/woff",
+        ".ttf": "font/ttf",
+        ".gif": "image/gif",
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(STATIC), **kwargs)
+
+    _cache_control_sent = False
+
+    def send_header(self, keyword, value):
+        if keyword.lower() == "cache-control":
+            self._cache_control_sent = True
+        super().send_header(keyword, value)
+
+    def end_headers(self):
+        # Default: always revalidate. Static files still get 304s via
+        # Last-Modified / If-Modified-Since (SimpleHTTPRequestHandler), API
+        # responses never come from a cache. Tutorial assets opt into a long
+        # max-age below (they only change with a commit).
+        if not self._cache_control_sent:
+            self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+        self._cache_control_sent = False
 
     def send_json(self, obj, status=200):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -96,59 +233,177 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_cached(self, entry):
+        """One of DATA_FILES: ETag/304, gzip when accepted, HEAD-aware."""
+        if self.headers.get("If-None-Match") == entry.etag:
+            self.send_response(304)
+            self.send_header("ETag", entry.etag)
+            self.end_headers()
+            return
+        accept = self.headers.get("Accept-Encoding", "")
+        use_gzip = "gzip" in [t.split(";")[0].strip() for t in accept.split(",")]
+        body = entry.gz if use_gzip else entry.raw
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("ETag", entry.etag)
+        self.send_header("Vary", "Accept-Encoding")
+        if use_gzip:
+            self.send_header("Content-Encoding", "gzip")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(body)
+
+    def _send_file(self, path, ctype, root):
+        """Serve a read-only repo file (tutorial markdown / GIF) with a cheap
+        size+mtime ETag and a day of caching. `root` is the directory the
+        file must live under — defense in depth behind the URL whitelist."""
+        try:
+            resolved = path.resolve(strict=True)
+            if not resolved.is_relative_to(root.resolve()) or not resolved.is_file():
+                raise FileNotFoundError(path)
+            st = resolved.stat()
+        except (OSError, ValueError):
+            self.send_json({"error": "not found"}, 404)
+            return
+        etag = f'"{st.st_size:x}-{st.st_mtime_ns:x}"'
+        if self.headers.get("If-None-Match") == etag:
+            self.send_response(304)
+            self.send_header("ETag", etag)
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.end_headers()
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(st.st_size))
+        self.send_header("ETag", etag)
+        self.send_header("Cache-Control", "public, max-age=86400")
+        self.end_headers()
+        if self.command != "HEAD":
+            with resolved.open("rb") as f:
+                self.copyfile(f, self.wfile)
+
+    def _route_files(self, path):
+        """Data files and tutorial files share GET and HEAD. Returns True if
+        the request was handled (including 404s inside /data and /tutorials)."""
+        if path in DATA_FILES:
+            self._send_cached(DATA_FILES[path])
+            return True
+        m = TUT_MD.match(path)
+        if m and m.group(1) != "README.md":
+            self._send_file(TUTORIALS_DIR / m.group(1),
+                            "text/markdown; charset=utf-8", TUTORIALS_DIR)
+            return True
+        m = TUT_ASSET.match(path)
+        if m:
+            ctype = mimetypes.guess_type(m.group(2))[0] or "application/octet-stream"
+            self._send_file(TUTORIALS_DIR / "assets" / m.group(1) / m.group(2), ctype,
+                            TUTORIALS_DIR / "assets")
+            return True
+        if path.startswith("/api/") or path.startswith("/data/") or path.startswith("/tutorials/"):
+            self.send_json({"error": "not found"}, 404)
+            return True
+        return False
+
     def do_GET(self):
-        if self.path == "/api/progress":
+        path = urlsplit(self.path).path
+        if path == "/api/progress":
             with LOCK:
                 self.send_json(PROGRESS)
-        elif self.path == "/api/data-dir":
+        elif path == "/api/data-dir":
             self.send_json({"path": str(store.LOG_FILE.parent)})
-        elif self.path == "/data/problems.json":
-            body = PROBLEMS_FILE.read_bytes()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-        else:
+        elif path == "/api/settings":
+            with LOCK:
+                self.send_json(SETTINGS)
+        elif path == "/api/activity":
+            with LOCK:
+                self.send_json(_activity_payload())
+        elif path == "/api/about":
+            self.send_json(about())
+        elif not self._route_files(path):
             super().do_GET()
+
+    def do_HEAD(self):
+        if not self._route_files(urlsplit(self.path).path):
+            super().do_HEAD()
 
     def _read_json(self):
         length = int(self.headers.get("Content-Length", 0))
         return json.loads(self.rfile.read(length))
 
     def do_POST(self):
-        if self.path == "/api/review":
+        path = urlsplit(self.path).path
+        if path == "/api/review":
             self._handle_review()
-        elif self.path == "/api/data-dir":
+        elif path == "/api/data-dir":
             self._handle_set_data_dir()
+        elif path == "/api/settings":
+            self._handle_settings()
         else:
             self.send_json({"error": "not found"}, 404)
 
     def _handle_review(self):
+        global PROGRESS, _ACTIVITY
         try:
             req = self._read_json()
             slug, action = req["slug"], req["action"]
-        except (ValueError, KeyError, json.JSONDecodeError):
+        except (ValueError, KeyError, TypeError, json.JSONDecodeError):
             self.send_json({"error": "bad request"}, 400)
             return
         if slug not in SLUGS:
             self.send_json({"error": f"unknown slug: {slug}"}, 400)
             return
-        if action not in ACTIONS:
+        if action not in ACTIONS and action != store.UNDO:
             self.send_json({"error": f"unknown action: {action}"}, 400)
             return
         with LOCK:
             today = date.today().isoformat()
-            entry = apply_action(PROGRESS.get(slug), action, today)
-            store.append_event(slug, action, today)
-            if entry is None:
-                PROGRESS.pop(slug, None)
+            if action == store.UNDO:
+                # Replaying the whole log (a few thousand lines at most) is
+                # far cheaper than reasoning about an inverse; it also keeps
+                # the snapshot identical to what a fresh start would compute.
+                events = store.load_events()
+                if not any(e["slug"] == slug for e in store.effective_events(events)):
+                    self.send_json({"error": "nothing to undo"}, 400)
+                    return
+                events.append(store.append_event(slug, action, today))
+                PROGRESS = store.replay(events)
+                entry = PROGRESS.get(slug)
+                undoable = any(e["slug"] == slug for e in store.effective_events(events))
             else:
-                PROGRESS[slug] = entry
+                entry = apply_action(PROGRESS.get(slug), action, today)
+                store.append_event(slug, action, today)
+                if entry is None:
+                    PROGRESS.pop(slug, None)
+                else:
+                    PROGRESS[slug] = entry
+                undoable = True
             store.save_snapshot(PROGRESS)
+            _ACTIVITY = None
         if AUTOCOMMIT:
             schedule_commit()
-        self.send_json({"slug": slug, "entry": entry})
+        self.send_json({"slug": slug, "entry": entry, "undoable": undoable})
+
+    def _handle_settings(self):
+        global SETTINGS
+        try:
+            req = self._read_json()
+        except (ValueError, json.JSONDecodeError):
+            self.send_json({"error": "bad request"}, 400)
+            return
+        if isinstance(req, dict) and req.get("reset") is True:
+            clean = json.loads(json.dumps(store.DEFAULT_SETTINGS))
+            replace = True
+        else:
+            clean, err = _validate_settings_patch(req)
+            replace = False
+            if err:
+                self.send_json({"error": err}, 400)
+                return
+        with LOCK:
+            SETTINGS = clean if replace else {**SETTINGS, **clean}
+            store.save_settings(SETTINGS)
+            self.send_json(SETTINGS)
 
     def _handle_set_data_dir(self):
         try:
@@ -182,6 +437,7 @@ def switch_data_dir(path):
     if target.resolve() == current_dir.resolve():
         config.set_data_dir(str(target))  # same folder: just remember it
         return str(target)
+    global SETTINGS, _ACTIVITY
     with LOCK:
         current_events = store.load_events()          # from the old dir
         store.set_data_dir(str(target))               # LOG_FILE now points at target
@@ -189,20 +445,43 @@ def switch_data_dir(path):
         store.write_events(merged)                    # lossless union in the new dir
         PROGRESS = store.replay(merged)
         store.save_snapshot(PROGRESS)
+        _ACTIVITY = None
+        # Preferences are not merged: adopt the synced folder's if it has one
+        # (that is what "sync across machines" means), else seed it with ours.
+        if store.SETTINGS_FILE.exists():
+            SETTINGS = store.load_settings()
+        else:
+            store.save_settings(SETTINGS)
     config.set_data_dir(str(target))
     return str(target)
 
 
-def configure(data_dir=None, autocommit=False, push=False):
-    """Load progress and set backup options. Call once before make_server().
+def about():
+    return {
+        "name": config.APP_NAME,
+        "version": __version__,
+        "python": platform.python_version(),
+        "dataDir": str(store.LOG_FILE.parent),
+        "configFile": str(config.config_file()),
+        "problemsSnapshot": PROBLEMS_SNAPSHOT,
+        "problems": len(SLUGS),
+        "desktop": DESKTOP,
+    }
+
+
+def configure(data_dir=None, autocommit=False, push=False, desktop=False):
+    """Load progress and settings, and set backup options. Call once before
+    make_server().
 
     Shared by the CLI (main) and the desktop launcher so both go through the
     same startup path. data_dir=None keeps store's default (./data)."""
-    global AUTOCOMMIT, PUSH, PROGRESS
-    AUTOCOMMIT, PUSH = autocommit, push
+    global AUTOCOMMIT, PUSH, PROGRESS, SETTINGS, DESKTOP, _ACTIVITY
+    AUTOCOMMIT, PUSH, DESKTOP = autocommit, push, desktop
     if data_dir is not None:
         store.set_data_dir(data_dir)
     PROGRESS = store.load_progress()
+    SETTINGS = store.load_settings()
+    _ACTIVITY = None
 
 
 def make_server(port=8765, host="127.0.0.1"):

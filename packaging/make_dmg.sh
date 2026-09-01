@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Package dist/LeetCodeTracker.app into a drag-to-install .dmg.
+# Package "dist/LeetCode Gym.app" into a drag-to-install .dmg.
 #
-# Prereq:  bash packaging/build_macos.sh   (produces dist/LeetCodeTracker.app)
+# Prereq:  bash packaging/build_macos.sh   (produces "dist/LeetCode Gym.app")
 # Run:     bash packaging/make_dmg.sh
-# Output:  dist/LeetCodeTracker.dmg
+# Output:  dist/LeetCode-Gym.dmg
 #
 # The disk image contains the app plus a symlink to /Applications, so the user
 # opens the DMG and drags the icon onto the Applications shortcut — the standard
@@ -13,9 +13,9 @@ set -euo pipefail
 # Repo root = parent of this script's folder.
 cd "$(dirname "$0")/.."
 
-APP="dist/LeetCodeTracker.app"
-VOLNAME="LeetCode Study Tracker"
-DMG="dist/LeetCodeTracker.dmg"
+APP="dist/LeetCode Gym.app"
+VOLNAME="LeetCode Gym"
+DMG="dist/LeetCode-Gym.dmg"
 
 if [ ! -d "$APP" ]; then
     echo "error: $APP not found — build it first:" >&2
@@ -41,5 +41,5 @@ hdiutil create \
 
 echo ""
 echo "Built: $(pwd)/$DMG"
-echo "Share this file. Recipients: open it, drag LeetCodeTracker onto Applications."
+echo "Share this file. Recipients: open it, drag LeetCode Gym onto Applications."
 echo "First launch (unsigned): right-click the app -> Open, then confirm once."

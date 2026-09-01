@@ -1,0 +1,67 @@
+/* The app shell: sidebar + content pane, titlebar strip (desktop), toolbar,
+ * view switching, drag regions. Layout only — components live in components.css. */
+#app {
+  display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);   /* bound the row so nested scrollers (Learn's article) work */
+  height: 100dvh; background: var(--bg);
+}
+
+/* ---- sidebar ------------------------------------------------------------ */
+.sidebar {
+  position: relative; display: flex; flex-direction: column; gap: 2px;
+  background: var(--bg-sidebar); border-right: 1px solid var(--line);
+  padding: calc(var(--titlebar-h)) 10px 12px;
+}
+.sidebar .drag { position: absolute; inset: 0 0 auto 0; height: var(--titlebar-h); }
+.sidebar .brand {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px 14px;
+  color: var(--text-2); font-size: var(--fs-sm); font-weight: 600; letter-spacing: .01em; user-select: none;
+}
+.sidebar .brand .icon { color: var(--accent); }
+.nav {
+  display: flex; align-items: center; gap: 9px; height: 28px; padding: 0 8px; border-radius: var(--r-md);
+  color: var(--text); font-weight: 500; text-decoration: none; user-select: none;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.nav:hover { background: var(--surface-3); text-decoration: none; }
+.nav .icon { color: var(--text-2); }
+.nav[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+.nav[aria-current="page"] .icon { color: var(--accent); }
+.nav .pill { margin-left: auto; }
+.nav .dot { margin-left: auto; width: 7px; height: 7px; border-radius: 50%; background: var(--st-help); }
+.nav .dot.off { background: var(--text-3); }
+.sidebar .spacer { flex: 1; }
+.sidebar .foot { font-size: var(--fs-xs); color: var(--text-3); padding: 8px 8px 0; }
+
+/* ---- content ------------------------------------------------------------ */
+.content { display: grid; grid-template-rows: var(--titlebar-h) var(--toolbar-h) minmax(0, 1fr); min-width: 0; min-height: 0; }
+html[data-shell] .content { grid-template-rows: 0 calc(var(--toolbar-h) + var(--titlebar-h) - 12px) minmax(0, 1fr); }
+.content > .drag { height: 100%; }
+.toolbar {
+  position: relative; display: flex; align-items: flex-end; gap: 12px; padding: 0 24px 12px;
+  border-bottom: 1px solid var(--line); background: var(--bg);
+}
+.toolbar > * { position: relative; z-index: 1; }
+.toolbar .drag { position: absolute; inset: 0; z-index: 0; }
+.toolbar h1 { font-size: var(--fs-2xl); font-weight: 600; letter-spacing: -.01em; line-height: 28px; }
+.toolbar .sub { line-height: 28px; }
+.views { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; }
+.views > section { grid-area: 1 / 1; }
+.scroll { overflow: auto; overscroll-behavior: contain; scroll-padding-top: 40px; outline: none; }
+.scroll:focus, .scroll:focus-visible { outline: none; }
+.view { padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 20px; max-width: var(--content-max); animation: view-in var(--dur) var(--ease); }
+.view.wide { max-width: none; }
+@keyframes view-in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+/* two-column content (Learn): pattern list + page */
+.split { display: grid; grid-template-columns: var(--plist-w) minmax(0, 1fr); height: 100%; min-height: 0; }
+.split > .col { border-right: 1px solid var(--line); overflow: auto; background: var(--bg); }
+.split > .main { display: grid; grid-template-rows: var(--toolbar-h) minmax(0, 1fr); min-width: 0; }
+
+/* drag region: pywebview turns .pywebview-drag-region into a window-move handle
+ * (DRAG_REGION_DIRECT_TARGET_ONLY keeps buttons on top clickable). */
+.pywebview-drag-region { -webkit-user-select: none; user-select: none; }
+html[data-shell="mac"] .sidebar .drag { cursor: default; }
+
+/* browser preview only: a slim strip so the layout matches the app */
+html:not([data-shell]) .sidebar .drag { display: none; }

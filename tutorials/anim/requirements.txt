@@ -1,0 +1,3 @@
+# Rendering only. The tracker app itself stays stdlib-only; this tool does not
+# ship with it and is never imported by tracker/.
+Pillow>=10.0
