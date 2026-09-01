@@ -23,3 +23,6 @@ __pycache__/
 .venv/
 dist/
 build/
+
+# IDE
+.idea/
