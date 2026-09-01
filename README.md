@@ -20,7 +20,7 @@ spaced-repetition scheduler.
 | | | |
 |---|---|---|
 | macOS 11+ | `LeetCode-Gym.dmg` | [Download](https://github.com/guangboyu/leetcode-gym/releases/latest/download/LeetCode-Gym.dmg) |
-| Windows 10/11 | `LeetCode Gym.exe` | [Download](https://github.com/guangboyu/leetcode-gym/releases/latest) |
+| Windows 10/11 | `LeetCode Gym.exe` | [Download](https://github.com/guangboyu/leetcode-gym/releases/latest/download/LeetCode.Gym.exe) |
 
 macOS: drag the app to Applications, then right-click → **Open** once (it is not
 code-signed). If macOS calls it damaged: `xattr -dr com.apple.quarantine "/Applications/LeetCode Gym.app"`.
