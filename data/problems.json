@@ -73,6 +73,12 @@
       "section": "§2.1.1 Basics",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
+     }
     ]
    }
   },
@@ -97,6 +103,12 @@
       "topic": "Binary Search",
       "section": "4. Other",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-3"
      }
     ]
    }
@@ -236,6 +248,12 @@
       "section": "§3.2 Opposite-Direction Two Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -317,6 +335,12 @@
       "section": "§3.2 Opposite-Direction Two Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -332,6 +356,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§3.2 Opposite-Direction Two Pointers",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
      }
     ]
    }
@@ -377,6 +407,12 @@
       "section": "§3.2 Opposite-Direction Two Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -401,6 +437,12 @@
       "topic": "Linked List, Tree & Backtracking",
       "section": "§1.5 Leading/Trailing Pointers",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
      }
     ]
    }
@@ -578,6 +620,12 @@
       "section": "§3.5 In-Place Modification",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2a"
+     }
     ]
    }
   },
@@ -599,6 +647,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§3.5 In-Place Modification",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2a"
      }
     ]
    }
@@ -642,6 +696,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§1.2 Advanced (optional)",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
      }
     ]
    }
@@ -882,6 +942,12 @@
       "topic": "Dynamic Programming",
       "section": "Special Topic: Prefix-Suffix Decomposition",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
      }
     ]
    }
@@ -1582,6 +1648,12 @@
       "section": "§3.5 In-Place Modification",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -1606,6 +1678,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.2 Longer-is-valid / shortest, minimum",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-3"
      }
     ]
    }
@@ -1694,6 +1772,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§3.5 In-Place Modification",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2a"
      }
     ]
    }
@@ -1843,6 +1927,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§4.1 Two Pointers",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-3"
      }
     ]
    }
@@ -2563,6 +2653,12 @@
       "section": "§3.2 Opposite-Direction Two Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -2915,6 +3011,12 @@
       "section": "§1.6 Fast and Slow Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
+     }
     ]
    }
   },
@@ -2934,6 +3036,12 @@
       "section": "§1.6 Fast and Slow Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
+     }
     ]
    }
   },
@@ -2952,6 +3060,12 @@
       "topic": "Linked List, Tree & Backtracking",
       "section": "§1.6 Fast and Slow Pointers",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
      }
     ]
    }
@@ -3313,6 +3427,12 @@
       "section": "§3.2 Opposite-Direction Two Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -3660,7 +3780,13 @@
     },
     "neetcode250": {
      "category": "Math & Geometry"
-    }
+    },
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
+     }
+    ]
    }
   },
   "remove-linked-list-elements": {
@@ -3797,6 +3923,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.2 Longer-is-valid / shortest, minimum",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-3"
      }
     ]
    }
@@ -4292,6 +4424,12 @@
       "section": "§1.6 Fast and Slow Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
+     }
     ]
    }
   },
@@ -4395,6 +4533,12 @@
       "topic": "Data Structures",
       "section": "§4.4 Monotonic Queue",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
      }
     ]
    }
@@ -4990,6 +5134,12 @@
       "section": "§3.5 In-Place Modification",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2a"
+     }
     ]
    }
   },
@@ -5051,6 +5201,12 @@
       "topic": "Linked List, Tree & Backtracking",
       "section": "§1.6 Fast and Slow Pointers",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
      }
     ]
    }
@@ -5861,6 +6017,12 @@
       "section": "§2.1.2 Advanced (optional)",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
+     }
     ]
    }
   },
@@ -5915,6 +6077,12 @@
       "section": "§3.1 Reversing Strings",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -5965,6 +6133,21 @@
     }
    }
   },
+  "intersection-of-two-arrays": {
+   "id": 349,
+   "title": "Intersection of Two Arrays",
+   "difficulty": "Easy",
+   "rating": null,
+   "paid_only": false,
+   "lists": {
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-3"
+     }
+    ]
+   }
+  },
   "intersection-of-two-arrays-ii": {
    "id": 350,
    "title": "Intersection of Two Arrays II",
@@ -5977,6 +6160,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§4.1 Two Pointers",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-3"
      }
     ]
    }
@@ -6518,6 +6707,12 @@
       "section": "§4.2 Subsequence Checking",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2a"
+     }
     ]
    }
   },
@@ -6879,6 +7074,12 @@
       "section": "§2.4 Other (optional)",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
+     }
     ]
    }
   },
@@ -7104,6 +7305,12 @@
       "section": "§2.4 Other (optional)",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -7151,6 +7358,21 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§3.5 In-Place Modification",
       "tier": "interview"
+     }
+    ]
+   }
+  },
+  "string-compression": {
+   "id": 443,
+   "title": "String Compression",
+   "difficulty": "Medium",
+   "rating": null,
+   "paid_only": false,
+   "lists": {
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2a"
      }
     ]
    }
@@ -8373,6 +8595,12 @@
       "section": "§4.2 Subsequence Checking",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-3"
+     }
     ]
    }
   },
@@ -8864,6 +9092,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§1.2 Advanced (optional)",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
      }
     ]
    }
@@ -9524,6 +9758,12 @@
       "section": "§1.1 Basics",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -10071,6 +10311,12 @@
       "section": "§3.2 Palindrome Greedy",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -10577,6 +10823,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.3.1 Shorter-is-valid",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-4"
      }
     ]
    }
@@ -12595,6 +12847,12 @@
       "section": "§4.4 Monotonic Queue",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-3"
+     }
     ]
    }
   },
@@ -12821,6 +13079,12 @@
       "topic": "Linked List, Tree & Backtracking",
       "section": "§1.6 Fast and Slow Pointers",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2b"
      }
     ]
    }
@@ -13137,6 +13401,12 @@
       "section": "§2.1.1 Basics",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
+     }
     ]
    }
   },
@@ -13152,6 +13422,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§3.5 In-Place Modification",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-2a"
      }
     ]
    }
@@ -13509,6 +13785,12 @@
       "topic": "Data Structures",
       "section": "§1.2 Prefix Sums + Hash Map",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-4"
      }
     ]
    }
@@ -14176,6 +14458,12 @@
       "section": "§3.2 Opposite-Direction Two Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -14325,6 +14613,12 @@
       "section": "§4.1 Two Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-3"
+     }
     ]
    }
   },
@@ -14404,6 +14698,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.3.3 Exactly-K Sliding Window",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-4"
      }
     ]
    }
@@ -14550,6 +14850,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.1.1 Basics",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
      }
     ]
    }
@@ -15276,6 +15582,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§1.2 Advanced (optional)",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
      }
     ]
    }
@@ -17098,6 +17410,12 @@
       "section": "§2.2 Longer-is-valid / shortest, minimum",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-3"
+     }
     ]
    }
   },
@@ -17251,6 +17569,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.3.3 Exactly-K Sliding Window",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-4"
      }
     ]
    }
@@ -19112,6 +19436,12 @@
       "section": "§1.1 Basics",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
+     }
     ]
    }
   },
@@ -19244,6 +19574,12 @@
       "topic": "Data Structures",
       "section": "§4.4 Monotonic Queue",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
      }
     ]
    }
@@ -19438,6 +19774,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§1.1 Basics",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
      }
     ]
    }
@@ -19874,6 +20216,12 @@
       "topic": "Dynamic Programming",
       "section": "Special Topic: Prefix-Suffix Decomposition",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
      }
     ]
    }
@@ -21793,6 +22141,12 @@
       "section": "§2.1.2 Advanced (optional)",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
+     }
     ]
    }
   },
@@ -22228,6 +22582,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.1.1 Basics",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
      }
     ]
    }
@@ -23089,7 +23449,13 @@
    "lists": {
     "neetcode250": {
      "category": "Two Pointers"
-    }
+    },
+    "tutorial": [
+     {
+      "pattern": "two-pointers",
+      "shape": "shape-3"
+     }
+    ]
    }
   },
   "maximum-score-from-performing-multiplication-operations": {
@@ -23771,6 +24137,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§2.1.2 Advanced (optional)",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
      }
     ]
    }
@@ -28542,6 +28914,12 @@
       "section": "§0.1.1 Basics",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-3"
+     }
     ]
    }
   },
@@ -30164,6 +30542,12 @@
       "section": "3. Properties of AND/OR",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-2"
+     }
     ]
    }
   },
@@ -30760,6 +31144,12 @@
       "section": "5. Three Pointers",
       "tier": "interview"
      }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-4"
+     }
     ]
    }
   },
@@ -30956,6 +31346,12 @@
       "topic": "Sliding Window & Two Pointers",
       "section": "§1.1 Basics",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-1"
      }
     ]
    }
@@ -36424,6 +36820,12 @@
       "topic": "Monotonic Stack",
       "section": "3. Contribution Technique",
       "tier": "interview"
+     }
+    ],
+    "tutorial": [
+     {
+      "pattern": "sliding-window",
+      "shape": "shape-4"
      }
     ]
    }
