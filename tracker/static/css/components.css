@@ -190,18 +190,22 @@ pre.ascii {
   background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 14px;
 }
 
-/* ---- toast -------------------------------------------------------------- */
-#toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 50; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+/* ---- toast (markup from js/toast.js) ------------------------------------ */
+#toast-root { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 50; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; width: max-content; max-width: calc(100vw - 40px); }
 .toast {
   display: flex; align-items: center; gap: 12px; pointer-events: auto;
   background: var(--surface); color: var(--text); border-radius: 12px; box-shadow: var(--shadow-2);
-  padding: 10px 10px 10px 14px; font-size: var(--fs-base); max-width: 640px;
+  padding: 8px 8px 8px 14px; font-size: var(--fs-base); max-width: 680px;
   animation: toast-in var(--dur-slow) var(--ease);
 }
-.toast .icon { width: 16px; height: 16px; color: var(--st-sched); flex: none; }
-.toast.error .icon { color: var(--danger); }
-.toast .m { color: var(--text-2); }
-.toast.leaving { opacity: 0; transform: translateY(6px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.toast__icon { width: 16px; height: 16px; flex: none; border-radius: 50%; background: var(--st-sched-soft); position: relative; }
+.toast__icon::after { content: ""; position: absolute; left: 5px; top: 3px; width: 4px; height: 7px; border: solid var(--st-sched); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.toast--info .toast__icon { background: var(--slate-soft); } .toast--info .toast__icon::after { border-color: var(--slate); }
+.toast--error .toast__icon { background: var(--st-forgot-soft); } .toast--error .toast__icon::after { display: none; }
+.toast--error .toast__icon::before { content: "!"; position: absolute; inset: 0; text-align: center; font-size: 11px; line-height: 16px; font-weight: 700; color: var(--st-forgot); }
+.toast__body { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toast__detail { color: var(--text-2); }
+.toast__close { color: var(--text-3); font-size: 15px; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 /* ---- dialog / sheet ----------------------------------------------------- */
@@ -233,13 +237,20 @@ dialog.sheet .bd { padding: 16px 18px; overflow: auto; }
 .tile .k i { width: 8px; height: 8px; border-radius: 50%; }
 .tile .v { font-size: var(--fs-3xl); font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1; margin-top: 4px; }
 .heat { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 20px; }
-.hm-wrap { position: relative; overflow-x: auto; }
-.hm { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 11px); gap: 3px; width: max-content; }
-.hm i { width: 11px; height: 11px; border-radius: 3px; background: var(--surface-3); }
-.hm i.h1 { background: var(--heat-1); } .hm i.h2 { background: var(--heat-2); }
-.hm i.h3 { background: var(--heat-3); } .hm i.h4 { background: var(--heat-4); }
-.hm i:hover, .hm i:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.months { display: grid; grid-auto-flow: column; font-size: var(--fs-xs); color: var(--text-3); margin: 0 0 6px; width: max-content; }
+.hm-wrap { position: relative; overflow-x: auto; padding-bottom: 2px; }
+.hm { display: grid; grid-template-columns: 30px max-content; grid-template-rows: auto auto; column-gap: 4px; row-gap: 6px; width: max-content; }
+.hm__months { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: repeat(var(--hm-cols, 52), 11px) !important; font-size: var(--fs-xs); color: var(--text-3); column-gap: 3px; height: 14px; }
+.hm__months span { grid-row: 1; white-space: nowrap; overflow: visible; }
+.hm__days { grid-column: 1; grid-row: 2; display: grid; grid-template-rows: repeat(7, 11px); row-gap: 3px; font-size: 10px; color: var(--text-3); }
+.hm__days span:nth-child(1) { grid-row: 1; } .hm__days span:nth-child(2) { grid-row: 3; } .hm__days span:nth-child(3) { grid-row: 5; }
+.hm__grid { grid-column: 2; grid-row: 2; display: grid; grid-auto-flow: column; grid-template-columns: repeat(var(--hm-cols, 52), 11px) !important; grid-template-rows: repeat(7, 11px); gap: 3px; }
+.hm__grid > i { width: 11px; height: 11px; border-radius: 3px; background: var(--surface-3); display: block; }
+.hm__grid > i.hm__cell--future { background: transparent; }
+.hm__grid > i.h1, .legend i.h1 { background: var(--heat-1); }
+.hm__grid > i.h2, .legend i.h2 { background: var(--heat-2); }
+.hm__grid > i.h3, .legend i.h3 { background: var(--heat-3); }
+.hm__grid > i.h4, .legend i.h4 { background: var(--heat-4); }
+.hm__grid > i:hover, .hm__grid > i:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
 .legend { display: flex; align-items: center; gap: 4px; font-size: var(--fs-xs); color: var(--text-3); margin-top: 10px; justify-content: flex-end; }
 .legend i { width: 11px; height: 11px; border-radius: 3px; background: var(--surface-3); }
 .streak { display: flex; flex-direction: column; gap: 12px; }

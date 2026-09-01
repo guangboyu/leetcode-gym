@@ -30,6 +30,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = ROOT / "tracker" / "static"
+LEGACY = ROOT / "scripts" / "legacy"   # retired UI data files kept for provenance
 OUT = ROOT / "data" / "patterns.json"
 TUTORIALS = ROOT / "data" / "tutorials.json"
 PROBLEMS = ROOT / "data" / "problems.json"
@@ -411,7 +412,7 @@ def strip_num(name):
 
 
 def extract_curriculum():
-    text = (STATIC / "curriculum.js").read_text(encoding="utf-8")
+    text = (LEGACY / "curriculum.js").read_text(encoding="utf-8")
     out = {}
     for m in PBLOCK.finditer(text):
         subs = []
@@ -424,7 +425,7 @@ def extract_curriculum():
 
 
 def extract_guide():
-    text = (STATIC / "guide.js").read_text(encoding="utf-8")
+    text = (LEGACY / "guide.js").read_text(encoding="utf-8")
     cut = text.index("const PATTERNS = {")
     topics = {m.group(1): {"zh": m.group(2), "post": m.group(3)} for m in GTOPIC.finditer(text[:cut])}
     pats = {}
