@@ -6,6 +6,12 @@
 Serves tracker/static/ plus:
     GET  /data/problems.json   the merged problem table (read-only input; served
                                from memory with an ETag and gzip)
+    GET  /data/tutorials.json  parsed tutorials (shapes, tables, anchors) — same caching
+    GET  /data/patterns.json   the unified pattern taxonomy + 0x3F mapping — same caching
+    GET  /tutorials/<Name>.md  a tutorial's markdown for the Learn tab (README excluded)
+    GET  /tutorials/assets/<pattern>/<file>.gif|png|svg|webp   its animations
+                               (both with a size+mtime ETag and a day of caching;
+                               nothing else under /tutorials is reachable)
     GET  /api/progress         all progress entries (derived from the event log)
     POST /api/review           {"slug": ..., "action": "solved"|"solved_help"|"forgotten"|"reset"|"undo"}
                                -> {"slug": ..., "entry": <updated entry or null>, "undoable": bool}
@@ -27,7 +33,9 @@ import argparse
 import gzip
 import hashlib
 import json
+import mimetypes
 import platform
+import re
 import subprocess
 import threading
 from datetime import date
@@ -43,17 +51,40 @@ from tracker.scheduler import ACTIONS, apply_action
 
 ROOT = resource_root()
 STATIC = ROOT / "tracker" / "static"
-PROBLEMS_FILE = ROOT / "data" / "problems.json"
+DATA_DIR = ROOT / "data"
+PROBLEMS_FILE = DATA_DIR / "problems.json"
+TUTORIALS_DIR = ROOT / "tutorials"
 
 LOCK = threading.Lock()
 
-# problems.json is ~1 MB and immutable while the server runs, so it is read
-# once: the raw bytes, a gzip copy (~150 KB on the wire) and a strong ETag so
-# the SPA revalidates with a 304 on every launch after the first.
-_PROBLEMS_RAW = PROBLEMS_FILE.read_bytes()
-_PROBLEMS_GZ = gzip.compress(_PROBLEMS_RAW, compresslevel=6)
-_PROBLEMS_ETAG = '"' + hashlib.sha1(_PROBLEMS_RAW).hexdigest() + '"'
+
+class _CachedJSON:
+    """A read-only JSON data file served from memory: raw bytes, a gzip copy
+    and a strong ETag, so the SPA revalidates with a 304 after the first
+    launch. problems.json is ~1 MB (≈150 KB gzipped); the others are small."""
+
+    def __init__(self, path):
+        self.raw = path.read_bytes() if path.exists() else b"{}"
+        self.gz = gzip.compress(self.raw, compresslevel=6)
+        self.etag = '"' + hashlib.sha1(self.raw).hexdigest() + '"'
+
+
+# The three data files the SPA loads at startup. tutorials.json / patterns.json
+# are optional at import time so a checkout mid-pipeline still serves.
+DATA_FILES = {
+    "/data/problems.json": _CachedJSON(PROBLEMS_FILE),
+    "/data/tutorials.json": _CachedJSON(DATA_DIR / "tutorials.json"),
+    "/data/patterns.json": _CachedJSON(DATA_DIR / "patterns.json"),
+}
+_PROBLEMS_RAW = DATA_FILES["/data/problems.json"].raw
 _PROBLEMS_DATA = json.loads(_PROBLEMS_RAW)
+
+# Tutorials are served straight from the repo (or the bundle): the markdown
+# the Learn tab renders and the GIFs it embeds. Only these two shapes are
+# reachable — tutorials/anim/**, README.md and anything with a path separator
+# in a segment (../) never match, and _send_file re-checks containment.
+TUT_MD = re.compile(r"^/tutorials/([A-Za-z0-9_-]+\.md)$")
+TUT_ASSET = re.compile(r"^/tutorials/assets/([a-z0-9-]+)/([A-Za-z0-9._-]+\.(?:gif|png|svg|webp|jpe?g))$")
 SLUGS = frozenset(_PROBLEMS_DATA["problems"])
 PROBLEMS_SNAPSHOT = _PROBLEMS_DATA.get("snapshot")
 PROGRESS = {}
@@ -177,12 +208,22 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(STATIC), **kwargs)
 
+    _cache_control_sent = False
+
+    def send_header(self, keyword, value):
+        if keyword.lower() == "cache-control":
+            self._cache_control_sent = True
+        super().send_header(keyword, value)
+
     def end_headers(self):
-        # Always revalidate: static files still get 304s via Last-Modified /
-        # If-Modified-Since (SimpleHTTPRequestHandler), API responses never
-        # come from a cache.
-        self.send_header("Cache-Control", "no-cache")
+        # Default: always revalidate. Static files still get 304s via
+        # Last-Modified / If-Modified-Since (SimpleHTTPRequestHandler), API
+        # responses never come from a cache. Tutorial assets opt into a long
+        # max-age below (they only change with a commit).
+        if not self._cache_control_sent:
+            self.send_header("Cache-Control", "no-cache")
         super().end_headers()
+        self._cache_control_sent = False
 
     def send_json(self, obj, status=200):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -192,18 +233,19 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _send_problems(self):
-        if self.headers.get("If-None-Match") == _PROBLEMS_ETAG:
+    def _send_cached(self, entry):
+        """One of DATA_FILES: ETag/304, gzip when accepted, HEAD-aware."""
+        if self.headers.get("If-None-Match") == entry.etag:
             self.send_response(304)
-            self.send_header("ETag", _PROBLEMS_ETAG)
+            self.send_header("ETag", entry.etag)
             self.end_headers()
             return
         accept = self.headers.get("Accept-Encoding", "")
         use_gzip = "gzip" in [t.split(";")[0].strip() for t in accept.split(",")]
-        body = _PROBLEMS_GZ if use_gzip else _PROBLEMS_RAW
+        body = entry.gz if use_gzip else entry.raw
         self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("ETag", _PROBLEMS_ETAG)
+        self.send_header("ETag", entry.etag)
         self.send_header("Vary", "Accept-Encoding")
         if use_gzip:
             self.send_header("Content-Encoding", "gzip")
@@ -211,6 +253,57 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
+
+    def _send_file(self, path, ctype, root):
+        """Serve a read-only repo file (tutorial markdown / GIF) with a cheap
+        size+mtime ETag and a day of caching. `root` is the directory the
+        file must live under — defense in depth behind the URL whitelist."""
+        try:
+            resolved = path.resolve(strict=True)
+            if not resolved.is_relative_to(root.resolve()) or not resolved.is_file():
+                raise FileNotFoundError(path)
+            st = resolved.stat()
+        except (OSError, ValueError):
+            self.send_json({"error": "not found"}, 404)
+            return
+        etag = f'"{st.st_size:x}-{st.st_mtime_ns:x}"'
+        if self.headers.get("If-None-Match") == etag:
+            self.send_response(304)
+            self.send_header("ETag", etag)
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.end_headers()
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(st.st_size))
+        self.send_header("ETag", etag)
+        self.send_header("Cache-Control", "public, max-age=86400")
+        self.end_headers()
+        if self.command != "HEAD":
+            with resolved.open("rb") as f:
+                self.copyfile(f, self.wfile)
+
+    def _route_files(self, path):
+        """Data files and tutorial files share GET and HEAD. Returns True if
+        the request was handled (including 404s inside /data and /tutorials)."""
+        if path in DATA_FILES:
+            self._send_cached(DATA_FILES[path])
+            return True
+        m = TUT_MD.match(path)
+        if m and m.group(1) != "README.md":
+            self._send_file(TUTORIALS_DIR / m.group(1),
+                            "text/markdown; charset=utf-8", TUTORIALS_DIR)
+            return True
+        m = TUT_ASSET.match(path)
+        if m:
+            ctype = mimetypes.guess_type(m.group(2))[0] or "application/octet-stream"
+            self._send_file(TUTORIALS_DIR / "assets" / m.group(1) / m.group(2), ctype,
+                            TUTORIALS_DIR / "assets")
+            return True
+        if path.startswith("/api/") or path.startswith("/data/") or path.startswith("/tutorials/"):
+            self.send_json({"error": "not found"}, 404)
+            return True
+        return False
 
     def do_GET(self):
         path = urlsplit(self.path).path
@@ -227,17 +320,11 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_json(_activity_payload())
         elif path == "/api/about":
             self.send_json(about())
-        elif path == "/data/problems.json":
-            self._send_problems()
-        elif path.startswith("/api/") or path.startswith("/data/"):
-            self.send_json({"error": "not found"}, 404)
-        else:
+        elif not self._route_files(path):
             super().do_GET()
 
     def do_HEAD(self):
-        if urlsplit(self.path).path == "/data/problems.json":
-            self._send_problems()
-        else:
+        if not self._route_files(urlsplit(self.path).path):
             super().do_HEAD()
 
     def _read_json(self):

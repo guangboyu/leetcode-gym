@@ -266,6 +266,71 @@ class TestServer(unittest.TestCase):
         self.assertIn("problemsSnapshot", body)
         self.assertRegex(body["python"], r"^\d+\.\d+")
 
+    # --- Learn tab: tutorials + taxonomy files -----------------------------
+
+    def test_serves_tutorial_markdown(self):
+        status, headers, body = self._raw("/tutorials/SlidingWindow.md")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers["Content-Type"], "text/markdown; charset=utf-8")
+        self.assertTrue(body.decode("utf-8").startswith("# Sliding Window"))
+        self.assertEqual(headers["Cache-Control"], "public, max-age=86400")
+        self.assertTrue(headers["ETag"].startswith('"'))
+
+    def test_serves_gif_with_etag_then_304_and_head(self):
+        path = "/tutorials/assets/sliding-window/lc0003-longest-substring.gif"
+        status, headers, body = self._raw(path)
+        self.assertEqual(status, 200)
+        self.assertEqual(headers["Content-Type"], "image/gif")
+        self.assertEqual(body[:6], b"GIF89a")
+        self.assertEqual(int(headers["Content-Length"]), len(body))
+        etag = headers["ETag"]
+        status, headers, body = self._raw(path, headers={"If-None-Match": etag})
+        self.assertEqual((status, body), (304, b""))
+        self.assertEqual(headers["ETag"], etag)
+        status, headers, body = self._raw(path, method="HEAD")
+        self.assertEqual((status, body), (200, b""))
+        self.assertEqual(headers["ETag"], etag)
+        self.assertEqual(headers["Cache-Control"], "public, max-age=86400")
+
+    def test_serves_tutorials_and_patterns_json_cached(self):
+        for path, key in (("/data/tutorials.json", "tutorials"), ("/data/patterns.json", "order")):
+            status, headers, body = self._raw(path)
+            self.assertEqual(status, 200, path)
+            self.assertIn(key, json.loads(body))
+            status, _, body = self._raw(path, headers={"If-None-Match": headers["ETag"]})
+            self.assertEqual((status, body), (304, b""), path)
+            status, headers, _ = self._raw(path, headers={"Accept-Encoding": "gzip"})
+            self.assertEqual(headers["Content-Encoding"], "gzip")
+
+    def test_tutorial_traversal_and_private_paths_rejected(self):
+        for path in ("/tutorials/../tracker/server.py",
+                     "/tutorials/assets/../../server.py",
+                     "/tutorials/assets/sliding-window/../../README.md",
+                     "/tutorials/anim/render_all.py",
+                     "/tutorials/anim/dsaviz/theme.py",
+                     "/tutorials/README.md",
+                     "/tutorials/Nope.md",
+                     "/tutorials/assets/sliding-window/nope.gif",
+                     "/tutorials/assets/sliding-window/lc0003-longest-substring.gif.txt",
+                     "/tutorials/"):
+            status, headers, body = self._raw(path)
+            self.assertEqual(status, 404, path)
+            self.assertEqual(json.loads(body), {"error": "not found"}, path)
+        # Raw sockets bypass urllib's path normalisation: the dot segments must
+        # reach the server verbatim and still be refused.
+        import http.client
+        conn = http.client.HTTPConnection("127.0.0.1", self.httpd.server_address[1])
+        try:
+            for path in ("/tutorials/../tracker/server.py", "/tutorials/assets/../../server.py",
+                         "/tutorials/%2e%2e/tracker/server.py"):
+                conn.request("GET", path)
+                r = conn.getresponse()
+                body = r.read()
+                self.assertEqual(r.status, 404, path)
+                self.assertNotIn(b"ThreadingHTTPServer", body, path)
+        finally:
+            conn.close()
+
     def test_unknown_slug_rejected(self):
         with self.assertRaises(urllib.error.HTTPError) as cm:
             _post(self.base, "/api/review",
