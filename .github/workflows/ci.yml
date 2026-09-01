@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, gym]
+  pull_request:
+
+jobs:
+  test:
+    name: tests (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Data is fresh (tutorials.json matches tutorials/*.md)
+        run: python3 scripts/build_tutorials.py --check
+      - name: Python + JS suites
+        # The JS suites run on JavaScriptCore on macOS and fall back to node on Linux.
+        run: python3 -m unittest discover -s tests -v
+      - name: JS modules on node
+        if: matrix.os == 'ubuntu-latest'
+        run: node tests/js/run.mjs
+      - name: Server smoke test
+        run: |
+          python3 tracker/server.py --data-dir "${RUNNER_TEMP}/gym" &
+          sleep 2
+          curl -fsS http://127.0.0.1:8765/ | grep -q "<title>"
+          curl -fsS http://127.0.0.1:8765/data/problems.json | head -c 200 | grep -q snapshot
+          curl -fsS http://127.0.0.1:8765/api/about

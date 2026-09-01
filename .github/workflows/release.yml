@@ -1,0 +1,71 @@
+name: Release
+
+# Tag a commit `vX.Y.Z` and push it: both desktop bundles are built on GitHub's
+# runners and attached to the release. No cross-compiling, no local Windows box.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    name: macOS app + DMG
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r packaging/requirements.txt
+      - run: bash packaging/build_macos.sh
+      - name: Self-test the bundle
+        run: |
+          LEETCODE_TRACKER_SELFTEST="${RUNNER_TEMP}/selftest.json" \
+            "dist/LeetCode Gym.app/Contents/MacOS/LeetCode Gym"
+          cat "${RUNNER_TEMP}/selftest.json"
+          grep -q '"ok": true' "${RUNNER_TEMP}/selftest.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LeetCode-Gym-macOS
+          path: dist/LeetCode-Gym.dmg
+
+  windows:
+    name: Windows exe
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r packaging/requirements.txt
+      - run: powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1
+      - name: Self-test the bundle
+        shell: pwsh
+        run: |
+          $env:LEETCODE_TRACKER_SELFTEST = "$env:RUNNER_TEMP\selftest.json"
+          & "dist\LeetCode Gym.exe"
+          Get-Content "$env:RUNNER_TEMP\selftest.json"
+          if (-not (Select-String -Path "$env:RUNNER_TEMP\selftest.json" -Pattern '"ok": true')) { exit 1 }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LeetCode-Gym-Windows
+          path: dist/LeetCode Gym.exe
+
+  release:
+    name: Attach to the GitHub release
+    needs: [macos, windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/LeetCode-Gym-macOS/LeetCode-Gym.dmg
+            artifacts/LeetCode-Gym-Windows/LeetCode Gym.exe
+          generate_release_notes: true
