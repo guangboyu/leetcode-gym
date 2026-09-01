@@ -112,7 +112,7 @@ export default {
           <div class="set"><div class="k">LeetCode Gym</div><div class="v sub">${about ? html`${about.version} · problems snapshot ${about.problemsSnapshot || "—"} · ${fmtInt(about.problems)} problems` : "…"}</div></div>
           ${about ? html`<div class="set"><div class="k">Config file</div><div class="v"><span class="mono" title="${about.configFile}">${about.configFile}</span></div></div>` : ""}
           <div class="set"><div class="k">Lists by</div><div class="v sub"><a href="https://leetcode.com" target="_blank" rel="noopener">LeetCode</a> · <a href="https://neetcode.io" target="_blank" rel="noopener">NeetCode</a> · <a href="https://github.com/EndlessCheng" target="_blank" rel="noopener">灵茶山艾府 (0x3F)</a> · ratings by <a href="https://zerotrac.github.io/leetcode_problem_rating/" target="_blank" rel="noopener">zerotrac</a></div></div>
-          <div class="set"><div class="k">Source</div><div class="v sub"><a href="https://github.com/guangboyu/leetcode-study-tracker" target="_blank" rel="noopener">github.com/guangboyu/leetcode-study-tracker</a> · MIT</div></div>
+          <div class="set"><div class="k">Source</div><div class="v sub"><a href="https://github.com/guangboyu/leetcode-gym" target="_blank" rel="noopener">github.com/guangboyu/leetcode-gym</a> · MIT</div></div>
           <div class="set"><div class="k">Reset</div><div class="v"><button type="button" class="btn danger" data-set="reset">Reset preferences…</button><span class="sub">Progress is never touched.</span></div></div>
         </div>
       </div>

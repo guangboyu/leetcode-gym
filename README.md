@@ -1,134 +1,110 @@
 # LeetCode Gym
 
-A desktop app for interview prep that treats LeetCode like a gym: **learn** one pattern
-at a time from a hand-written tutorial, **drill** random problems with the type hidden
-until you commit, and let a **forgetting-curve scheduler** bring each problem back right
-before you would forget it. Runs as a native macOS/Windows app; nothing to install.
+Learn a pattern, drill it cold, keep it on a forgetting curve. A native macOS / Windows
+app for LeetCode interview prep — 2,678 problems from Hot 100, Top Interview 150,
+NeetCode 250 and 0x3F's lists, hand-written pattern tutorials with animations, and a
+spaced-repetition scheduler.
 
-![Learn tab — the Sliding Window pattern page](docs/screenshots/learn.png)
+> **Under construction.** The app works end to end; the tutorials are being written one
+> pattern at a time (2 of 21 so far — Sliding Window and Two Pointers). See
+> [tutorials/README.md](tutorials/README.md) for what exists.
 
-[![CI](https://github.com/guangboyu/leetcode-study-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/guangboyu/leetcode-study-tracker/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/guangboyu/leetcode-study-tracker?display_name=tag)](https://github.com/guangboyu/leetcode-study-tracker/releases/latest)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB.svg)](#run-from-source)
+![Learn tab](docs/screenshots/learn.png)
 
-## Download
+[![CI](https://github.com/guangboyu/leetcode-gym/actions/workflows/ci.yml/badge.svg)](https://github.com/guangboyu/leetcode-gym/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/guangboyu/leetcode-gym?display_name=tag)](https://github.com/guangboyu/leetcode-gym/releases/latest)
+[![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-| Platform | File | |
+## Install
+
+| | | |
 |---|---|---|
-| macOS 11+ | `LeetCode-Gym.dmg` | [Download](https://github.com/guangboyu/leetcode-study-tracker/releases/latest/download/LeetCode-Gym.dmg) |
-| Windows 10/11 | `LeetCode Gym.exe` | [Download](https://github.com/guangboyu/leetcode-study-tracker/releases/latest) |
+| macOS 11+ | `LeetCode-Gym.dmg` | [Download](https://github.com/guangboyu/leetcode-gym/releases/latest/download/LeetCode-Gym.dmg) |
+| Windows 10/11 | `LeetCode Gym.exe` | [Download](https://github.com/guangboyu/leetcode-gym/releases/latest) |
 
-**macOS:** open the DMG, drag *LeetCode Gym* to Applications, then right-click → **Open**
-the first time (the app is not code-signed). If macOS says the app is damaged, run
-`xattr -dr com.apple.quarantine "/Applications/LeetCode Gym.app"` once.
-**Windows:** double-click the exe; if SmartScreen appears, *More info → Run anyway*.
+macOS: drag the app to Applications, then right-click → **Open** once (it is not
+code-signed). If macOS calls it damaged: `xattr -dr com.apple.quarantine "/Applications/LeetCode Gym.app"`.
+Windows: if SmartScreen appears, *More info → Run anyway*.
 
-## How to practice
+Or run from source with nothing but Python 3: `python3 tracker/server.py` and open
+http://localhost:8765 (`python3 -m tracker.desktop` for the native window, needs `pip install pywebview`).
 
-1. **Learn a pattern.** Open *Learn*, pick the next pattern in the list, read its
-   tutorial (animated walkthroughs, a template you can copy, the pitfalls), then solve
-   the problems in the order the tutorial lists them — every table is live, so you mark
-   *Solved / Help / Forgot* right there. When the core problems are done, expand
-   *Extend with 0x3F* for more of the same shape within your rating cap.
-2. **Drill cold.** *Drill* draws a random untouched problem inside a rating range with
-   its type hidden. Decide the approach *before* you reveal or mark — that is the skill
-   interviews test. Narrow the pool to Hot 100 + Top Interview 150 + NeetCode 250 for
-   most companies; add 0x3F when you want depth.
-3. **Keep it.** *Today* lists what is due. Each solve pushes the next review out along
-   an Ebbinghaus ladder (1 → 2 → 4 → 7 → 15 → 30 days); six clean reviews and the
-   problem is mastered. *Forgot* restarts the ladder, *Help* holds it and brings the
-   problem back in two days. Every mark can be undone (⌘Z).
+## How to use it
 
-## What is in the app
+**1. Learn — one pattern at a time.**
+Open *Learn*. Patterns are ordered from foundations to advanced; take the next one.
+Read its tutorial (what to look for, the template, worked examples with animations, the
+pitfalls), then solve the problems in the order the tutorial lists them. Every table in
+the app is live: mark **Solved**, **Help** (solved after reading a solution) or
+**Forgot** right there. When the core problems are done, *Extend with 0x3F* adds more
+of the same shape, filtered by your rating cap.
+
+**2. Drill — by rating, type hidden.**
+Open *Drill*, set a rating range around your level, pick the lists (Hot 100 +
+Interview 150 + NeetCode 250 covers most interviews), press space. You get one untouched
+problem with its pattern hidden. Decide the approach *before* you reveal or mark — that
+is the skill interviews test. Raise the range as your hit rate goes up.
+
+**3. Review — the forgetting curve does the scheduling.**
+Everything you mark comes back in *Today*: 1 → 2 → 4 → 7 → 15 → 30 days after each
+clean solve, then it is mastered. **Forgot** restarts the ladder; **Help** holds it and
+brings the problem back in two days. Any mark can be undone (⌘Z).
 
 | | |
 |---|---|
 | ![Reading a tutorial](docs/screenshots/read.png) | ![Today](docs/screenshots/today.png) |
-| **Learn → tutorial.** Your own markdown rendered in-app: table of contents, GIF animations, highlighted code, live problem tables. | **Today.** Reviews due, sorted by how overdue, then the next subtopic to work on. |
 | ![Browse](docs/screenshots/browse.png) | ![Stats](docs/screenshots/stats.png) |
-| **Browse.** All 2,678 problems from four lists; filter, sort, search (⌘F). | **Stats.** Activity heatmap, streaks, coverage per list. |
 
-- **Learn** — one ordered route of 21 patterns (arrays & hashing → two pointers →
-  sliding window → … → DP → greedy → intervals → math & bits, plus four advanced
-  ones). Patterns with a written tutorial show a book mark; the rest use a curated
-  recognize/solve card until their tutorial lands. Tutorials so far: Sliding Window,
-  Two Pointers — see [`tutorials/README.md`](tutorials/README.md) for the status table.
-- **Drill** — random, type-blind, rating-ranged; no repeats within the last ten draws.
-- **Settings** — progress folder (point it at Dropbox/iCloud to sync machines; histories
-  merge losslessly), rating cap, appearance (system / light / dark), keyboard shortcuts.
+Also there: *Browse* (all problems; filter, sort, ⌘F), *Stats* (activity heatmap,
+streaks, coverage per list) and *Settings* (rating cap, light/dark, progress folder).
+Keyboard: ⌘1–5 views, ⌘, settings, ⌘/ lists every shortcut; `j`/`k` move in tables,
+`s`/`h`/`f` mark, `Enter` opens the problem on LeetCode.
 
-The whole app is keyboard-driven: ⌘1–5 switch views, ⌘F searches, ⌘, opens Settings,
-⌘/ shows every shortcut; in tables `j`/`k` move, `s`/`h`/`f` mark, `Enter` opens the
-problem on LeetCode.
+## Sync between machines
 
-## The lists
+Progress is an append-only log in one folder. Settings → *Choose folder…* and pick a
+Dropbox / iCloud / OneDrive folder on each machine; histories merge, nothing is lost.
+For a git-backed copy instead: `python3 tracker/server.py --data-dir ~/leetcode-progress --autocommit --push`.
 
-| List | Problems | Notes |
-|---|---|---|
-| [LeetCode Hot 100](source/Hot100.md) | 100 | Official study plan |
-| [LeetCode Top Interview 150](source/Leetcode150.md) | 150 | Official study plan |
-| [NeetCode 250](source/Neetcode250.md) | 250 | NeetCode 150 plus 100 more |
-| [0x3F (灵茶山艾府)](source/ox3F/) | 2,346 | 12 topic lists, interview-tier sections, translated |
+## Data
 
-Problems are keyed by leetcode.com slug and tagged with the lists they belong to, so one
-review counts everywhere. Most carry a contest rating (~1000–3000, from zerotrac); the
-rest get a difficulty-based estimate shown as `≈`.
+| List | Problems |
+|---|---|
+| [LeetCode Hot 100](source/Hot100.md) | 100 |
+| [LeetCode Top Interview 150](source/Leetcode150.md) | 150 |
+| [NeetCode 250](source/Neetcode250.md) | 250 |
+| [0x3F topic lists](source/ox3F/) | 2,346 (12 lists, interview-tier sections) |
 
-Problem statements and solutions are never redistributed — only ids, titles and
-groupings, as factual data (see [Acknowledgements](#acknowledgements)).
+One table keyed by leetcode.com slug; a problem in several lists is reviewed once.
+Ratings are contest ratings from zerotrac; unrated problems get an estimate shown as `≈`.
+Only ids, titles and groupings are stored — no statements, no solutions.
+Snapshot: 2026-06-09; refresh instructions in [source/README.md](source/README.md).
 
-## Run from source
+## Develop
 
 ```bash
-python3 tracker/server.py          # http://localhost:8765 — standard library only
-python3 -m tracker.desktop         # the same app in a native window (pip install pywebview)
-python3 -m unittest discover -s tests
+python3 -m unittest discover -s tests      # Python + JS tests, no install
+python3 scripts/build_tutorials.py         # after editing tutorials/*.md
+bash packaging/build_macos.sh              # dist/LeetCode Gym.app + .dmg
 ```
 
-Progress is stored as an append-only event log (`reviews.jsonl`) plus a derived
-snapshot; preferences live beside it in `settings.json`. Default location: the folder
-chosen in Settings, else `$LEETCODE_TRACKER_DATA`, else an existing `~/LeetCodeTracker`,
-else the OS application-support directory. To keep a git-backed backup:
-
-```bash
-python3 tracker/server.py --data-dir ~/leetcode-progress --autocommit --push
-```
-
-## Build the desktop app
-
-```bash
-pip install -r packaging/requirements.txt
-bash packaging/build_macos.sh                                  # dist/LeetCode Gym.app + LeetCode-Gym.dmg
-powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1   # dist\LeetCode Gym.exe
-```
-
-Releases are built by GitHub Actions: push a `vX.Y.Z` tag and both bundles are attached
-to the release.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) — how the repo is laid out, how to add a tutorial
-(the parser and tests will tell you if a table id, GIF or anchor is off), and the data
-invariants. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+[CONTRIBUTING.md](CONTRIBUTING.md) explains the layout, how to add a tutorial, and the
+data invariants. Releases are built by GitHub Actions on a `vX.Y.Z` tag.
+Changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## Acknowledgements
 
-The learning path and problem selection in LeetCode Gym are informed by several
-excellent collections and resources:
-
-- [灵茶山艾府 (EndlessCheng)](https://github.com/EndlessCheng)'s algorithm problem lists
-  and the [codeforces-go](https://github.com/EndlessCheng/codeforces-go) repository (MIT),
-  from which parts of the problem categorization are derived
-- [NeetCode 250](https://neetcode.io)
-- [LeetCode Hot 100 and Top Interview 150](https://leetcode.com/studyplan/)
-- [zerotrac](https://zerotrac.github.io/leetcode_problem_rating/)'s contest-rating data
-
-The tutorials, animations and the learning interface are independently written and
-organized for LeetCode Gym. Bundled third-party software and fonts are listed with
-their licenses in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The learning path and problem selection are informed by
+[灵茶山艾府 (EndlessCheng)](https://github.com/EndlessCheng)'s problem lists and the
+MIT-licensed [codeforces-go](https://github.com/EndlessCheng/codeforces-go) repository
+(parts of the problem categorization are derived from them),
+[NeetCode 250](https://neetcode.io), LeetCode's
+[Hot 100 and Top Interview 150](https://leetcode.com/studyplan/), and
+[zerotrac](https://zerotrac.github.io/leetcode_problem_rating/)'s ratings.
+The tutorials, animations and the interface are written for LeetCode Gym.
+Third-party licenses: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 
-[MIT](LICENSE). Problem-list data is redistributed as factual data with attribution and
-remains the work of its curators.
+[MIT](LICENSE). Problem-list data stays the work of its curators and is redistributed
+as factual data with attribution. Not affiliated with LeetCode LLC.
