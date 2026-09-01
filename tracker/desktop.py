@@ -7,14 +7,16 @@ tab, no terminal. pywebview is the ONLY third-party dependency, and it's importe
 lazily inside run(), so the server itself stays stdlib-only.
 
 Run from source:   python -m tracker.desktop        (or: python desktop_app.py)
-Packaged:          double-click the built LeetCodeTracker app.
+Packaged:          double-click the built "LeetCode Gym" app.
 
-Progress (reviews.jsonl / progress.json) lives in a persistent per-user
-directory — NEVER inside the app bundle, which is read-only and, for a frozen
-build, a temp dir wiped on exit. Resolution order:
+Progress (reviews.jsonl / progress.json / settings.json) lives in a persistent
+per-user directory — NEVER inside the app bundle, which is read-only and, for a
+frozen build, a temp dir wiped on exit. Resolution order:
     1. --data-dir argument
-    2. $LEETCODE_TRACKER_DATA   (point at a Dropbox folder to sync machines)
-    3. ~/LeetCodeTracker
+    2. folder chosen in the Settings UI (tracker/config.py)
+    3. $LEETCODE_TRACKER_DATA   (point at a Dropbox folder to sync machines)
+    4. ~/LeetCodeTracker, if it exists (pre-0.2 default; never moved silently)
+    5. <config dir>/data  (e.g. ~/Library/Application Support/LeetCode Gym/data)
 """
 import os
 import sys
@@ -24,17 +26,25 @@ from pathlib import Path
 
 from tracker import config, server
 
-APP_NAME = "LeetCode Study Tracker"
+APP_NAME = config.APP_NAME
+LEGACY_DATA_DIR_NAME = "LeetCodeTracker"
 WINDOW_SIZE = (1200, 860)
 MIN_WINDOW_SIZE = (900, 600)
 
 
 def default_data_dir():
-    """Persistent per-user location for progress files (before any UI choice)."""
+    """Persistent per-user location for progress files (before any UI choice).
+
+    An existing ~/LeetCodeTracker (the pre-0.2 default) keeps being used so an
+    upgrade never silently changes where a user's history lives; fresh installs
+    get a folder under the OS config dir instead of a visible one in $HOME."""
     env = os.environ.get("LEETCODE_TRACKER_DATA")
     if env:
         return Path(env).expanduser()
-    return Path.home() / "LeetCodeTracker"
+    legacy = Path.home() / LEGACY_DATA_DIR_NAME
+    if legacy.is_dir():
+        return legacy
+    return config.config_dir() / "data"
 
 
 def resolve_data_dir(arg=None):
@@ -114,7 +124,7 @@ def run(data_dir=None):
     import webview  # lazy: keeps the module importable without the GUI dep
 
     data_dir = resolve_data_dir(data_dir)
-    server.configure(data_dir=str(data_dir))
+    server.configure(data_dir=str(data_dir), desktop=True)
     httpd = server.make_server(port=0)  # port 0 -> OS picks a free port
     port = httpd.server_address[1]
     threading.Thread(target=httpd.serve_forever, daemon=True,
@@ -134,10 +144,11 @@ def run(data_dir=None):
 
 def main():
     import argparse
-    ap = argparse.ArgumentParser(description="LeetCode study tracker (desktop window)")
+    ap = argparse.ArgumentParser(description=f"{APP_NAME} (desktop window)")
     ap.add_argument("--data-dir", default=None,
-                    help="where progress is stored "
-                         "(default: $LEETCODE_TRACKER_DATA or ~/LeetCodeTracker)")
+                    help="where progress is stored (default: the folder chosen in "
+                         "Settings, $LEETCODE_TRACKER_DATA, ~/LeetCodeTracker if it "
+                         "exists, else the per-user config dir)")
     # parse_known_args: tolerate stray args a frozen app may be launched with
     args, _ = ap.parse_known_args()
     data_dir = resolve_data_dir(args.data_dir)
