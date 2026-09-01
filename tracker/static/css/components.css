@@ -270,3 +270,11 @@ dialog.sheet .bd { padding: 16px 18px; overflow: auto; }
 @media (prefers-reduced-motion: reduce) { .skeleton i { animation: none; } }
 .errorcard { max-width: 520px; margin: 48px auto; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .errorcard h2 { color: var(--danger); }
+
+/* Narrow windows: list badges give way before the status and action columns do. */
+@media (max-width: 1100px) {
+  .tbl .badge { display: none; }
+  .tbl td.title { max-width: 260px; }
+  .chip { max-width: 180px; overflow: hidden; text-overflow: ellipsis; display: inline-block; line-height: 22px; }
+  .chip::before { display: inline-block; margin-right: 6px; vertical-align: 1px; }
+}

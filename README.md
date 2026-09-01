@@ -1,209 +1,122 @@
-# LeetCode Study Tracker
+# LeetCode Gym
 
-A desktop study tracker for LeetCode interview prep. It merges four curated problem
-lists into one searchable table of 2,676 problems, lets you mark each problem as
-Solved, Forgot, or Reset, and schedules reviews on an Ebbinghaus forgetting curve so
-you revisit each problem right before you would forget it.
+A desktop app for interview prep that treats LeetCode like a gym: **learn** one pattern
+at a time from a hand-written tutorial, **drill** random problems with the type hidden
+until you commit, and let a **forgetting-curve scheduler** bring each problem back right
+before you would forget it. Runs as a native macOS/Windows app; nothing to install.
 
-The app runs in its own native window. There is nothing to install beyond the app itself.
+![Learn tab — the Sliding Window pattern page](docs/screenshots/learn.png)
+
+[![CI](https://github.com/guangboyu/leetcode-study-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/guangboyu/leetcode-study-tracker/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/guangboyu/leetcode-study-tracker?display_name=tag)](https://github.com/guangboyu/leetcode-study-tracker/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB.svg)](#run-from-source)
 
 ## Download
 
-Get the newest build from the [Releases page](https://github.com/guangboyu/leetcode-study-tracker/releases/latest),
-or download directly:
+| Platform | File | |
+|---|---|---|
+| macOS 11+ | `LeetCode-Gym.dmg` | [Download](https://github.com/guangboyu/leetcode-study-tracker/releases/latest/download/LeetCode-Gym.dmg) |
+| Windows 10/11 | `LeetCode Gym.exe` | [Download](https://github.com/guangboyu/leetcode-study-tracker/releases/latest) |
 
-| Platform | File | Download |
-|----------|------|----------|
-| macOS | `LeetCodeTracker.dmg` | [Download for macOS](https://github.com/guangboyu/leetcode-study-tracker/releases/latest/download/LeetCodeTracker.dmg) |
-| Windows | `LeetCodeTracker.exe` | [Download for Windows](https://github.com/guangboyu/leetcode-study-tracker/releases/download/v0.1.0/LeetCodeTracker.exe) (v0.1.0; a rebuild on Windows is needed per release) |
+**macOS:** open the DMG, drag *LeetCode Gym* to Applications, then right-click → **Open**
+the first time (the app is not code-signed). If macOS says the app is damaged, run
+`xattr -dr com.apple.quarantine "/Applications/LeetCode Gym.app"` once.
+**Windows:** double-click the exe; if SmartScreen appears, *More info → Run anyway*.
 
-## Install
+## How to practice
 
-### macOS
+1. **Learn a pattern.** Open *Learn*, pick the next pattern in the list, read its
+   tutorial (animated walkthroughs, a template you can copy, the pitfalls), then solve
+   the problems in the order the tutorial lists them — every table is live, so you mark
+   *Solved / Help / Forgot* right there. When the core problems are done, expand
+   *Extend with 0x3F* for more of the same shape within your rating cap.
+2. **Drill cold.** *Drill* draws a random untouched problem inside a rating range with
+   its type hidden. Decide the approach *before* you reveal or mark — that is the skill
+   interviews test. Narrow the pool to Hot 100 + Top Interview 150 + NeetCode 250 for
+   most companies; add 0x3F when you want depth.
+3. **Keep it.** *Today* lists what is due. Each solve pushes the next review out along
+   an Ebbinghaus ladder (1 → 2 → 4 → 7 → 15 → 30 days); six clean reviews and the
+   problem is mastered. *Forgot* restarts the ladder, *Help* holds it and brings the
+   problem back in two days. Every mark can be undone (⌘Z).
 
-1. Open `LeetCodeTracker.dmg`.
-2. Drag **LeetCodeTracker** onto the **Applications** folder.
-3. In Applications, right-click **LeetCodeTracker** and choose **Open**, then confirm once.
+## What is in the app
 
-The app is not code-signed, so the first launch needs right-click then Open. A plain
-double-click will not work the first time. If macOS reports that the app is damaged,
-clear the download flag once in Terminal:
+| | |
+|---|---|
+| ![Reading a tutorial](docs/screenshots/read.png) | ![Today](docs/screenshots/today.png) |
+| **Learn → tutorial.** Your own markdown rendered in-app: table of contents, GIF animations, highlighted code, live problem tables. | **Today.** Reviews due, sorted by how overdue, then the next subtopic to work on. |
+| ![Browse](docs/screenshots/browse.png) | ![Stats](docs/screenshots/stats.png) |
+| **Browse.** All 2,678 problems from four lists; filter, sort, search (⌘F). | **Stats.** Activity heatmap, streaks, coverage per list. |
 
-```bash
-xattr -dr com.apple.quarantine /Applications/LeetCodeTracker.app
-```
+- **Learn** — one ordered route of 21 patterns (arrays & hashing → two pointers →
+  sliding window → … → DP → greedy → intervals → math & bits, plus four advanced
+  ones). Patterns with a written tutorial show a book mark; the rest use a curated
+  recognize/solve card until their tutorial lands. Tutorials so far: Sliding Window,
+  Two Pointers — see [`tutorials/README.md`](tutorials/README.md) for the status table.
+- **Drill** — random, type-blind, rating-ranged; no repeats within the last ten draws.
+- **Settings** — progress folder (point it at Dropbox/iCloud to sync machines; histories
+  merge losslessly), rating cap, appearance (system / light / dark), keyboard shortcuts.
 
-### Windows
-
-1. Double-click `LeetCodeTracker.exe`.
-2. If SmartScreen appears, click **More info**, then **Run anyway**.
-
-## Using the app
-
-The app opens on the **Today** tab. Each tab covers one part of the workflow:
-
-- **Today**: reviews that are due now, followed by the study route.
-- **Browse**: filter by list, topic, difficulty, or status. Search by name and sort by rating.
-- **Drill**: a random unseen problem with its topic and difficulty hidden until you answer, which trains you to recognize problem types cold. Narrow the draw by source list (for most companies Hot 100 + Top Interview 150 + NeetCode 250 is plenty) and by problem type (skip types your target companies rarely ask, or focus on one to reinforce it).
-- **Stats**: per-list progress and a data-range to time-complexity reference table.
-
-The study route has two parts, both clickable so you can practice any type at any time:
-
-- **Beginner route**: 17 pattern stages built from the union of Hot 100, Top Interview 150,
-  and NeetCode 250 (302 problems, each assigned to exactly one pattern). The order goes
-  foundations first: arrays and hashing, two pointers, sliding window, stack, binary search,
-  linked list, trees, heap, backtracking, tries, graphs, dynamic programming, greedy,
-  intervals, math and bits. Each stage splits into semantic subtopics — sliding window, for
-  example, becomes fixed-size window, longest window (shrink when invalid), shortest window
-  (shrink while valid), and window max/min with a monotonic deque. Two guide cards teach
-  recognition first: the pattern's mental map (the statement phrases that signal it), then
-  the selected subtopic's recognize, solve, and code template.
-- **Go deeper**: all 12 of 0x3F's topic lists with every interview-tier chapter, grouped
-  under their real chapter names (fixed-length window, knapsack, topological sort, and so
-  on), each with its own guide card and a link to the original list.
-
-Any tier or subtopic you consider irrelevant can be skipped with one click (restorable);
-rarely-interviewed 0x3F sections are hidden by default behind a
-"show optional &amp; niche subtopics" toggle.
-
-When you finish a problem, mark it:
-
-- **Solved**: you solved it on your own. The next review moves further out along the curve.
-- **w/ help**: you solved it after reading the editorial. It returns in 2 days and the interval does not grow.
-- **Forgot**: you could not solve it at review time. It becomes due immediately and the interval restarts.
-
-## How reviewing works
-
-Reviews follow an Ebbinghaus forgetting curve. Each time you solve a problem on your own,
-the next review moves to the next interval:
-
-```
-1 day  ->  2 days  ->  4 days  ->  7 days  ->  15 days  ->  30 days
-```
-
-Clear all six intervals and the problem becomes **Mastered**, with no more reviews.
-Marking **Forgot** restarts the ladder. Marking **w/ help** holds the ladder in place and
-brings the problem back in 2 days.
-
-A **rating cap** in the header (default 1700) keeps you at one difficulty level in the 0x3F
-topic lists until you finish everything at or below it, then you raise the cap. The dynamic
-programming list widens to 2000 automatically. The beginner route ignores the cap; its
-subtopic progression does the pacing instead.
-
-Classic problems mostly predate contest ratings, so unrated problems count as an estimated
-1250 (Easy), 1650 (Medium), or 2150 (Hard) in the Drill rating range and sort order. Estimates
-show as ≈ values in the tables.
-
-## Sync progress across machines
-
-Your progress is stored on your own computer. To sync it between machines:
-
-1. Click the **Settings** button (top right).
-2. Choose **Choose folder** and select a folder inside Dropbox, iCloud Drive, or OneDrive.
-3. Repeat on your other machine and pick the same synced folder.
-
-The two machines merge their histories without losing anything, because progress is stored
-as an append-only event log. Avoid studying on two machines at the same second, or the
-cloud drive may create a conflicted copy.
-
-The chosen folder is remembered in a small config file:
-
-- macOS: `~/Library/Application Support/LeetCodeTracker`
-- Windows: `%APPDATA%\LeetCodeTracker`
-
-Without a choice, progress is saved to `~/LeetCodeTracker`, or to the folder named in the
-`LEETCODE_TRACKER_DATA` environment variable if it is set.
+The whole app is keyboard-driven: ⌘1–5 switch views, ⌘F searches, ⌘, opens Settings,
+⌘/ shows every shortcut; in tables `j`/`k` move, `s`/`h`/`f` mark, `Enter` opens the
+problem on LeetCode.
 
 ## The lists
 
 | List | Problems | Notes |
-|------|----------|-------|
+|---|---|---|
 | [LeetCode Hot 100](source/Hot100.md) | 100 | Official study plan |
 | [LeetCode Top Interview 150](source/Leetcode150.md) | 150 | Official study plan |
 | [NeetCode 250](source/Neetcode250.md) | 250 | NeetCode 150 plus 100 more |
-| [0x3F (灵茶山艾府)](source/ox3F/) | 2,346 curated | 12 topic lists translated to English, competition-only sections omitted |
+| [0x3F (灵茶山艾府)](source/ox3F/) | 2,346 | 12 topic lists, interview-tier sections, translated |
 
-Problems are keyed by their leetcode.com slug and tagged with the lists they belong to.
-The lists overlap heavily, so one review counts across all of them. Most problems carry a
-numeric contest rating (roughly 1000 to 3000) for fine-grained ordering.
+Problems are keyed by leetcode.com slug and tagged with the lists they belong to, so one
+review counts everywhere. Most carry a contest rating (~1000–3000, from zerotrac); the
+rest get a difficulty-based estimate shown as `≈`.
 
-Sources, the curation pipeline, and refresh instructions are in [source/README.md](source/README.md).
-Lists by [LeetCode](https://leetcode.com), [NeetCode](https://neetcode.io), and
+Lists by [LeetCode](https://leetcode.com), [NeetCode](https://neetcode.io) and
 [灵茶山艾府 / EndlessCheng](https://github.com/EndlessCheng); ratings by
-[zerotrac](https://zerotrac.github.io/leetcode_problem_rating/). This project redistributes
-factual list data only (IDs, titles, slugs, grouping), with no problem statements or solutions.
+[zerotrac](https://zerotrac.github.io/leetcode_problem_rating/). This repository
+redistributes factual list data (ids, titles, groupings) with attribution — no problem
+statements, no solutions. The tutorials are original writing.
 
 ## Run from source
 
-You can run the tracker without downloading a release. This needs Python 3, standard
-library only, with no extra packages:
-
 ```bash
-python3 tracker/server.py
+python3 tracker/server.py          # http://localhost:8765 — standard library only
+python3 -m tracker.desktop         # the same app in a native window (pip install pywebview)
+python3 -m unittest discover -s tests
 ```
 
-Then open http://localhost:8765 in your browser. Progress is saved to `data/progress.json`.
-
-To open the same server in a native window instead of a browser tab:
+Progress is stored as an append-only event log (`reviews.jsonl`) plus a derived
+snapshot; preferences live beside it in `settings.json`. Default location: the folder
+chosen in Settings, else `$LEETCODE_TRACKER_DATA`, else an existing `~/LeetCodeTracker`,
+else the OS application-support directory. To keep a git-backed backup:
 
 ```bash
-python3 -m tracker.desktop
+python3 tracker/server.py --data-dir ~/leetcode-progress --autocommit --push
 ```
 
 ## Build the desktop app
 
-Building the standalone app needs two extra packages on the build machine only:
-
 ```bash
 pip install -r packaging/requirements.txt
+bash packaging/build_macos.sh                                  # dist/LeetCode Gym.app + LeetCode-Gym.dmg
+powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1   # dist\LeetCode Gym.exe
 ```
 
-Then build for your platform. PyInstaller cannot cross-compile, so build on each operating
-system separately:
+Releases are built by GitHub Actions: push a `vX.Y.Z` tag and both bundles are attached
+to the release.
 
-```bash
-# macOS: produces dist/LeetCodeTracker.app and dist/LeetCodeTracker.dmg
-bash packaging/build_macos.sh
+## Contributing
 
-# Windows: produces dist\LeetCodeTracker.exe
-powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1
-```
-
-The app wraps the same standard-library server in a native window using
-[pywebview](https://pywebview.flowlib.com), which uses the built-in OS webview: WebView2 on
-Windows 10 and 11, WKWebView on macOS. There is nothing extra for users to install.
-
-## Back up your progress
-
-Your progress files are gitignored, so they are never committed to this repository, and the
-repository can be published without exposing what you have solved. To keep a version-controlled
-backup, point the tracker at a separate private repository:
-
-```bash
-git clone git@github.com:you/leetcode-progress.git ~/leetcode-progress
-python3 tracker/server.py --data-dir ~/leetcode-progress --autocommit --push
-```
-
-`--autocommit` commits the event log a minute after each study session and on shutdown.
-`--push` also pushes it. Nothing touches this repository.
-
-## Storage
-
-Every action is appended to `data/reviews.jsonl`, which is the source of truth. It is
-append-only, so it is safe against crashes and merges cleanly across machines.
-`data/progress.json` is a snapshot rebuilt from the log when the server starts.
-
-## Development
-
-```bash
-python3 -m unittest discover -s tests
-```
-
-The data pipeline that rebuilds everything from raw snapshots is documented in
-[source/README.md](source/README.md#regenerating-from-the-repo-root-needs-python3-no-extra-deps).
+See [CONTRIBUTING.md](CONTRIBUTING.md) — how the repo is laid out, how to add a tutorial
+(the parser and tests will tell you if a table id, GIF or anchor is off), and the data
+invariants. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-The code, meaning the tracker and scripts, is [MIT](LICENSE). The problem-list data remains
-the work of its upstream curators and is redistributed here as factual data with attribution,
-not under the MIT grant.
+Code (the app, scripts and tutorials' generator) is [MIT](LICENSE). The problem-list data
+remains the work of its upstream curators and is redistributed as factual data with
+attribution, not under the MIT grant.
