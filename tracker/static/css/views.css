@@ -114,3 +114,31 @@
 .set .k .sub { display: block; font-weight: 400; margin-top: 2px; }
 .set .v { padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
 .set .v .mono { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: 5px 10px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- Learn: additions for the live view --------------------------------- */
+.learn-page { max-width: var(--content-max); }
+.split { height: 100%; min-height: 0; }
+.split > .main.learn-main { grid-template-rows: minmax(0, 1fr); }
+.split > .main.learn-main > .view { overflow: auto; height: 100%; }
+.read-split .read { min-height: 0; height: 100%; }
+.read .toc { overflow: auto; min-height: 0; }
+.read .article { overflow: auto; min-height: 0; height: 100%; max-width: none; }
+.read .article > * { max-width: 800px; }
+.article .codeblock { position: relative; margin: 0 0 14px; }
+.article .codeblock .copy { position: absolute; top: 6px; right: 6px; opacity: 0; transition: opacity var(--dur-fast) var(--ease); }
+.article .codeblock:hover .copy, .article .codeblock:focus-within .copy { opacity: 1; }
+.article .codeblock .copy.copied { color: var(--st-help); opacity: 1; }
+.article .codeblock pre.code { margin: 0; }
+.article pre.code code, pre.code code { font: inherit; background: none; padding: 0; }
+.article table.tbl { margin: 8px 0 16px; }
+.article .tbl td.title { white-space: normal; max-width: none; }
+.schip .skip { display: none; }
+.schip:hover .skip, .schip:focus-within .skip, .schip[aria-pressed="true"] .skip { display: inline-flex; }
+.subcard .fig a { display: block; }
+.extend { border-radius: 0 0 var(--r-lg) var(--r-lg); }
+.chip.slate { color: var(--slate); background: var(--slate-soft); }
+/* Learn tables sit in a narrower column (sidebar + pattern list): let titles
+ * wrap instead of pushing the action buttons out of the card. */
+.learn-page .tbl td.title, .article .tbl td.title { white-space: normal; max-width: none; min-width: 200px; }
+.learn-page .tbl td.title .badge, .article .tbl td.title .badge { white-space: nowrap; }
+.learn-page .tbl td, .article .tbl td { padding-top: 6px; padding-bottom: 6px; height: auto; min-height: var(--row-h); }
