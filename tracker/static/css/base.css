@@ -1,0 +1,75 @@
+/* Reset, typography, native-control reset, focus, utilities.
+ * Nothing in here knows about a specific view. */
+@font-face {
+  font-family: "JetBrains Mono"; font-weight: 400; font-style: normal; font-display: swap;
+  src: url("../vendor/fonts/JetBrainsMono-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "JetBrains Mono"; font-weight: 600 700; font-style: normal; font-display: swap;
+  src: url("../vendor/fonts/JetBrainsMono-Bold.ttf") format("truetype");
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: var(--fs-base)/1.5 var(--font-ui);
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden;              /* the content pane scrolls, not the page */
+}
+:root[data-theme="dark"] body,
+html:not([data-theme="light"]) body { -webkit-font-smoothing: auto; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body { -webkit-font-smoothing: antialiased; }
+}
+:root[data-theme="dark"] body { -webkit-font-smoothing: antialiased; }
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font-size: var(--fs-2xl); line-height: 1.3; }
+h2 { font-size: var(--fs-xl); line-height: 1.3; }
+h3 { font-size: var(--fs-lg); line-height: 1.4; }
+p { margin: 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { margin: 0; padding-left: 18px; }
+code, kbd, pre { font-family: var(--font-mono); }
+code { font-size: 0.92em; }
+img { max-width: 100%; }
+svg.icon { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+[hidden] { display: none !important; }
+::selection { background: var(--accent-soft); }
+
+/* focus: one ring everywhere, only for keyboard */
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm); }
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: none; border-color: var(--accent) !important; box-shadow: 0 0 0 3px var(--focus);
+}
+
+/* native controls: reset so every control is drawn by our components */
+button, input, select, textarea {
+  font: inherit; color: inherit; margin: 0;
+  -webkit-appearance: none; appearance: none;
+}
+button { background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+button:disabled { cursor: default; opacity: .5; }
+input[type="checkbox"], input[type="radio"] { -webkit-appearance: auto; appearance: auto; accent-color: var(--accent-fill); }
+input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+select { background-image: none; }
+
+/* text utilities */
+.num, .tabnum { font-variant-numeric: tabular-nums; }
+.sub { color: var(--text-2); font-size: var(--fs-sm); }
+.muted { color: var(--text-3); }
+.mono { font-family: var(--font-mono); font-size: var(--fs-mono); }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.grow { flex: 1 1 auto; min-width: 0; }
+
+kbd {
+  display: inline-block; font-family: var(--font-ui); font-size: var(--fs-xs); line-height: 1;
+  border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: var(--r-sm);
+  padding: 2px 5px; color: var(--text-2); background: var(--surface); vertical-align: middle;
+}
