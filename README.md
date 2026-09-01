@@ -75,11 +75,8 @@ Problems are keyed by leetcode.com slug and tagged with the lists they belong to
 review counts everywhere. Most carry a contest rating (~1000–3000, from zerotrac); the
 rest get a difficulty-based estimate shown as `≈`.
 
-Lists by [LeetCode](https://leetcode.com), [NeetCode](https://neetcode.io) and
-[灵茶山艾府 / EndlessCheng](https://github.com/EndlessCheng); ratings by
-[zerotrac](https://zerotrac.github.io/leetcode_problem_rating/). This repository
-redistributes factual list data (ids, titles, groupings) with attribution — no problem
-statements, no solutions. The tutorials are original writing.
+Problem statements and solutions are never redistributed — only ids, titles and
+groupings, as factual data (see [Acknowledgements](#acknowledgements)).
 
 ## Run from source
 
@@ -115,8 +112,23 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) — how the repo is laid out, how to add 
 (the parser and tests will tell you if a table id, GIF or anchor is off), and the data
 invariants. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
+## Acknowledgements
+
+The learning path and problem selection in LeetCode Gym are informed by several
+excellent collections and resources:
+
+- [灵茶山艾府 (EndlessCheng)](https://github.com/EndlessCheng)'s algorithm problem lists
+  and the [codeforces-go](https://github.com/EndlessCheng/codeforces-go) repository (MIT),
+  from which parts of the problem categorization are derived
+- [NeetCode 250](https://neetcode.io)
+- [LeetCode Hot 100 and Top Interview 150](https://leetcode.com/studyplan/)
+- [zerotrac](https://zerotrac.github.io/leetcode_problem_rating/)'s contest-rating data
+
+The tutorials, animations and the learning interface are independently written and
+organized for LeetCode Gym. Bundled third-party software and fonts are listed with
+their licenses in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ## License
 
-Code (the app, scripts and tutorials' generator) is [MIT](LICENSE). The problem-list data
-remains the work of its upstream curators and is redistributed as factual data with
-attribution, not under the MIT grant.
+[MIT](LICENSE). Problem-list data is redistributed as factual data with attribution and
+remains the work of its curators.
