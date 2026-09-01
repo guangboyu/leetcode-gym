@@ -8,6 +8,7 @@ import "./store.test.mjs";
 import "./pyhl.test.mjs";
 import "./md.test.mjs";
 import "./views.test.mjs";
+import "./learn.test.mjs";
 import { run } from "./harness.mjs";
 
 await run();
