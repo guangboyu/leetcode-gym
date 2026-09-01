@@ -12,7 +12,9 @@
  */
 
 export const isMac = (() => {
-  if (typeof navigator === "undefined") return true;
+  // No browser (jsc), or Node's own `navigator` (v21+, userAgent "Node.js/…"):
+  // default to macOS, which is what the tests and the desktop app assume.
+  if (typeof navigator === "undefined" || /Node\.js/.test(navigator.userAgent || "")) return true;
   const s = (navigator.platform || "") + " " + (navigator.userAgent || "");
   return /Mac|iPhone|iPad|iPod/.test(s);
 })();

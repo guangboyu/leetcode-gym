@@ -1,7 +1,7 @@
 /* Tests for views/learn.js pure helpers against the real data files
  * (route.js learnState is loaded as a classic script into the global scope). */
 import { test, assert, readText } from "./harness.mjs";
-import "../../tracker/static/vendor/marked.umd.js";
+import "./marked-global.mjs";
 import {
   ringOffset, RING_C, chipModel, defaultSub, resolveSelection, toolbarText,
   extSlice, noteHtml, withNotes, neighbour,

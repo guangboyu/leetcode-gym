@@ -1,5 +1,5 @@
 import { test, assert, readText } from "./harness.mjs";
-import "../../tracker/static/vendor/marked.umd.js"; // UMD → globalThis.marked
+import "./marked-global.mjs";
 import { renderTutorial, slugify, patternIdFromFile } from "../../tracker/static/js/md.js";
 
 const FIXTURE = `# Sliding Window
