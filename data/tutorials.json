@@ -1,0 +1,1887 @@
+{
+ "generated_from": [
+  "tutorials/SlidingWindow.md",
+  "tutorials/TwoPointers.md"
+ ],
+ "slug_rule": "github",
+ "tutorials": {
+  "sliding-window": {
+   "title": "Sliding Window",
+   "file": "SlidingWindow.md",
+   "status": "done",
+   "has_mermaid": true,
+   "code_langs": [
+    "",
+    "mermaid",
+    "python"
+   ],
+   "template": "left = 0\nfor right, x in enumerate(nums):\n    add(x)                       # 1. grow by one\n    while SHRINK_CONDITION:      # 2. restore the invariant\n        remove(nums[left])\n        left += 1\n    HARVEST                      # 3. read the answer",
+   "headings": [
+    {
+     "level": 1,
+     "text": "Sliding Window",
+     "anchor": "sliding-window"
+    },
+    {
+     "level": 2,
+     "text": "Contents",
+     "anchor": "contents"
+    },
+    {
+     "level": 2,
+     "text": "The one idea",
+     "anchor": "the-one-idea"
+    },
+    {
+     "level": 3,
+     "text": "The invariant",
+     "anchor": "the-invariant"
+    },
+    {
+     "level": 3,
+     "text": "Why it is O(n), not O(n²)",
+     "anchor": "why-it-is-on-not-on²"
+    },
+    {
+     "level": 3,
+     "text": "The precondition",
+     "anchor": "the-precondition"
+    },
+    {
+     "level": 2,
+     "text": "Which shape",
+     "anchor": "which-shape"
+    },
+    {
+     "level": 2,
+     "text": "Shape 1: fixed size k",
+     "anchor": "shape-1-fixed-size-k"
+    },
+    {
+     "level": 3,
+     "text": "Maximum Average Subarray I (LC 643)",
+     "anchor": "maximum-average-subarray-i-lc-643"
+    },
+    {
+     "level": 3,
+     "text": "Find All Anagrams in a String (LC 438)",
+     "anchor": "find-all-anagrams-in-a-string-lc-438"
+    },
+    {
+     "level": 3,
+     "text": "Sliding Window Maximum (LC 239)",
+     "anchor": "sliding-window-maximum-lc-239"
+    },
+    {
+     "level": 3,
+     "text": "Fixed-size problems",
+     "anchor": "fixed-size-problems"
+    },
+    {
+     "level": 2,
+     "text": "Shape 2: longest valid",
+     "anchor": "shape-2-longest-valid"
+    },
+    {
+     "level": 3,
+     "text": "Longest Substring Without Repeating Characters (LC 3)",
+     "anchor": "longest-substring-without-repeating-characters-lc-3"
+    },
+    {
+     "level": 4,
+     "text": "The jump variant",
+     "anchor": "the-jump-variant"
+    },
+    {
+     "level": 3,
+     "text": "Shift, don't shrink (LC 424)",
+     "anchor": "shift-dont-shrink-lc-424"
+    },
+    {
+     "level": 3,
+     "text": "Longest problems",
+     "anchor": "longest-problems"
+    },
+    {
+     "level": 2,
+     "text": "Shape 3: shortest valid",
+     "anchor": "shape-3-shortest-valid"
+    },
+    {
+     "level": 3,
+     "text": "Minimum Size Subarray Sum (LC 209)",
+     "anchor": "minimum-size-subarray-sum-lc-209"
+    },
+    {
+     "level": 3,
+     "text": "Minimum Window Substring (LC 76)",
+     "anchor": "minimum-window-substring-lc-76"
+    },
+    {
+     "level": 3,
+     "text": "Shortest problems",
+     "anchor": "shortest-problems"
+    },
+    {
+     "level": 2,
+     "text": "Shape 4: count subarrays",
+     "anchor": "shape-4-count-subarrays"
+    },
+    {
+     "level": 3,
+     "text": "Exactly K (LC 992)",
+     "anchor": "exactly-k-lc-992"
+    },
+    {
+     "level": 3,
+     "text": "Counting problems",
+     "anchor": "counting-problems"
+    },
+    {
+     "level": 2,
+     "text": "Choosing the state",
+     "anchor": "choosing-the-state"
+    },
+    {
+     "level": 3,
+     "text": "Maintaining a distinct count",
+     "anchor": "maintaining-a-distinct-count"
+    },
+    {
+     "level": 2,
+     "text": "Transforms",
+     "anchor": "transforms"
+    },
+    {
+     "level": 3,
+     "text": "Edges to middle (LC 1423)",
+     "anchor": "edges-to-middle-lc-1423"
+    },
+    {
+     "level": 3,
+     "text": "Complement (LC 1658)",
+     "anchor": "complement-lc-1658"
+    },
+    {
+     "level": 3,
+     "text": "Sort first (LC 1838)",
+     "anchor": "sort-first-lc-1838"
+    },
+    {
+     "level": 2,
+     "text": "When sliding window breaks",
+     "anchor": "when-sliding-window-breaks"
+    },
+    {
+     "level": 3,
+     "text": "The canonical trap: LC 560 versus LC 209",
+     "anchor": "the-canonical-trap-lc-560-versus-lc-209"
+    },
+    {
+     "level": 2,
+     "text": "Pitfalls",
+     "anchor": "pitfalls"
+    },
+    {
+     "level": 3,
+     "text": "1. Index where you meant value",
+     "anchor": "1-index-where-you-meant-value"
+    },
+    {
+     "level": 3,
+     "text": "2. Harvesting in the wrong place",
+     "anchor": "2-harvesting-in-the-wrong-place"
+    },
+    {
+     "level": 3,
+     "text": "3. `if` where `while` belongs",
+     "anchor": "3-if-where-while-belongs"
+    },
+    {
+     "level": 3,
+     "text": "4. Stale zero-count keys",
+     "anchor": "4-stale-zero-count-keys"
+    },
+    {
+     "level": 3,
+     "text": "5. The jump variant without the guard",
+     "anchor": "5-the-jump-variant-without-the-guard"
+    },
+    {
+     "level": 3,
+     "text": "6. `formed` decremented in the wrong order",
+     "anchor": "6-formed-decremented-in-the-wrong-order"
+    },
+    {
+     "level": 3,
+     "text": "7. Reaching for a window on negative numbers",
+     "anchor": "7-reaching-for-a-window-on-negative-numbers"
+    },
+    {
+     "level": 3,
+     "text": "8. `ans += right - left + 1` without shrink-safety",
+     "anchor": "8-ans--right---left--1-without-shrink-safety"
+    },
+    {
+     "level": 3,
+     "text": "9. Empty input, or `k > n`",
+     "anchor": "9-empty-input-or-k--n"
+    },
+    {
+     "level": 2,
+     "text": "Drills",
+     "anchor": "drills"
+    },
+    {
+     "level": 2,
+     "text": "Reference card",
+     "anchor": "reference-card"
+    }
+   ],
+   "shapes": [
+    {
+     "id": "shape-1",
+     "label": "Shape 1: fixed size k",
+     "name": "fixed size k",
+     "anchor": "shape-1-fixed-size-k",
+     "parent": null,
+     "blurb": "The window grows to size `k` and then slides. One element in, one element out.",
+     "template": null,
+     "worked": [
+      {
+       "id": 643,
+       "title": "Maximum Average Subarray I",
+       "anchor": "maximum-average-subarray-i-lc-643"
+      },
+      {
+       "id": 438,
+       "title": "Find All Anagrams in a String",
+       "anchor": "find-all-anagrams-in-a-string-lc-438"
+      },
+      {
+       "id": 239,
+       "title": "Sliding Window Maximum",
+       "anchor": "sliding-window-maximum-lc-239"
+      }
+     ],
+     "gifs": [
+      "assets/sliding-window/lc0643-fixed-window.gif",
+      "assets/sliding-window/lc0239-window-maximum.gif"
+     ],
+     "problems": [
+      {
+       "id": 643,
+       "slug": "maximum-average-subarray-i",
+       "title_md": "Maximum Average Subarray I",
+       "diff": "Easy",
+       "paid": false,
+       "state": "sum",
+       "freq": 2,
+       "note_md": "harvest only when full"
+      },
+      {
+       "id": 1456,
+       "slug": "maximum-number-of-vowels-in-a-substring-of-given-length",
+       "title_md": "Maximum Number of Vowels in a Substring",
+       "diff": "Easy",
+       "paid": false,
+       "state": "vowel count",
+       "freq": 1,
+       "note_md": "cleanest drill for the shape"
+      },
+      {
+       "id": 438,
+       "slug": "find-all-anagrams-in-a-string",
+       "title_md": "Find All Anagrams in a String",
+       "diff": "Medium",
+       "paid": false,
+       "state": "matched counter",
+       "freq": 3,
+       "note_md": "no while loop needed"
+      },
+      {
+       "id": 567,
+       "slug": "permutation-in-string",
+       "title_md": "Permutation in String",
+       "diff": "Medium",
+       "paid": false,
+       "state": "matched counter",
+       "freq": 2,
+       "note_md": "LC 438 with an early return"
+      },
+      {
+       "id": 239,
+       "slug": "sliding-window-maximum",
+       "title_md": "Sliding Window Maximum",
+       "diff": "Hard",
+       "paid": false,
+       "state": "monotonic deque",
+       "freq": 3,
+       "note_md": "store indices, not values"
+      },
+      {
+       "id": 2461,
+       "slug": "maximum-sum-of-distinct-subarrays-with-length-k",
+       "title_md": "Maximum Sum of Distinct Subarrays With Length K",
+       "diff": "Medium",
+       "paid": false,
+       "state": "sum + freq",
+       "freq": 1,
+       "note_md": "two pieces of state at once"
+      },
+      {
+       "id": 1052,
+       "slug": "grumpy-bookstore-owner",
+       "title_md": "Grumpy Bookstore Owner",
+       "diff": "Medium",
+       "paid": false,
+       "state": "sum",
+       "freq": 1,
+       "note_md": "base total plus a window gain"
+      },
+      {
+       "id": 1423,
+       "slug": "maximum-points-you-can-obtain-from-cards",
+       "title_md": "Maximum Points You Can Obtain from Cards",
+       "diff": "Medium",
+       "paid": false,
+       "state": "sum",
+       "freq": 2,
+       "note_md": "see [transforms](#transforms)"
+      },
+      {
+       "id": 30,
+       "slug": "substring-with-concatenation-of-all-words",
+       "title_md": "Substring with Concatenation of All Words",
+       "diff": "Hard",
+       "paid": false,
+       "state": "matched counter",
+       "freq": 1,
+       "note_md": "`wordLen` independent windows"
+      }
+     ]
+    },
+    {
+     "id": "shape-2",
+     "label": "Shape 2: longest valid",
+     "name": "longest valid",
+     "anchor": "shape-2-longest-valid",
+     "parent": null,
+     "blurb": "Grow every step. When the window goes invalid, shrink until it is valid again, then",
+     "template": "left = 0\nbest = 0\nfor right, x in enumerate(nums):\n    add(x)\n    while not valid():\n        remove(nums[left])\n        left += 1\n    best = max(best, right - left + 1)     # harvest AFTER",
+     "worked": [
+      {
+       "id": 3,
+       "title": "Longest Substring Without Repeating Characters",
+       "anchor": "longest-substring-without-repeating-characters-lc-3"
+      },
+      {
+       "id": 424,
+       "title": "Shift, don't shrink",
+       "anchor": "shift-dont-shrink-lc-424"
+      }
+     ],
+     "gifs": [
+      "assets/sliding-window/lc0003-longest-substring.gif",
+      "assets/sliding-window/lc0424-shift-dont-shrink.gif"
+     ],
+     "problems": [
+      {
+       "id": 3,
+       "slug": "longest-substring-without-repeating-characters",
+       "title_md": "Longest Substring Without Repeating Characters",
+       "diff": "Medium",
+       "paid": false,
+       "state": "freq or last-seen",
+       "freq": 3,
+       "note_md": "jump variant needs the `>= left` guard"
+      },
+      {
+       "id": 1004,
+       "slug": "max-consecutive-ones-iii",
+       "title_md": "Max Consecutive Ones III",
+       "diff": "Medium",
+       "paid": false,
+       "state": "zero count",
+       "freq": 3,
+       "note_md": "the constraint is on zeros, not ones"
+      },
+      {
+       "id": 424,
+       "slug": "longest-repeating-character-replacement",
+       "title_md": "Longest Repeating Character Replacement",
+       "diff": "Medium",
+       "paid": false,
+       "state": "freq + max_freq",
+       "freq": 3,
+       "note_md": "high-water mark, `if` not `while`"
+      },
+      {
+       "id": 340,
+       "slug": "longest-substring-with-at-most-k-distinct-characters",
+       "title_md": "Longest Substring with At Most K Distinct",
+       "diff": "Medium",
+       "paid": true,
+       "state": "distinct count",
+       "freq": 2,
+       "note_md": "delete zero-count keys"
+      },
+      {
+       "id": 904,
+       "slug": "fruit-into-baskets",
+       "title_md": "Fruit Into Baskets",
+       "diff": "Medium",
+       "paid": false,
+       "state": "distinct count",
+       "freq": 2,
+       "note_md": "LC 340 with K=2 in a costume"
+      },
+      {
+       "id": 1493,
+       "slug": "longest-subarray-of-1s-after-deleting-one-element",
+       "title_md": "Longest Subarray of 1's After Deleting One Element",
+       "diff": "Medium",
+       "paid": false,
+       "state": "zero count",
+       "freq": 2,
+       "note_md": "answer is `size - 1`, deletion is mandatory"
+      },
+      {
+       "id": 1695,
+       "slug": "maximum-erasure-value",
+       "title_md": "Maximum Erasure Value",
+       "diff": "Medium",
+       "paid": false,
+       "state": "set + running sum",
+       "freq": 2,
+       "note_md": "maximize sum, not length"
+      },
+      {
+       "id": 1658,
+       "slug": "minimum-operations-to-reduce-x-to-zero",
+       "title_md": "Minimum Operations to Reduce X to Zero",
+       "diff": "Medium",
+       "paid": false,
+       "state": "sum",
+       "freq": 2,
+       "note_md": "see [transforms](#transforms)"
+      },
+      {
+       "id": 1838,
+       "slug": "frequency-of-the-most-frequent-element",
+       "title_md": "Frequency of the Most Frequent Element",
+       "diff": "Medium",
+       "paid": false,
+       "state": "sorted + sum",
+       "freq": 2,
+       "note_md": "sort first, then shift-only"
+      },
+      {
+       "id": 1438,
+       "slug": "longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit",
+       "title_md": "Longest Subarray with Absolute Diff ≤ Limit",
+       "diff": "Medium",
+       "paid": false,
+       "state": "two deques",
+       "freq": 2,
+       "note_md": "one max deque, one min deque"
+      },
+      {
+       "id": 2401,
+       "slug": "longest-nice-subarray",
+       "title_md": "Longest Nice Subarray",
+       "diff": "Medium",
+       "paid": false,
+       "state": "running OR",
+       "freq": 1,
+       "note_md": "bitwise state, add and remove by XOR"
+      }
+     ]
+    },
+    {
+     "id": "shape-3",
+     "label": "Shape 3: shortest valid",
+     "name": "shortest valid",
+     "anchor": "shape-3-shortest-valid",
+     "parent": null,
+     "blurb": "The mirror image of Shape 2. Shrink *while the window is still valid*, and record before",
+     "template": "left = 0\nbest = float(\"inf\")\nfor right, x in enumerate(nums):\n    add(x)\n    while valid():\n        best = min(best, right - left + 1)  # harvest INSIDE\n        remove(nums[left])\n        left += 1",
+     "worked": [
+      {
+       "id": 209,
+       "title": "Minimum Size Subarray Sum",
+       "anchor": "minimum-size-subarray-sum-lc-209"
+      },
+      {
+       "id": 76,
+       "title": "Minimum Window Substring",
+       "anchor": "minimum-window-substring-lc-76"
+      }
+     ],
+     "gifs": [
+      "assets/sliding-window/lc0076-min-window.gif"
+     ],
+     "problems": [
+      {
+       "id": 209,
+       "slug": "minimum-size-subarray-sum",
+       "title_md": "Minimum Size Subarray Sum",
+       "diff": "Medium",
+       "paid": false,
+       "state": "sum",
+       "freq": 3,
+       "note_md": "positives only, harvest inside the while"
+      },
+      {
+       "id": 76,
+       "slug": "minimum-window-substring",
+       "title_md": "Minimum Window Substring",
+       "diff": "Hard",
+       "paid": false,
+       "state": "need/have + formed",
+       "freq": 3,
+       "note_md": "`formed` bookkeeping order"
+      },
+      {
+       "id": 1234,
+       "slug": "replace-the-substring-for-balanced-string",
+       "title_md": "Replace the Substring for Balanced String",
+       "diff": "Medium",
+       "paid": false,
+       "state": "outside-window counts",
+       "freq": 1,
+       "note_md": "validity is about what is *outside*"
+      },
+      {
+       "id": 2260,
+       "slug": "minimum-consecutive-cards-to-pick-up",
+       "title_md": "Minimum Consecutive Cards to Pick Up",
+       "diff": "Easy",
+       "paid": false,
+       "state": "last-seen dict",
+       "freq": 1,
+       "note_md": "a hash map alone solves it"
+      },
+      {
+       "id": 862,
+       "slug": "shortest-subarray-with-sum-at-least-k",
+       "title_md": "Shortest Subarray with Sum at Least K",
+       "diff": "Hard",
+       "paid": false,
+       "state": "prefix + deque",
+       "freq": 2,
+       "note_md": "negatives, so not a window at all"
+      }
+     ]
+    },
+    {
+     "id": "shape-4",
+     "label": "Shape 4: count subarrays",
+     "name": "count subarrays",
+     "anchor": "shape-4-count-subarrays",
+     "parent": null,
+     "blurb": "For each `right`, count how many valid windows *end* at `right`. Once `left` is at its",
+     "template": "left = 0\nans = 0\nfor right, x in enumerate(nums):\n    add(x)\n    while not valid():\n        remove(nums[left])\n        left += 1\n    ans += right - left + 1",
+     "worked": [
+      {
+       "id": 992,
+       "title": "Exactly K",
+       "anchor": "exactly-k-lc-992"
+      }
+     ],
+     "gifs": [
+      "assets/sliding-window/lc0713-count-subarrays.gif"
+     ],
+     "problems": [
+      {
+       "id": 713,
+       "slug": "subarray-product-less-than-k",
+       "title_md": "Subarray Product Less Than K",
+       "diff": "Medium",
+       "paid": false,
+       "state": "product",
+       "freq": 2,
+       "note_md": "guard `k <= 1`, integer divide on remove"
+      },
+      {
+       "id": 992,
+       "slug": "subarrays-with-k-different-integers",
+       "title_md": "Subarrays with K Different Integers",
+       "diff": "Hard",
+       "paid": false,
+       "state": "distinct count",
+       "freq": 3,
+       "note_md": "the canonical exactly-K"
+      },
+      {
+       "id": 930,
+       "slug": "binary-subarrays-with-sum",
+       "title_md": "Binary Subarrays With Sum",
+       "diff": "Medium",
+       "paid": false,
+       "state": "sum",
+       "freq": 2,
+       "note_md": "zeros break the naive version"
+      },
+      {
+       "id": 1248,
+       "slug": "count-number-of-nice-subarrays",
+       "title_md": "Count Number of Nice Subarrays",
+       "diff": "Medium",
+       "paid": false,
+       "state": "odd count",
+       "freq": 2,
+       "note_md": "exactly-K again"
+      },
+      {
+       "id": 2962,
+       "slug": "count-subarrays-where-max-element-appears-at-least-k-times",
+       "title_md": "Count Subarrays Where Max Element Appears ≥ K Times",
+       "diff": "Medium",
+       "paid": false,
+       "state": "max count",
+       "freq": 2,
+       "note_md": "the `ans += left` mirror form"
+      },
+      {
+       "id": 2444,
+       "slug": "count-subarrays-with-fixed-bounds",
+       "title_md": "Count Subarrays With Fixed Bounds",
+       "diff": "Hard",
+       "paid": false,
+       "state": "three pointers",
+       "freq": 2,
+       "note_md": "last out-of-range, last min, last max"
+      }
+     ]
+    }
+   ],
+   "gifs": [
+    {
+     "src": "assets/sliding-window/lc0643-fixed-window.gif",
+     "alt": "LC 643, a fixed-size window sliding one step at a time",
+     "shape": "shape-1",
+     "lc": 643
+    },
+    {
+     "src": "assets/sliding-window/lc0239-window-maximum.gif",
+     "alt": "LC 239, the deque popping every element a larger one dominates",
+     "shape": "shape-1",
+     "lc": 239
+    },
+    {
+     "src": "assets/sliding-window/lc0003-longest-substring.gif",
+     "alt": "LC 3, the window growing until a duplicate appears, then shrinking past it",
+     "shape": "shape-2",
+     "lc": 3
+    },
+    {
+     "src": "assets/sliding-window/lc0424-shift-dont-shrink.gif",
+     "alt": "LC 424, the window sliding one step without ever losing length",
+     "shape": "shape-2",
+     "lc": 424
+    },
+    {
+     "src": "assets/sliding-window/lc0076-min-window.gif",
+     "alt": "LC 76, shrinking a valid window while it stays valid",
+     "shape": "shape-3",
+     "lc": 76
+    },
+    {
+     "src": "assets/sliding-window/lc0713-count-subarrays.gif",
+     "alt": "LC 713, counting every valid subarray that ends at the current index",
+     "shape": "shape-4",
+     "lc": 713
+    },
+    {
+     "src": "assets/prefix-sum/lc0560-prefix-sum.gif",
+     "alt": "LC 560 solved with prefix sums and a hash map",
+     "shape": null,
+     "lc": 560
+    }
+   ],
+   "worked_elsewhere": [
+    {
+     "id": 1423,
+     "title": "Edges to middle",
+     "anchor": "edges-to-middle-lc-1423"
+    },
+    {
+     "id": 1658,
+     "title": "Complement",
+     "anchor": "complement-lc-1658"
+    },
+    {
+     "id": 1838,
+     "title": "Sort first",
+     "anchor": "sort-first-lc-1838"
+    }
+   ],
+   "links_to": [],
+   "ids": [
+    3,
+    30,
+    76,
+    209,
+    239,
+    340,
+    424,
+    438,
+    567,
+    643,
+    713,
+    862,
+    904,
+    930,
+    992,
+    1004,
+    1052,
+    1234,
+    1248,
+    1423,
+    1438,
+    1456,
+    1493,
+    1658,
+    1695,
+    1838,
+    2260,
+    2401,
+    2444,
+    2461,
+    2962
+   ]
+  },
+  "two-pointers": {
+   "title": "Two Pointers",
+   "file": "TwoPointers.md",
+   "status": "done",
+   "has_mermaid": true,
+   "code_langs": [
+    "",
+    "mermaid",
+    "python"
+   ],
+   "template": null,
+   "headings": [
+    {
+     "level": 1,
+     "text": "Two Pointers",
+     "anchor": "two-pointers"
+    },
+    {
+     "level": 2,
+     "text": "Contents",
+     "anchor": "contents"
+    },
+    {
+     "level": 2,
+     "text": "The one idea",
+     "anchor": "the-one-idea"
+    },
+    {
+     "level": 3,
+     "text": "Relation to sliding window",
+     "anchor": "relation-to-sliding-window"
+    },
+    {
+     "level": 2,
+     "text": "Which shape",
+     "anchor": "which-shape"
+    },
+    {
+     "level": 2,
+     "text": "Shape 1: converging",
+     "anchor": "shape-1-converging"
+    },
+    {
+     "level": 3,
+     "text": "Template",
+     "anchor": "template"
+    },
+    {
+     "level": 3,
+     "text": "Two Sum II (LC 167)",
+     "anchor": "two-sum-ii-lc-167"
+    },
+    {
+     "level": 3,
+     "text": "Container With Most Water (LC 11)",
+     "anchor": "container-with-most-water-lc-11"
+    },
+    {
+     "level": 3,
+     "text": "Trapping Rain Water (LC 42)",
+     "anchor": "trapping-rain-water-lc-42"
+    },
+    {
+     "level": 4,
+     "text": "Stop filling bowls",
+     "anchor": "stop-filling-bowls"
+    },
+    {
+     "level": 4,
+     "text": "Two passes, and write this one first",
+     "anchor": "two-passes-and-write-this-one-first"
+    },
+    {
+     "level": 4,
+     "text": "Dropping the arrays",
+     "anchor": "dropping-the-arrays"
+    },
+    {
+     "level": 4,
+     "text": "Two shorter-side arguments, two different moves",
+     "anchor": "two-shorter-side-arguments-two-different-moves"
+    },
+    {
+     "level": 3,
+     "text": "3Sum (LC 15)",
+     "anchor": "3sum-lc-15"
+    },
+    {
+     "level": 3,
+     "text": "Converging problems",
+     "anchor": "converging-problems"
+    },
+    {
+     "level": 2,
+     "text": "Shape 2: chasing",
+     "anchor": "shape-2-chasing"
+    },
+    {
+     "level": 3,
+     "text": "2a. Read and write",
+     "anchor": "2a-read-and-write"
+    },
+    {
+     "level": 4,
+     "text": "One template, two problems",
+     "anchor": "one-template-two-problems"
+    },
+    {
+     "level": 4,
+     "text": "Read and write problems",
+     "anchor": "read-and-write-problems"
+    },
+    {
+     "level": 3,
+     "text": "2b. Slow and fast",
+     "anchor": "2b-slow-and-fast"
+    },
+    {
+     "level": 4,
+     "text": "Floyd's cycle detection (LC 142)",
+     "anchor": "floyds-cycle-detection-lc-142"
+    },
+    {
+     "level": 4,
+     "text": "Floyd on an array",
+     "anchor": "floyd-on-an-array"
+    },
+    {
+     "level": 4,
+     "text": "Slow and fast problems",
+     "anchor": "slow-and-fast-problems"
+    },
+    {
+     "level": 2,
+     "text": "Shape 3: parallel",
+     "anchor": "shape-3-parallel"
+    },
+    {
+     "level": 3,
+     "text": "Merge Sorted Array (LC 88), backward",
+     "anchor": "merge-sorted-array-lc-88-backward"
+    },
+    {
+     "level": 3,
+     "text": "Parallel problems",
+     "anchor": "parallel-problems"
+    },
+    {
+     "level": 2,
+     "text": "When two pointers breaks",
+     "anchor": "when-two-pointers-breaks"
+    },
+    {
+     "level": 2,
+     "text": "Pitfalls",
+     "anchor": "pitfalls"
+    },
+    {
+     "level": 3,
+     "text": "`l < r` versus `l <= r`",
+     "anchor": "l--r-versus-l--r"
+    },
+    {
+     "level": 3,
+     "text": "3Sum, skipping duplicates in the wrong place",
+     "anchor": "3sum-skipping-duplicates-in-the-wrong-place"
+    },
+    {
+     "level": 3,
+     "text": "Sort Colors (LC 75), three pointers and one asymmetry",
+     "anchor": "sort-colors-lc-75-three-pointers-and-one-asymmetry"
+    },
+    {
+     "level": 3,
+     "text": "Merging forward when you should merge backward",
+     "anchor": "merging-forward-when-you-should-merge-backward"
+    },
+    {
+     "level": 3,
+     "text": "Fast pointer null check order",
+     "anchor": "fast-pointer-null-check-order"
+    },
+    {
+     "level": 3,
+     "text": "Valid Palindrome II (LC 680), one skip, either side",
+     "anchor": "valid-palindrome-ii-lc-680-one-skip-either-side"
+    },
+    {
+     "level": 3,
+     "text": "Returning the array instead of the length",
+     "anchor": "returning-the-array-instead-of-the-length"
+    },
+    {
+     "level": 2,
+     "text": "Drills",
+     "anchor": "drills"
+    },
+    {
+     "level": 2,
+     "text": "Reference card",
+     "anchor": "reference-card"
+    }
+   ],
+   "shapes": [
+    {
+     "id": "shape-1",
+     "label": "Shape 1: converging",
+     "name": "converging",
+     "anchor": "shape-1-converging",
+     "parent": null,
+     "blurb": "Two pointers start at the ends and walk toward each other. Each iteration either records",
+     "template": "l, r = 0, len(a) - 1\nwhile l < r:\n    if too_small(a[l], a[r]):\n        l += 1              # a[l] is worthless, name why\n    elif too_big(a[l], a[r]):\n        r -= 1\n    else:\n        record(l, r)\n        l += 1\n        r -= 1",
+     "worked": [
+      {
+       "id": 167,
+       "title": "Two Sum II",
+       "anchor": "two-sum-ii-lc-167"
+      },
+      {
+       "id": 11,
+       "title": "Container With Most Water",
+       "anchor": "container-with-most-water-lc-11"
+      },
+      {
+       "id": 42,
+       "title": "Trapping Rain Water",
+       "anchor": "trapping-rain-water-lc-42"
+      },
+      {
+       "id": 15,
+       "title": "3Sum",
+       "anchor": "3sum-lc-15"
+      }
+     ],
+     "gifs": [
+      "assets/two-pointers/lc0167-two-pointers.gif",
+      "assets/two-pointers/lc0011-container-water.gif",
+      "assets/two-pointers/lc0042-trapping-two-pass.gif",
+      "assets/two-pointers/lc0042-trapping-water.gif"
+     ],
+     "problems": [
+      {
+       "id": 167,
+       "slug": "two-sum-ii-input-array-is-sorted",
+       "title_md": "Two Sum II",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "the base case, 1-indexed output"
+      },
+      {
+       "id": 15,
+       "slug": "3sum",
+       "title_md": "3Sum",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "three duplicate skips"
+      },
+      {
+       "id": 16,
+       "slug": "3sum-closest",
+       "title_md": "3Sum Closest",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "track the best diff, never return early"
+      },
+      {
+       "id": 18,
+       "slug": "4sum",
+       "title_md": "4Sum",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 1,
+       "note_md": "recurse down to kSum, two pointers at the base"
+      },
+      {
+       "id": 11,
+       "slug": "container-with-most-water",
+       "title_md": "Container With Most Water",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "shorter wall is discarded"
+      },
+      {
+       "id": 42,
+       "slug": "trapping-rain-water",
+       "title_md": "Trapping Rain Water",
+       "diff": "Hard",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "shorter side is resolved"
+      },
+      {
+       "id": 125,
+       "slug": "valid-palindrome",
+       "title_md": "Valid Palindrome",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "skip non-alphanumeric on both sides"
+      },
+      {
+       "id": 680,
+       "slug": "valid-palindrome-ii",
+       "title_md": "Valid Palindrome II",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "on mismatch, try skipping left OR right"
+      },
+      {
+       "id": 75,
+       "slug": "sort-colors",
+       "title_md": "Sort Colors",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "three pointers, see pitfalls"
+      },
+      {
+       "id": 977,
+       "slug": "squares-of-a-sorted-array",
+       "title_md": "Squares of a Sorted Array",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "biggest square is at an end, fill backward"
+      },
+      {
+       "id": 344,
+       "slug": "reverse-string",
+       "title_md": "Reverse String",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 1,
+       "note_md": "the smallest possible instance"
+      }
+     ]
+    },
+    {
+     "id": "shape-2",
+     "label": "Shape 2: chasing",
+     "name": "chasing",
+     "anchor": "shape-2-chasing",
+     "parent": null,
+     "blurb": "Both pointers move left to right, and one lags. Two flavors, worth keeping apart.",
+     "template": null,
+     "worked": [],
+     "gifs": [],
+     "problems": []
+    },
+    {
+     "id": "shape-2a",
+     "label": "2a. Read and write",
+     "name": "chasing: Read and write",
+     "anchor": "2a-read-and-write",
+     "parent": "shape-2",
+     "blurb": "`read` visits every element. `write` only advances when an element earns its spot.",
+     "template": "write = 0\nfor read in range(len(a)):\n    if keep(a[read]):\n        a[write] = a[read]\n        write += 1\nreturn write            # new length",
+     "worked": [],
+     "gifs": [
+      "assets/two-pointers/lc0283-read-write.gif"
+     ],
+     "problems": [
+      {
+       "id": 27,
+       "slug": "remove-element",
+       "title_md": "Remove Element",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "the plain write pointer"
+      },
+      {
+       "id": 26,
+       "slug": "remove-duplicates-from-sorted-array",
+       "title_md": "Remove Duplicates from Sorted Array",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "`k = 1`"
+      },
+      {
+       "id": 80,
+       "slug": "remove-duplicates-from-sorted-array-ii",
+       "title_md": "Remove Duplicates from Sorted Array II",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "`k = 2`, same code"
+      },
+      {
+       "id": 283,
+       "slug": "move-zeroes",
+       "title_md": "Move Zeroes",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "write survivors, then zero-fill the tail"
+      },
+      {
+       "id": 392,
+       "slug": "is-subsequence",
+       "title_md": "Is Subsequence",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "advance `j` always, `i` only on match"
+      },
+      {
+       "id": 443,
+       "slug": "string-compression",
+       "title_md": "String Compression",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "write pointer plus a run counter"
+      },
+      {
+       "id": 905,
+       "slug": "sort-array-by-parity",
+       "title_md": "Sort Array By Parity",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 1,
+       "note_md": "one pass, or converging with swaps"
+      }
+     ]
+    },
+    {
+     "id": "shape-2b",
+     "label": "2b. Slow and fast",
+     "name": "chasing: Slow and fast",
+     "anchor": "2b-slow-and-fast",
+     "parent": "shape-2",
+     "blurb": "Same family, but the lag is structural rather than conditional. Two ways to build it:",
+     "template": null,
+     "worked": [
+      {
+       "id": 142,
+       "title": "Floyd's cycle detection",
+       "anchor": "floyds-cycle-detection-lc-142"
+      }
+     ],
+     "gifs": [
+      "assets/two-pointers/lc0142-floyd-cycle.gif"
+     ],
+     "problems": [
+      {
+       "id": 141,
+       "slug": "linked-list-cycle",
+       "title_md": "Linked List Cycle",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "phase 1 only"
+      },
+      {
+       "id": 142,
+       "slug": "linked-list-cycle-ii",
+       "title_md": "Linked List Cycle II",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "phase 2 is the actual interview question"
+      },
+      {
+       "id": 876,
+       "slug": "middle-of-the-linked-list",
+       "title_md": "Middle of the Linked List",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "which middle for even length? ask first"
+      },
+      {
+       "id": 19,
+       "slug": "remove-nth-node-from-end-of-list",
+       "title_md": "Remove Nth Node From End of List",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "fixed gap, use a dummy head"
+      },
+      {
+       "id": 234,
+       "slug": "palindrome-linked-list",
+       "title_md": "Palindrome Linked List",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "find middle, reverse half, then converge"
+      },
+      {
+       "id": 143,
+       "slug": "reorder-list",
+       "title_md": "Reorder List",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "middle, reverse, merge, three sub-skills in one"
+      },
+      {
+       "id": 287,
+       "slug": "find-the-duplicate-number",
+       "title_md": "Find the Duplicate Number",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "Floyd on `f(i) = nums[i]`"
+      },
+      {
+       "id": 202,
+       "slug": "happy-number",
+       "title_md": "Happy Number",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 1,
+       "note_md": "Floyd on digit-square-sum, same idea"
+      }
+     ]
+    },
+    {
+     "id": "shape-3",
+     "label": "Shape 3: parallel",
+     "name": "parallel",
+     "anchor": "shape-3-parallel",
+     "parent": null,
+     "blurb": "Two sorted sequences, one pointer each. Compare the heads, consume the smaller. Nothing",
+     "template": "i = j = 0\nwhile i < len(a) and j < len(b):\n    if a[i] < b[j]:\n        i += 1\n    elif a[i] > b[j]:\n        j += 1\n    else:\n        record(a[i])\n        i += 1\n        j += 1",
+     "worked": [
+      {
+       "id": 88,
+       "title": "Merge Sorted Array",
+       "anchor": "merge-sorted-array-lc-88-backward"
+      }
+     ],
+     "gifs": [
+      "assets/two-pointers/lc0088-merge-sorted.gif"
+     ],
+     "problems": [
+      {
+       "id": 88,
+       "slug": "merge-sorted-array",
+       "title_md": "Merge Sorted Array",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 3,
+       "note_md": "fill backward"
+      },
+      {
+       "id": 350,
+       "slug": "intersection-of-two-arrays-ii",
+       "title_md": "Intersection of Two Arrays II",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "keep multiplicity, follow-up is about disk"
+      },
+      {
+       "id": 349,
+       "slug": "intersection-of-two-arrays",
+       "title_md": "Intersection of Two Arrays",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 1,
+       "note_md": "dedupe on output"
+      },
+      {
+       "id": 986,
+       "slug": "interval-list-intersections",
+       "title_md": "Interval List Intersections",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "overlap is `max(starts)` to `min(ends)`"
+      },
+      {
+       "id": 4,
+       "slug": "median-of-two-sorted-arrays",
+       "title_md": "Median of Two Sorted Arrays",
+       "diff": "Hard",
+       "paid": false,
+       "state": null,
+       "freq": 2,
+       "note_md": "O(n) merge is the warmup, O(log n) is binary search"
+      },
+      {
+       "id": 524,
+       "slug": "longest-word-in-dictionary-through-deleting",
+       "title_md": "Longest Word in Dictionary through Deleting",
+       "diff": "Medium",
+       "paid": false,
+       "state": null,
+       "freq": 1,
+       "note_md": "subsequence check in a loop"
+      },
+      {
+       "id": 1768,
+       "slug": "merge-strings-alternately",
+       "title_md": "Merge Strings Alternately",
+       "diff": "Easy",
+       "paid": false,
+       "state": null,
+       "freq": 1,
+       "note_md": "trivial, good warmup"
+      }
+     ]
+    }
+   ],
+   "gifs": [
+    {
+     "src": "assets/two-pointers/lc0167-two-pointers.gif",
+     "alt": "LC 167, two pointers closing in from both ends of a sorted array",
+     "shape": "shape-1",
+     "lc": 167
+    },
+    {
+     "src": "assets/two-pointers/lc0011-container-water.gif",
+     "alt": "LC 11, the container shrinking as the shorter wall is discarded each step",
+     "shape": "shape-1",
+     "lc": 11
+    },
+    {
+     "src": "assets/two-pointers/lc0042-trapping-two-pass.gif",
+     "alt": "LC 42, building both prefix maxima and then resolving one column at a time",
+     "shape": "shape-1",
+     "lc": 42
+    },
+    {
+     "src": "assets/two-pointers/lc0042-trapping-water.gif",
+     "alt": "LC 42, banking each column's water from whichever side is currently the shorter one",
+     "shape": "shape-1",
+     "lc": 42
+    },
+    {
+     "src": "assets/two-pointers/lc0283-read-write.gif",
+     "alt": "LC 283, the write pointer falling behind the read pointer as zeroes are skipped",
+     "shape": "shape-2a",
+     "lc": 283
+    },
+    {
+     "src": "assets/two-pointers/lc0142-floyd-cycle.gif",
+     "alt": "LC 142, fast lapping slow inside the cycle, then both walking to the entry",
+     "shape": "shape-2b",
+     "lc": 142
+    },
+    {
+     "src": "assets/two-pointers/lc0088-merge-sorted.gif",
+     "alt": "LC 88, merging backward from the largest element so the write pointer never overtakes a read pointer",
+     "shape": "shape-3",
+     "lc": 88
+    },
+    {
+     "src": "assets/two-pointers/lc0075-sort-colors.gif",
+     "alt": "LC 75, the unknown middle region shrinking from both sides",
+     "shape": null,
+     "lc": 75
+    }
+   ],
+   "worked_elsewhere": [
+    {
+     "id": 75,
+     "title": "Sort Colors",
+     "anchor": "sort-colors-lc-75-three-pointers-and-one-asymmetry"
+    },
+    {
+     "id": 680,
+     "title": "Valid Palindrome II",
+     "anchor": "valid-palindrome-ii-lc-680-one-skip-either-side"
+    }
+   ],
+   "links_to": [
+    "sliding-window"
+   ],
+   "ids": [
+    4,
+    11,
+    15,
+    16,
+    18,
+    19,
+    26,
+    27,
+    42,
+    75,
+    80,
+    88,
+    125,
+    141,
+    142,
+    143,
+    167,
+    202,
+    234,
+    283,
+    287,
+    344,
+    349,
+    350,
+    392,
+    443,
+    524,
+    680,
+    876,
+    905,
+    977,
+    986,
+    1768
+   ]
+  }
+ },
+ "by_id": {
+  "3": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "4": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-3"
+   }
+  ],
+  "11": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "15": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "16": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "18": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "19": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "26": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2a"
+   }
+  ],
+  "27": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2a"
+   }
+  ],
+  "30": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "42": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "75": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "76": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-3"
+   }
+  ],
+  "80": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2a"
+   }
+  ],
+  "88": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-3"
+   }
+  ],
+  "125": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "141": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "142": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "143": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "167": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "202": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "209": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-3"
+   }
+  ],
+  "234": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "239": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "283": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2a"
+   }
+  ],
+  "287": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "340": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "344": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "349": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-3"
+   }
+  ],
+  "350": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-3"
+   }
+  ],
+  "392": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2a"
+   }
+  ],
+  "424": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "438": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "443": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2a"
+   }
+  ],
+  "524": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-3"
+   }
+  ],
+  "567": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "643": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "680": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "713": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-4"
+   }
+  ],
+  "862": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-3"
+   }
+  ],
+  "876": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2b"
+   }
+  ],
+  "904": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "905": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-2a"
+   }
+  ],
+  "930": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-4"
+   }
+  ],
+  "977": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-1"
+   }
+  ],
+  "986": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-3"
+   }
+  ],
+  "992": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-4"
+   }
+  ],
+  "1004": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "1052": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "1234": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-3"
+   }
+  ],
+  "1248": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-4"
+   }
+  ],
+  "1423": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "1438": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "1456": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "1493": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "1658": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "1695": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "1768": [
+   {
+    "tutorial": "two-pointers",
+    "shape": "shape-3"
+   }
+  ],
+  "1838": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "2260": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-3"
+   }
+  ],
+  "2401": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-2"
+   }
+  ],
+  "2444": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-4"
+   }
+  ],
+  "2461": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-1"
+   }
+  ],
+  "2962": [
+   {
+    "tutorial": "sliding-window",
+    "shape": "shape-4"
+   }
+  ]
+ },
+ "dups": []
+}

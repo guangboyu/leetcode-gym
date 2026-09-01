@@ -11,6 +11,36 @@ tutorials/
   anim/                 the generator that produces assets/ (see anim/README.md)
 ```
 
+## Status
+
+<!-- tutorials:status -->
+2 of 21 patterns have a written tutorial. The rest are in progress and will be added one pattern at a time.
+
+| Pattern | Status | Tutorial |
+| --- | --- | --- |
+| Arrays & Hashing | in progress | — |
+| Two Pointers | ✓ written | [TwoPointers.md](TwoPointers.md) |
+| Sliding Window | ✓ written | [SlidingWindow.md](SlidingWindow.md) |
+| Stack & Monotonic Stack | in progress | — |
+| Binary Search | in progress | — |
+| Linked List | in progress | — |
+| Trees & BSTs | in progress | — |
+| Heap / Priority Queue | in progress | — |
+| Backtracking | in progress | — |
+| Tries | in progress | — |
+| Graphs | in progress | — |
+| Advanced Graphs | in progress | — |
+| 1-D Dynamic Programming | in progress | — |
+| 2-D Dynamic Programming | in progress | — |
+| Greedy | in progress | — |
+| Intervals | in progress | — |
+| Math & Bit Manipulation | in progress | — |
+| Insight & Case Analysis | in progress | — |
+| String Algorithms | in progress | — |
+| Number Theory & Combinatorics | in progress | — |
+| Fenwick & Segment Tree | in progress | — |
+<!-- /tutorials:status -->
+
 ## Using an animation in a tutorial
 
 GIFs play inline on GitHub, in most Markdown renderers and in the tracker's

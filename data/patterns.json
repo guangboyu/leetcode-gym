@@ -1,0 +1,1903 @@
+{
+ "order": [
+  "arrays-hashing",
+  "two-pointers",
+  "sliding-window",
+  "stack",
+  "binary-search",
+  "linked-list",
+  "trees",
+  "heap",
+  "backtracking",
+  "tries",
+  "graphs",
+  "advanced-graphs",
+  "dp-1d",
+  "dp-2d",
+  "greedy",
+  "intervals",
+  "math-bits",
+  "insight",
+  "strings",
+  "number-theory",
+  "fenwick-segment"
+ ],
+ "patterns": {
+  "arrays-hashing": {
+   "name": "Arrays & Hashing",
+   "tutorial": null,
+   "signals": [
+    "“have I seen this element before?” → hash set",
+    "pair/count/group lookups → hash map keyed by value, count, or a canonical form (sorted string, tuple)",
+    "“sum of a range” many times → prefix sums"
+   ],
+   "one_liner": "The toolbox everything else builds on: trade memory for O(1) lookups. Most “clever” array problems are a hash map with the right key, or a prefix-sum identity like sum(i..j) = pre[j+1] - pre[i].",
+   "template": [
+    "# two-sum shape: one pass, check the complement before inserting",
+    "seen = {}                       # value -> index",
+    "for i, x in enumerate(a):",
+    "    if target - x in seen:",
+    "        return [seen[target - x], i]",
+    "    seen[x] = i"
+   ],
+   "legacy_patternOf": [
+    "Arrays & Hashing"
+   ],
+   "subtopics": [
+    {
+     "id": "hash-basics",
+     "name": "Hash set & map basics",
+     "recognize": "“Have I seen this before?”, “does a pair exist?”, O(1) membership or key→value bookkeeping.",
+     "solve": "One pass; query the map before inserting the current element so each pair is seen exactly once.",
+     "template": [
+      "seen = {}                   # value -> index",
+      "for i, x in enumerate(a):",
+      "    if target - x in seen:",
+      "        return [seen[target - x], i]",
+      "    seen[x] = i"
+     ],
+     "core_ids": [
+      1,
+      217,
+      242,
+      383,
+      205,
+      290,
+      705,
+      706,
+      1929
+     ]
+    },
+    {
+     "id": "grouping-counting",
+     "name": "Grouping & counting",
+     "recognize": "“Group the equivalent items”, “most frequent”, “appears more than n/k times”.",
+     "solve": "Map from a canonical key (sorted string, count signature) to a bucket; counts via Counter. Majority element has the O(1)-space Boyer-Moore vote.",
+     "core_ids": [
+      49,
+      347,
+      169,
+      229,
+      274,
+      128
+     ]
+    },
+    {
+     "id": "prefix-sums",
+     "name": "Prefix sums & products",
+     "recognize": "Many range-sum queries, “subarray summing to k” (negatives allowed!), “product of everything except me”.",
+     "solve": "pre[i+1] = pre[i] + a[i], so sum(i..j) = pre[j+1] - pre[i]. Count subarrays with a map of previously seen prefix values; “except self” = prefix pass × suffix pass.",
+     "template": [
+      "# subarrays summing to k (works with negatives)",
+      "cnt = {0: 1}",
+      "s = ans = 0",
+      "for x in a:",
+      "    s += x",
+      "    ans += cnt.get(s - k, 0)",
+      "    cnt[s] = cnt.get(s, 0) + 1"
+     ],
+     "core_ids": [
+      238,
+      304,
+      560
+     ]
+    },
+    {
+     "id": "difference-arrays",
+     "name": "Difference arrays",
+     "recognize": "Many range updates (+v on [l, r]), one final read of the whole array.",
+     "solve": "d[l] += v and d[r+1] -= v per update; a prefix sum over d recovers the values. Car pooling and flight bookings are this.",
+     "template": [
+      "d = [0] * (n + 1)",
+      "for l, r, v in updates:",
+      "    d[l] += v",
+      "    d[r + 1] -= v",
+      "a = list(accumulate(d))[:n]"
+     ],
+     "core_ids": []
+    },
+    {
+     "id": "in-place",
+     "name": "In-place array surgery",
+     "recognize": "“Do it in O(1) extra space”: remove/keep elements, partition by value, find the missing one by using the array itself.",
+     "solve": "Slow writer + fast reader, or cyclic swaps that park value v at index v. Sort Colors is a 3-way partition with two boundaries.",
+     "core_ids": [
+      27,
+      41,
+      75,
+      80
+     ]
+    },
+    {
+     "id": "string-scanning",
+     "name": "String scanning & run grouping",
+     "recognize": "Format, split, align, or match strings; no algorithmic depth, all edge cases.",
+     "solve": "Walk the string once with clear state; build results in a list and join. Rehearse these — interviewers use them to check clean code speed.",
+     "core_ids": [
+      6,
+      12,
+      14,
+      28,
+      58,
+      68,
+      151
+     ]
+    },
+    {
+     "id": "sorting-simulation",
+     "name": "Sorting & simulation",
+     "recognize": "“Design a structure”, “validate a board”, or a scan where sorting first makes the logic trivial.",
+     "solve": "Pick the invariant, then simulate carefully. GetRandom O(1) pairs a list with an index map; swap-with-last makes deletion O(1).",
+     "core_ids": [
+      36,
+      122,
+      380,
+      912
+     ]
+    }
+   ]
+  },
+  "two-pointers": {
+   "name": "Two Pointers",
+   "tutorial": "TwoPointers.md",
+   "signals": [
+    "sorted array + “find a pair/triple” → opposite ends, move the pointer that helps",
+    "in-place remove/partition → slow writer + fast reader",
+    "linked-list cycle or middle → fast & slow pointers"
+   ],
+   "one_liner": "Two indices replace a nested loop because moving one pointer can never help the other side: O(n²) → O(n). Ask “when I look at a[l] and a[r], which side is provably useless now?”",
+   "template": [
+    "l, r = 0, len(a) - 1        # opposite-ends shape",
+    "while l < r:",
+    "    s = a[l] + a[r]",
+    "    if s == target: ...",
+    "    elif s < target: l += 1     # a[l] can never pair with anything -> drop it",
+    "    else: r -= 1"
+   ],
+   "legacy_patternOf": [
+    "Two Pointers"
+   ],
+   "legacy_core_ids": [
+    11,
+    15,
+    18,
+    42,
+    125,
+    167,
+    680,
+    881,
+    26,
+    31,
+    88,
+    189,
+    283,
+    344,
+    392,
+    1768
+   ]
+  },
+  "sliding-window": {
+   "name": "Sliding Window",
+   "tutorial": "SlidingWindow.md",
+   "signals": [
+    "“longest/shortest contiguous subarray or substring such that …”",
+    "“max/min/count over every window of size k”",
+    "needs monotonicity: growing the window only makes the condition worse (or better)"
+   ],
+   "one_liner": "A moving window whose stats update incrementally: add the new right element, shrink from the left while the window is broken. Never recompute a window from scratch.",
+   "template": null,
+   "legacy_patternOf": [
+    "Sliding Window"
+   ],
+   "legacy_core_ids": [
+    219,
+    438,
+    567,
+    30,
+    658,
+    3,
+    121,
+    424,
+    76,
+    209,
+    239
+   ]
+  },
+  "stack": {
+   "name": "Stack & Monotonic Stack",
+   "tutorial": null,
+   "signals": [
+    "matching/nesting (parentheses, undo, calculators) → plain stack",
+    "“next/previous greater (or smaller) element” → monotonic stack",
+    "“largest rectangle / trapped water / visible items” → monotonic stack"
+   ],
+   "one_liner": "A stack remembers what is still waiting to be resolved. Keep it monotonic and each element is pushed and popped once: every “nearest element beating me” question in O(n).",
+   "template": [
+    "st = []                     # indices, values decreasing",
+    "for i, x in enumerate(a):",
+    "    while st and a[st[-1]] < x:",
+    "        j = st.pop()            # x is the next greater element of a[j]",
+    "        ans[j] = i - j",
+    "    st.append(i)"
+   ],
+   "legacy_patternOf": [
+    "Stack & Monotonic Stack"
+   ],
+   "subtopics": [
+    {
+     "id": "matching",
+     "name": "Matching & elimination",
+     "recognize": "Nested/paired symbols, collisions that cancel adjacent items, “generate all valid parentheses”.",
+     "solve": "Push what is unresolved; the stack top is always the most recent open item. Asteroid-style problems pop while the new element destroys the top. Generate Parentheses is backtracking on open/close counts.",
+     "core_ids": [
+      20,
+      22,
+      71,
+      682,
+      735
+     ]
+    },
+    {
+     "id": "expression",
+     "name": "Expression parsing",
+     "recognize": "Evaluate or decode a string with operators, brackets, or repeat counts.",
+     "solve": "One stack for numbers and one for pending operators/context; on '(' push state, on ')' pop and combine. RPN is the pure form: push operands, apply operators.",
+     "core_ids": [
+      150,
+      224,
+      394
+     ]
+    },
+    {
+     "id": "monotonic",
+     "name": "Monotonic stack",
+     "recognize": "“Next/previous greater (or smaller) element”, “days until warmer”, “largest rectangle”, spans.",
+     "solve": "Keep indices whose values are monotonic; each pop resolves one element's answer. Every element pushes and pops once: O(n).",
+     "template": [
+      "st = []                     # indices, a[st] decreasing",
+      "for i, x in enumerate(a):",
+      "    while st and a[st[-1]] < x:",
+      "        j = st.pop()            # x is a[j]'s next greater element",
+      "        ans[j] = i - j",
+      "    st.append(i)"
+     ],
+     "core_ids": [
+      84,
+      739,
+      853,
+      901
+     ]
+    },
+    {
+     "id": "design",
+     "name": "Stack & queue design",
+     "recognize": "“Design a stack/queue with an extra O(1) query” (min, max frequency), or build one container from another.",
+     "solve": "Store the auxiliary answer alongside each element (value, min-so-far), so pop restores it for free.",
+     "core_ids": [
+      155,
+      225,
+      232,
+      895
+     ]
+    }
+   ]
+  },
+  "binary-search": {
+   "name": "Binary Search",
+   "tutorial": null,
+   "signals": [
+    "sorted (or rotated-sorted) input → search for a boundary, not just equality",
+    "“minimize the maximum / maximize the minimum / least k such that …” → binary search the answer",
+    "check(x) is monotonic: if x works, so does every larger x"
+   ],
+   "one_liner": "Binary search needs monotonicity, not a sorted array. Frame everything as “first index where check() flips from false to true” and the off-by-ones disappear.",
+   "template": [
+    "lo, hi = 0, n               # first x with check(x) true",
+    "while lo < hi:",
+    "    mid = (lo + hi) // 2",
+    "    if check(mid): hi = mid",
+    "    else: lo = mid + 1",
+    "return lo"
+   ],
+   "legacy_patternOf": [
+    "Binary Search"
+   ],
+   "subtopics": [
+    {
+     "id": "boundary",
+     "name": "Boundary on sorted data",
+     "recognize": "Sorted input + “find the position / first / last occurrence”, or a store queried by timestamp.",
+     "solve": "Frame every variant as lower_bound: the first index where check() is true. Then first occurrence, insert position, and ranges are all the same code.",
+     "template": [
+      "lo, hi = 0, n               # first index with check true",
+      "while lo < hi:",
+      "    mid = (lo + hi) // 2",
+      "    if check(mid): hi = mid",
+      "    else: lo = mid + 1",
+      "return lo"
+     ],
+     "core_ids": [
+      704,
+      35,
+      34,
+      74,
+      374,
+      981
+     ]
+    },
+    {
+     "id": "rotated-mountain",
+     "name": "Rotated & mountain arrays",
+     "recognize": "“Sorted then rotated”, “peak element”, “mountain array” — piecewise-sorted data.",
+     "solve": "Compare mid against an endpoint to decide which half is normally sorted, then decide which half can contain the target. Duplicates can force a linear step.",
+     "core_ids": [
+      33,
+      81,
+      153,
+      162,
+      1095
+     ]
+    },
+    {
+     "id": "answer",
+     "name": "Binary search the answer",
+     "recognize": "“Minimum speed/capacity/largest-sum so that …”, “minimize the maximum”. The answer itself is the search space.",
+     "solve": "check(x) = “is x feasible?” must be monotonic; binary search the smallest feasible x. sqrt(x) is the same idea on values.",
+     "core_ids": [
+      69,
+      410,
+      875,
+      1011
+     ]
+    },
+    {
+     "id": "divide-eliminate",
+     "name": "Divide & eliminate",
+     "recognize": "Two sorted arrays jointly (median), or a row+column-sorted matrix.",
+     "solve": "Median: binary search the partition of the shorter array. Sorted matrix: start at the top-right corner and discard a row or column each step.",
+     "core_ids": [
+      4,
+      240
+     ]
+    }
+   ]
+  },
+  "linked-list": {
+   "name": "Linked List",
+   "tutorial": null,
+   "signals": [
+    "reverse / reorder / splice in place → prev-cur pointer surgery with a dummy head",
+    "cycle detection, middle, k-th from end → fast & slow pointers",
+    "“merge k lists” → heap of heads"
+   ],
+   "one_liner": "Almost every list problem is careful pointer surgery. A dummy node kills the empty-list and head edge cases; draw the before/after arrows before coding.",
+   "template": [
+    "dummy = ListNode(0, head)   # reverse shape",
+    "prev, cur = None, head",
+    "while cur:",
+    "    nxt = cur.next",
+    "    cur.next = prev",
+    "    prev, cur = cur, nxt",
+    "return prev"
+   ],
+   "legacy_patternOf": [
+    "Linked List"
+   ],
+   "subtopics": [
+    {
+     "id": "reversal",
+     "name": "Reversal",
+     "recognize": "“Reverse the list / a sublist / in k-groups”, “swap pairs”.",
+     "solve": "The three-pointer loop below is the atom; sublist and k-group reversal wrap it with a dummy head and careful reconnection. Draw the arrows first.",
+     "template": [
+      "prev, cur = None, head",
+      "while cur:",
+      "    nxt = cur.next",
+      "    cur.next = prev",
+      "    prev, cur = cur, nxt",
+      "return prev"
+     ],
+     "core_ids": [
+      206,
+      92,
+      24,
+      25
+     ]
+    },
+    {
+     "id": "dummy-head-deletion",
+     "name": "Dummy head & deletion",
+     "recognize": "Delete/skip/partition nodes where the head itself might be removed, “remove nth from end”, “rotate”.",
+     "solve": "dummy = ListNode(0, head) kills every head edge case. For nth-from-end, advance a lead pointer n steps, then move both.",
+     "core_ids": [
+      19,
+      61,
+      82,
+      86
+     ]
+    },
+    {
+     "id": "fast-slow",
+     "name": "Fast & slow pointers",
+     "recognize": "Cycle? middle? intersection? palindrome? — questions about list SHAPE without extra space.",
+     "solve": "fast moves 2, slow moves 1: they meet iff there is a cycle; reset one to head and they meet at the cycle entrance. Middle = where fast hits the end. Duplicate-number is this on the array seen as a function graph.",
+     "core_ids": [
+      141,
+      142,
+      143,
+      160,
+      234,
+      287
+     ]
+    },
+    {
+     "id": "merging-divide",
+     "name": "Merging & divide",
+     "recognize": "“Merge two/k sorted lists”, “sort a list”, “add two numbers”.",
+     "solve": "Two-list merge with a dummy tail is the atom; k lists use a heap of heads (or pairwise merging); sort = split at middle + merge (mergesort).",
+     "core_ids": [
+      2,
+      21,
+      23,
+      148
+     ]
+    },
+    {
+     "id": "design-copying",
+     "name": "Design & copying",
+     "recognize": "“Design LRU/LFU/circular queue”, “copy a list with random pointers”.",
+     "solve": "LRU = hashmap + doubly-linked list, evict the tail. Random-pointer copy: map old→new (or interleave copies in place).",
+     "core_ids": [
+      138,
+      146,
+      460,
+      622
+     ]
+    }
+   ]
+  },
+  "trees": {
+   "name": "Trees & BSTs",
+   "tutorial": null,
+   "signals": [
+    "“for every node …” / path sums / depth / diameter → DFS returning info upward",
+    "“level by level / zigzag / rightmost per level” → BFS with a queue",
+    "BST → inorder is sorted; prune by comparing with the root"
+   ],
+   "one_liner": "Trust the recursion: assume the recursive call already solves the subtree, then combine the children's answers at the root. Distinguish “answer passes through this node” from “answer returned to the parent”.",
+   "template": [
+    "def dfs(node):              # post-order combine",
+    "    if not node: return 0",
+    "    left, right = dfs(node.left), dfs(node.right)",
+    "    ans = max(ans, left + right)   # path through node",
+    "    return max(left, right) + 1    # best chain up to parent"
+   ],
+   "legacy_patternOf": [
+    "Trees & BSTs"
+   ],
+   "subtopics": [
+    {
+     "id": "traversal",
+     "name": "Traversal basics",
+     "recognize": "“Return the in/pre/postorder”, “iterator over a BST”.",
+     "solve": "Know the recursive version cold and the stack-based iterative inorder (push all lefts, pop, go right) — the iterator is exactly that stack, paused.",
+     "core_ids": [
+      94,
+      144,
+      145,
+      173
+     ]
+    },
+    {
+     "id": "top-down",
+     "name": "Top-down DFS (preorder)",
+     "recognize": "Info flows root→leaf: running path sum, max seen so far, “count good nodes”, root-to-leaf numbers.",
+     "solve": "Pass accumulators as parameters; check leaf conditions at the leaf.",
+     "core_ids": [
+      104,
+      112,
+      129,
+      1448
+     ]
+    },
+    {
+     "id": "bottom-up",
+     "name": "Bottom-up DFS (postorder)",
+     "recognize": "A node's answer depends on its children: height, balance, symmetry, same/subtree, invert, prune.",
+     "solve": "Trust the recursion: assume dfs(child) already answers the subtree, combine at the node, return upward.",
+     "template": [
+      "def dfs(node):",
+      "    if not node: return 0",
+      "    left, right = dfs(node.left), dfs(node.right)",
+      "    return max(left, right) + 1   # combine children's answers"
+     ],
+     "core_ids": [
+      100,
+      101,
+      110,
+      226,
+      572,
+      543,
+      1325
+     ]
+    },
+    {
+     "id": "bfs",
+     "name": "BFS by level",
+     "recognize": "“Level order / zigzag / average per level / right side view / connect next pointers”.",
+     "solve": "Queue; loop len(q) times per level so levels stay separated. Right side view = last node of each level.",
+     "core_ids": [
+      102,
+      103,
+      117,
+      199,
+      637
+     ]
+    },
+    {
+     "id": "bst",
+     "name": "BST property",
+     "recognize": "The tree is a BST: validate, k-th smallest, closest values, insert/delete, LCA by value.",
+     "solve": "Inorder is sorted — many BST problems are “inorder + observation”. Validation passes down (lo, hi) bounds. LCA: walk from root, split point is the answer.",
+     "core_ids": [
+      98,
+      230,
+      235,
+      450,
+      530,
+      701
+     ]
+    },
+    {
+     "id": "build-transform",
+     "name": "Build & transform",
+     "recognize": "“Construct from preorder+inorder”, serialize/deserialize, flatten, count complete-tree nodes.",
+     "solve": "Construction: the first preorder element is the root; inorder splits left/right (use an index map). Serialization: preorder with null markers.",
+     "core_ids": [
+      105,
+      106,
+      108,
+      114,
+      222,
+      297,
+      427
+     ]
+    },
+    {
+     "id": "paths-tree-dp",
+     "name": "Paths & tree DP",
+     "recognize": "“Max path sum anywhere”, “count paths summing to k”, LCA of arbitrary nodes, rob houses on a tree.",
+     "solve": "Distinguish “best chain returned to parent” from “best path through the node” (diameter trick). Path Sum III = prefix sums on the root path. Tree DP returns a tuple of states per node.",
+     "core_ids": [
+      124,
+      236,
+      337,
+      437
+     ]
+    }
+   ]
+  },
+  "heap": {
+   "name": "Heap / Priority Queue",
+   "tutorial": null,
+   "signals": [
+    "“top-k / k-th largest / k closest” → heap of size k",
+    "“running median” → two heaps balanced around the middle",
+    "repeatedly “take the smallest, put back something” → heap-driven simulation"
+   ],
+   "one_liner": "A heap gives the current min (or max) in O(log n) without full sorting. For top-k, keep a min-heap of size k: the root is the k-th largest so far.",
+   "template": [
+    "import heapq                # k largest",
+    "h = []",
+    "for x in a:",
+    "    heapq.heappush(h, x)",
+    "    if len(h) > k:",
+    "        heapq.heappop(h)        # root of h = k-th largest"
+   ],
+   "legacy_patternOf": [
+    "Heap / Priority Queue"
+   ],
+   "subtopics": [
+    {
+     "id": "top-k",
+     "name": "Top-k & k-th",
+     "recognize": "“k largest/smallest/closest/most frequent”, “k-th element”, “k smallest pairs”.",
+     "solve": "Min-heap of size k: push, pop when over k; the root is the k-th largest. Quickselect gives O(n) average for a one-shot k-th.",
+     "template": [
+      "import heapq",
+      "h = []",
+      "for x in a:",
+      "    heapq.heappush(h, x)",
+      "    if len(h) > k: heapq.heappop(h)",
+      "# h[0] is the k-th largest"
+     ],
+     "core_ids": [
+      215,
+      373,
+      703,
+      973
+     ]
+    },
+    {
+     "id": "two-heaps",
+     "name": "Two heaps",
+     "recognize": "“Running median”, or any “split the stream around the middle” question.",
+     "solve": "Max-heap for the lower half, min-heap for the upper, rebalanced so sizes differ by ≤ 1; the median lives at the roots.",
+     "core_ids": [
+      295
+     ]
+    },
+    {
+     "id": "scheduling",
+     "name": "Scheduling & rearranging",
+     "recognize": "Repeatedly take the best available item, possibly with cooldowns or capacities: tasks, stones, seats, “no two adjacent equal”.",
+     "solve": "Heap keyed by the greedy criterion (count, end time, ratio); pop, use, push back the updated item. Car Pooling is the simpler difference-array cousin.",
+     "core_ids": [
+      355,
+      502,
+      621,
+      767,
+      1046,
+      1094,
+      1405,
+      1834
+     ]
+    }
+   ]
+  },
+  "backtracking": {
+   "name": "Backtracking",
+   "tutorial": null,
+   "signals": [
+    "“generate ALL combinations / permutations / partitions”",
+    "constraint satisfaction on a small n (n ≤ ~20): boards, digits, words",
+    "decision tree where each level chooses one element or position"
+   ],
+   "one_liner": "Systematic exhaustive search: choose, explore, un-choose. Define what one level of the tree decides, then prune branches that already violate the constraints.",
+   "template": [
+    "def dfs(start, path):",
+    "    if done(path):",
+    "        ans.append(path[:]); return",
+    "    for i in range(start, n):",
+    "        if not valid(i): continue   # prune",
+    "        path.append(a[i])",
+    "        dfs(i + 1, path)",
+    "        path.pop()                  # un-choose"
+   ],
+   "legacy_patternOf": [
+    "Backtracking"
+   ],
+   "subtopics": [
+    {
+     "id": "subsets-combos",
+     "name": "Subsets & combinations",
+     "recognize": "“All subsets / combinations summing to target / letter combinations”. Order inside a choice does not matter.",
+     "solve": "Pass a start index so each element is considered once; reuse allowed → recurse with i, not i+1. Duplicates: sort, then skip a[i]==a[i-1] at the same depth.",
+     "template": [
+      "def dfs(start, path):",
+      "    ans.append(path[:])         # every node is a subset",
+      "    for i in range(start, n):",
+      "        if i > start and a[i] == a[i-1]: continue  # dup guard",
+      "        path.append(a[i])",
+      "        dfs(i + 1, path)",
+      "        path.pop()"
+     ],
+     "core_ids": [
+      17,
+      39,
+      40,
+      77,
+      78,
+      90,
+      1863
+     ]
+    },
+    {
+     "id": "permutations-boards",
+     "name": "Permutations & boards",
+     "recognize": "“All orderings”, N-Queens style constraint boards. Order matters, each element used once.",
+     "solve": "Track a used[] set (or column/diagonal sets for queens); choose, recurse, un-choose. Duplicates: sort + skip equal values whose previous twin is unused.",
+     "core_ids": [
+      46,
+      47,
+      51,
+      52
+     ]
+    },
+    {
+     "id": "partition",
+     "name": "Partition backtracking",
+     "recognize": "“Split the string into valid pieces” (palindromes, dictionary words) and return all ways.",
+     "solve": "At position i, try every valid prefix and recurse on the rest; memoize feasibility when only counting or checking.",
+     "core_ids": [
+      131,
+      140
+     ]
+    },
+    {
+     "id": "pruning",
+     "name": "Search with pruning",
+     "recognize": "Grid word search, bucket-filling into k equal groups, matchsticks — exponential search that lives or dies on pruning.",
+     "solve": "Prune hard: sort descending, skip equal buckets, bail when a bucket overflows. Mark grid cells visited in place and restore on backtrack.",
+     "core_ids": [
+      79,
+      473,
+      698
+     ]
+    }
+   ]
+  },
+  "tries": {
+   "name": "Tries",
+   "tutorial": null,
+   "signals": [
+    "many words + “starts with / prefix” queries",
+    "search a board or stream against a whole dictionary at once",
+    "wildcard letters → DFS over trie children"
+   ],
+   "one_liner": "A tree keyed by characters: shared prefixes are stored once, so prefix queries cost O(len(word)) regardless of dictionary size.",
+   "template": [
+    "trie = {}",
+    "for w in words:",
+    "    node = trie",
+    "    for c in w:",
+    "        node = node.setdefault(c, {})",
+    "    node['$'] = True            # end-of-word marker"
+   ],
+   "legacy_patternOf": [
+    "Tries"
+   ],
+   "subtopics": [
+    {
+     "id": "build-query",
+     "name": "Build & query",
+     "recognize": "Many words + “insert / exact search / startsWith”.",
+     "solve": "Nested maps (or arrays of 26); walk character by character; '$' marks end-of-word.",
+     "template": [
+      "trie = {}",
+      "for w in words:",
+      "    node = trie",
+      "    for c in w:",
+      "        node = node.setdefault(c, {})",
+      "    node['$'] = True"
+     ],
+     "core_ids": [
+      208
+     ]
+    },
+    {
+     "id": "wildcards-board",
+     "name": "Wildcards & board search",
+     "recognize": "Search with '.' wildcards, or find MANY words in one grid at once.",
+     "solve": "Wildcard → DFS over all children at that node. Word Search II: DFS the grid while walking the trie, prune dead branches, remove found words.",
+     "core_ids": [
+      211,
+      212
+     ]
+    },
+    {
+     "id": "trie-dp",
+     "name": "Trie + DP",
+     "recognize": "Partition/segment a string against a dictionary where prefix matching is the bottleneck.",
+     "solve": "f[i] over positions; transitions walk the trie from i instead of trying every substring.",
+     "core_ids": [
+      2707
+     ]
+    }
+   ]
+  },
+  "graphs": {
+   "name": "Graphs",
+   "tutorial": null,
+   "signals": [
+    "“islands / connected regions / spread” on a grid → flood-fill DFS/BFS",
+    "shortest path with unit steps → BFS level by level",
+    "“prerequisites / build order” → topological sort",
+    "“are these connected / merge groups” → union-find"
+   ],
+   "one_liner": "Model the entities as nodes and relations as edges, then pick the traversal the question implies. A grid is just a graph whose neighbors are the 4 directions. Always mark visited when enqueuing, not when popping.",
+   "template": [
+    "from collections import deque   # BFS shortest steps",
+    "q, seen = deque([start]), {start}",
+    "d = 0",
+    "while q:",
+    "    for _ in range(len(q)):",
+    "        u = q.popleft()",
+    "        if u == goal: return d",
+    "        for v in neighbors(u):",
+    "            if v not in seen:",
+    "                seen.add(v); q.append(v)",
+    "    d += 1"
+   ],
+   "legacy_patternOf": [
+    "Graphs"
+   ],
+   "subtopics": [
+    {
+     "id": "flood-fill",
+     "name": "Grid flood fill (DFS)",
+     "recognize": "“Islands / regions / area / perimeter” on a grid; “spread from the border”.",
+     "solve": "DFS the 4 neighbors, mark visited by mutating the grid. Border-connected questions (Surrounded Regions, Pacific-Atlantic) flip the direction: start from the edges.",
+     "template": [
+      "def dfs(r, c):",
+      "    if not (0 <= r < R and 0 <= c < C) or g[r][c] != LAND: return 0",
+      "    g[r][c] = SEEN",
+      "    return 1 + dfs(r+1,c) + dfs(r-1,c) + dfs(r,c+1) + dfs(r,c-1)"
+     ],
+     "core_ids": [
+      130,
+      200,
+      417,
+      463,
+      695
+     ]
+    },
+    {
+     "id": "bfs",
+     "name": "BFS shortest steps",
+     "recognize": "“Minimum number of steps/mutations/moves”, “time for rot to spread” — unweighted shortest path, sometimes multi-source.",
+     "solve": "Queue + seen set; mark visited when ENQUEUING, not when popping. Multi-source: seed the queue with all sources at distance 0. Word Ladder builds neighbors via wildcard buckets.",
+     "template": [
+      "from collections import deque",
+      "q, seen, d = deque([start]), {start}, 0",
+      "while q:",
+      "    for _ in range(len(q)):",
+      "        u = q.popleft()",
+      "        if u == goal: return d",
+      "        for v in neighbors(u):",
+      "            if v not in seen:",
+      "                seen.add(v); q.append(v)",
+      "    d += 1"
+     ],
+     "core_ids": [
+      127,
+      433,
+      752,
+      909,
+      994
+     ]
+    },
+    {
+     "id": "topo",
+     "name": "Topological sort",
+     "recognize": "“Prerequisites / build order / can you finish”, layered peeling (min height trees).",
+     "solve": "Kahn: queue of indegree-0 nodes, pop and decrement neighbors. Processed < n ⇒ cycle. Min Height Trees peels leaves layer by layer — same loop.",
+     "template": [
+      "q = deque([u for u in range(n) if indeg[u] == 0])",
+      "order = []",
+      "while q:",
+      "    u = q.popleft(); order.append(u)",
+      "    for v in adj[u]:",
+      "        indeg[v] -= 1",
+      "        if indeg[v] == 0: q.append(v)",
+      "# len(order) < n -> cycle"
+     ],
+     "core_ids": [
+      207,
+      210,
+      310,
+      1462
+     ]
+    },
+    {
+     "id": "modeling-traversal",
+     "name": "Graph modeling & traversal",
+     "recognize": "The graph is implicit: clone a graph, ratio queries along paths (evaluate division), degree puzzles (town judge).",
+     "solve": "Build the adjacency list first, then plain DFS/BFS. Some “graph” problems are only degree counting.",
+     "template": [
+      "g = defaultdict(list)",
+      "for u, v in edges:",
+      "    g[u].append(v); g[v].append(u)",
+      "vis = set()",
+      "def dfs(u):",
+      "    vis.add(u)",
+      "    for v in g[u]:",
+      "        if v not in vis:",
+      "            dfs(v)"
+     ],
+     "core_ids": [
+      133,
+      399,
+      997
+     ]
+    },
+    {
+     "id": "union-find",
+     "name": "Union-Find",
+     "recognize": "“Merge accounts / components”, “which edge creates a cycle”, connectivity as edges arrive.",
+     "solve": "DSU with path compression: find(x) follows parents; union attaches one root under the other. Count components by counting roots.",
+     "template": [
+      "pa = list(range(n))",
+      "def find(x):",
+      "    while pa[x] != x:",
+      "        pa[x] = pa[pa[x]]       # path halving",
+      "        x = pa[x]",
+      "    return x",
+      "def union(a, b): pa[find(a)] = find(b)"
+     ],
+     "core_ids": [
+      684,
+      721,
+      953
+     ]
+    }
+   ]
+  },
+  "advanced-graphs": {
+   "name": "Advanced Graphs",
+   "tutorial": null,
+   "signals": [
+    "shortest path with weighted edges → Dijkstra (no negatives)",
+    "“connect everything at minimum cost” → minimum spanning tree",
+    "≤ k stops / negative edges → Bellman-Ford style relaxation"
+   ],
+   "one_liner": "Same graphs, weighted questions. Dijkstra is BFS with a priority queue: settle the closest unsettled node, relax its edges; stale heap entries are skipped when popped.",
+   "template": [
+    "import heapq                # Dijkstra",
+    "dist = {s: 0}",
+    "h = [(0, s)]",
+    "while h:",
+    "    d, u = heapq.heappop(h)",
+    "    if d > dist.get(u, inf): continue   # stale",
+    "    for v, w in adj[u]:",
+    "        if d + w < dist.get(v, inf):",
+    "            dist[v] = d + w",
+    "            heapq.heappush(h, (d + w, v))"
+   ],
+   "legacy_patternOf": [
+    "Advanced Graphs"
+   ],
+   "subtopics": [
+    {
+     "id": "dijkstra",
+     "name": "Dijkstra, Floyd & minimax paths",
+     "recognize": "Shortest path with WEIGHTED edges (no negatives); “path minimizing the maximum edge” (effort, rising water); “cheapest flights within k stops”.",
+     "solve": "Heap of (dist, node); settle the closest, relax edges, skip stale pops. Minimax: replace + with max in the relaxation. K-stops caps the relaxation rounds (Bellman-Ford flavor).",
+     "template": [
+      "import heapq",
+      "dist = {s: 0}; h = [(0, s)]",
+      "while h:",
+      "    d, u = heapq.heappop(h)",
+      "    if d > dist.get(u, inf): continue   # stale",
+      "    for v, w in adj[u]:",
+      "        if d + w < dist.get(v, inf):",
+      "            dist[v] = d + w",
+      "            heapq.heappush(h, (d + w, v))"
+     ],
+     "core_ids": [
+      743,
+      778,
+      787,
+      1631
+     ]
+    },
+    {
+     "id": "mst",
+     "name": "Minimum spanning tree",
+     "recognize": "“Connect all points at minimum total cost”.",
+     "solve": "Kruskal: sort edges, union-find, take edges that join two components. Critical edge = MST cost rises without it.",
+     "core_ids": [
+      1489,
+      1584
+     ]
+    },
+    {
+     "id": "special-structures",
+     "name": "Special structures",
+     "recognize": "Use-every-edge-once itineraries (Eulerian path), building a matrix from order constraints, connectivity through shared prime factors.",
+     "solve": "Eulerian: Hierholzer — DFS consuming edges, append on the way out, reverse. Order constraints → topological sort per axis. Shared-factor connectivity → union nodes with their prime factors.",
+     "core_ids": [
+      332,
+      2392,
+      2709
+     ]
+    }
+   ]
+  },
+  "dp-1d": {
+   "name": "1-D Dynamic Programming",
+   "tutorial": null,
+   "signals": [
+    "“how many ways / min cost / max value” over a sequence → not the ways themselves",
+    "current choice depends on a few previous positions (climb stairs, rob houses)",
+    "“best subarray ending here” → Kadane"
+   ],
+   "one_liner": "Define f[i] = answer for the prefix ending at i, write the transition from smaller states, set base cases. If the recursive version overlaps subproblems, memoize it — that IS the DP.",
+   "template": [
+    "# house-robber shape: take a[i] + f[i-2], or skip -> f[i-1]",
+    "f0, f1 = 0, 0",
+    "for x in a:",
+    "    f0, f1 = f1, max(f1, f0 + x)",
+    "return f1"
+   ],
+   "legacy_patternOf": [
+    "1-D Dynamic Programming"
+   ],
+   "subtopics": [
+    {
+     "id": "linear",
+     "name": "Linear transitions",
+     "recognize": "“How many ways to reach step n”, cost to climb, Fibonacci-shaped recurrences, counting with order (Combination Sum IV).",
+     "solve": "f[i] from f[i-1], f[i-2], …; roll two variables when only the last few states matter.",
+     "template": [
+      "f0, f1 = 1, 1               # climbing stairs",
+      "for _ in range(2, n + 1):",
+      "    f0, f1 = f1, f0 + f1",
+      "return f1"
+     ],
+     "core_ids": [
+      70,
+      118,
+      377,
+      746,
+      1137
+     ]
+    },
+    {
+     "id": "take-or-skip",
+     "name": "Take or skip (House Robber)",
+     "recognize": "Pick elements under a no-two-adjacent constraint, maximize the total.",
+     "solve": "f[i] = max(f[i-1], f[i-2] + a[i]). Circular version: run twice, excluding the first or the last house.",
+     "core_ids": [
+      198,
+      213
+     ]
+    },
+    {
+     "id": "kadane",
+     "name": "Best subarray ending here (Kadane)",
+     "recognize": "“Maximum product/sum subarray” — contiguous, best ending at each index.",
+     "solve": "Carry the best (and for products, the worst — negatives flip) subarray ending at i; answer is the best over all i.",
+     "core_ids": [
+      152
+     ]
+    },
+    {
+     "id": "partition-decode",
+     "name": "Partition & decode",
+     "recognize": "“Can the string be segmented / how many decodings / longest valid prefix structure”.",
+     "solve": "f[i] = answer for the first i chars; transitions try every valid last piece (dictionary word, 1-2 digit code).",
+     "core_ids": [
+      32,
+      91,
+      139
+     ]
+    },
+    {
+     "id": "knapsack",
+     "name": "Knapsack",
+     "recognize": "“Fewest coins / perfect squares to build n”, “split into two equal halves”, “ways to hit a target with +/− signs”. Items combined under a capacity.",
+     "solve": "0-1 knapsack: loop capacity DOWNWARD (each item once). Unbounded (coins): loop capacity upward. Counting uses +=. Target Sum reduces to subset-sum via (total + target) / 2.",
+     "template": [
+      "# 0-1 knapsack feasibility (Partition Equal Subset Sum)",
+      "f = [True] + [False] * target",
+      "for x in a:",
+      "    for c in range(target, x - 1, -1):   # downward: use x once",
+      "        f[c] = f[c] or f[c - x]"
+     ],
+     "core_ids": [
+      279,
+      322,
+      343,
+      416,
+      494,
+      518,
+      1049
+     ]
+    },
+    {
+     "id": "subsequences",
+     "name": "Subsequences & palindromes",
+     "recognize": "“Longest increasing subsequence”, “count palindromic substrings”.",
+     "solve": "LIS: patience trick — binary search a tails array, O(n log n). Palindromes: expand around each of the 2n−1 centers.",
+     "core_ids": [
+      5,
+      300,
+      647
+     ]
+    },
+    {
+     "id": "game",
+     "name": "Game DP",
+     "recognize": "Two players alternate taking from a line, both optimal, “who wins / best margin”.",
+     "solve": "f[i] = best score difference for the player to move from state i; take max over moves of (gain − f[next]).",
+     "core_ids": [
+      1406
+     ]
+    }
+   ]
+  },
+  "dp-2d": {
+   "name": "2-D Dynamic Programming",
+   "tutorial": null,
+   "signals": [
+    "two sequences compared (edit distance, LCS, interleaving) → f[i][j] on two prefixes",
+    "grid paths with costs/counts → f[r][c] from top/left",
+    "“pick items under a budget” → knapsack over (item, capacity)"
+   ],
+   "one_liner": "State = a pair of prefixes (or position + resource). Fill the table so every transition reads already-computed cells; for 0-1 knapsack compress to 1-D by looping capacity downward.",
+   "template": [
+    "# LCS shape",
+    "for i in range(1, m + 1):",
+    "    for j in range(1, n + 1):",
+    "        if s[i-1] == t[j-1]:",
+    "            f[i][j] = f[i-1][j-1] + 1",
+    "        else:",
+    "            f[i][j] = max(f[i-1][j], f[i][j-1])"
+   ],
+   "legacy_patternOf": [
+    "2-D Dynamic Programming"
+   ],
+   "subtopics": [
+    {
+     "id": "grid",
+     "name": "Grid paths & submatrices",
+     "recognize": "Count/min-cost paths moving right+down, largest square, longest increasing path.",
+     "solve": "f[r][c] from top/left neighbors, row by row. Maximal square: f = min of three neighbors + 1. Arbitrary-direction grids → memoized DFS.",
+     "core_ids": [
+      62,
+      63,
+      64,
+      120,
+      221,
+      329
+     ]
+    },
+    {
+     "id": "two-sequences",
+     "name": "Two sequences",
+     "recognize": "Compare two strings: LCS, edit distance, interleaving, distinct subsequences, regex matching.",
+     "solve": "f[i][j] = answer for prefixes s[:i], t[:j]; match ⇒ diagonal, else best of dropping a character from either side.",
+     "template": [
+      "for i in range(1, m + 1):        # LCS",
+      "    for j in range(1, n + 1):",
+      "        if s[i-1] == t[j-1]:",
+      "            f[i][j] = f[i-1][j-1] + 1",
+      "        else:",
+      "            f[i][j] = max(f[i-1][j], f[i][j-1])"
+     ],
+     "core_ids": [
+      10,
+      72,
+      97,
+      115,
+      1143
+     ]
+    },
+    {
+     "id": "state-machines",
+     "name": "State machines (stock series)",
+     "recognize": "Buy/sell with limits, cooldowns, or k transactions.",
+     "solve": "States = (day, holding?, transactions used); f transitions buy/sell/rest. All five stock problems are this one machine with different constraints.",
+     "core_ids": [
+      123,
+      188,
+      309
+     ]
+    },
+    {
+     "id": "interval",
+     "name": "Interval DP",
+     "recognize": "“Burst balloons” — the answer for a range depends on choosing the LAST action inside it.",
+     "solve": "f[l][r] over gaps, lengths increasing; pick the last balloon k: f[l][r] = max over k of f[l][k] + f[k][r] + gain(l,k,r).",
+     "core_ids": [
+      312
+     ]
+    },
+    {
+     "id": "game-ranges",
+     "name": "Game DP on ranges",
+     "recognize": "Two players pick from ends/piles, both optimal.",
+     "solve": "f[l][r] = best margin for the mover on that range; or exploit parity (Stone Game I: first player always wins).",
+     "core_ids": [
+      877,
+      1140
+     ]
+    },
+    {
+     "id": "bitmask",
+     "name": "Bitmask DP",
+     "recognize": "n ≤ ~20 and the state is “which elements are used”.",
+     "solve": "f[mask] = best over the last element added; iterate masks upward, transitions flip one bit.",
+     "template": [
+      "f = [INF] * (1 << n)",
+      "f[0] = 0",
+      "for mask in range(1 << n):",
+      "    for i in range(n):",
+      "        if mask >> i & 1:",
+      "            f[mask] = min(f[mask], f[mask ^ (1 << i)] + cost(mask, i))"
+     ],
+     "core_ids": []
+    }
+   ]
+  },
+  "greedy": {
+   "name": "Greedy",
+   "tutorial": null,
+   "signals": [
+    "“minimum number of jumps/refuels/removals” where one obvious best move exists",
+    "sorting the input first makes the choice safe",
+    "an exchange argument shows a local choice never hurts the global optimum"
+   ],
+   "one_liner": "Commit to the locally best choice and never look back — valid only when you can argue no future regret (exchange argument). If you cannot argue it, it is probably DP.",
+   "template": [
+    "# jump-game shape: furthest reachable frontier",
+    "far = 0",
+    "for i, x in enumerate(a):",
+    "    if i > far: return False    # gap we can never cross",
+    "    far = max(far, i + x)",
+    "return True"
+   ],
+   "legacy_patternOf": [
+    "Greedy"
+   ],
+   "subtopics": [
+    {
+     "id": "jump-frontier",
+     "name": "Jump frontier",
+     "recognize": "“Can you reach the end / fewest jumps”, reachability with per-index ranges.",
+     "solve": "Sweep once, keep the furthest reachable index; count a jump when you pass the current frontier. BFS-on-intervals intuition.",
+     "template": [
+      "far = 0                     # Jump Game",
+      "for i, x in enumerate(a):",
+      "    if i > far: return False    # unreachable gap",
+      "    far = max(far, i + x)",
+      "return True"
+     ],
+     "core_ids": [
+      45,
+      55,
+      1871
+     ]
+    },
+    {
+     "id": "running-scans",
+     "name": "Running scans (Kadane family)",
+     "recognize": "“Maximum subarray”, circular variant, longest turbulent run.",
+     "solve": "Best subarray ending here: cur = max(x, cur + x). Circular = max(normal, total − minimum subarray). Turbulent: extend or restart the run per comparison sign.",
+     "core_ids": [
+      53,
+      918,
+      978
+     ]
+    },
+    {
+     "id": "partition-last-occurrence",
+     "name": "Partition by last occurrence",
+     "recognize": "“Cut into as many parts as possible so parts don't share letters”, build a target from pieces.",
+     "solve": "Precompute each element's last position; extend the current part to cover it; cut when i reaches the boundary.",
+     "core_ids": [
+      763,
+      1899
+     ]
+    },
+    {
+     "id": "exchange-arguments",
+     "name": "Exchange arguments & case analysis",
+     "recognize": "“Does a valid order/assignment exist”, distribute under fairness (candy), make change, circular gas tour.",
+     "solve": "Sort or scan with the one safe local rule, then prove no regret: gas station restarts after any failed prefix; candy needs a left pass + right pass.",
+     "core_ids": [
+      134,
+      135,
+      649,
+      678,
+      846,
+      860
+     ]
+    }
+   ]
+  },
+  "intervals": {
+   "name": "Intervals",
+   "tutorial": null,
+   "signals": [
+    "“merge / insert / count overlapping intervals”",
+    "“minimum rooms / arrows / removals” over ranges",
+    "events with start & end → sort by one endpoint and sweep"
+   ],
+   "one_liner": "Sort, then sweep: after sorting by start, an interval overlaps the current merged block iff its start ≤ the block's end. For min-removals style questions, sort by END and greedily keep the earliest-ending interval.",
+   "template": [
+    "ivs.sort()",
+    "merged = []",
+    "for s, e in ivs:",
+    "    if merged and s <= merged[-1][1]:",
+    "        merged[-1][1] = max(merged[-1][1], e)   # overlap -> extend",
+    "    else:",
+    "        merged.append([s, e])"
+   ],
+   "legacy_patternOf": [
+    "Intervals"
+   ],
+   "subtopics": [
+    {
+     "id": "merge-insert",
+     "name": "Merge & insert",
+     "recognize": "“Merge overlapping intervals”, “insert and merge”, “summarize ranges”.",
+     "solve": "Sort by start; overlap iff start ≤ current end; extend or push a new block.",
+     "template": [
+      "ivs.sort()",
+      "merged = []",
+      "for s, e in ivs:",
+      "    if merged and s <= merged[-1][1]:",
+      "        merged[-1][1] = max(merged[-1][1], e)",
+      "    else:",
+      "        merged.append([s, e])"
+     ],
+     "core_ids": [
+      56,
+      57,
+      228
+     ]
+    },
+    {
+     "id": "sort-by-end",
+     "name": "Sort by end (scheduling)",
+     "recognize": "“Fewest removals so none overlap”, “fewest arrows to pop all balloons”.",
+     "solve": "Sort by END and greedily keep the earliest-ending interval — it leaves the most room. Arrows = count the non-overlapping groups.",
+     "core_ids": [
+      435,
+      452
+     ]
+    },
+    {
+     "id": "sweep-heap",
+     "name": "Sweep with a heap",
+     "recognize": "Rooms/machines over time, per-query smallest covering interval.",
+     "solve": "Sort events; heap holds active intervals keyed by end (or size). Offline trick: sort queries too and answer them in order.",
+     "core_ids": [
+      1851,
+      2402
+     ]
+    }
+   ]
+  },
+  "math-bits": {
+   "name": "Math & Bit Manipulation",
+   "tutorial": null,
+   "signals": [
+    "“without using +/×”, single number among pairs → XOR tricks",
+    "count bits / powers of two → n & (n-1) drops the lowest set bit",
+    "rotate/spiral/simulate a matrix → index mapping, layer by layer"
+   ],
+   "one_liner": "A small bag of identities does the work: x ^ x = 0 (pairs cancel), n & (n-1) clears the lowest set bit, rotate = transpose + reverse rows. Simulation problems reward careful index bookkeeping over cleverness.",
+   "template": [
+    "# single number: everything paired cancels",
+    "acc = 0",
+    "for x in a:",
+    "    acc ^= x",
+    "return acc"
+   ],
+   "legacy_patternOf": [
+    "Math & Bit Manipulation"
+   ],
+   "subtopics": [
+    {
+     "id": "bit-tricks",
+     "name": "Bit tricks",
+     "recognize": "“Without +”, “single number among pairs/triples”, count bits, missing number.",
+     "solve": "x ^ x = 0 cancels pairs; n & (n-1) drops the lowest set bit; add = XOR + shifted carries. Triples: count each bit position mod 3.",
+     "template": [
+      "acc = 0                     # single number",
+      "for x in a:",
+      "    acc ^= x                    # pairs cancel",
+      "return acc"
+     ],
+     "core_ids": [
+      136,
+      137,
+      190,
+      191,
+      201,
+      268,
+      338,
+      371,
+      3133
+     ]
+    },
+    {
+     "id": "bit-contribution",
+     "name": "Bit by bit",
+     "recognize": "Sums over pairs of AND/OR/XOR, “maximum XOR”, constraints on which bits can be set.",
+     "solve": "Bits are independent: count how many numbers have bit b set and add its contribution separately. Maximum XOR builds the answer from the top bit down with a set or a trie.",
+     "template": [
+      "ans = 0",
+      "for b in range(31):",
+      "    ones = sum(x >> b & 1 for x in a)",
+      "    ans += (1 << b) * ones * (n - ones)   # pairs whose XOR has bit b"
+     ],
+     "core_ids": []
+    },
+    {
+     "id": "numbers-digits",
+     "name": "Numbers & digits",
+     "recognize": "Digit-by-digit arithmetic (reverse, plus one, add binary, multiply strings), gcd, factorial zeros, base conversions, digit cycles.",
+     "solve": "Simulate school arithmetic with explicit carries; gcd(a,b) = gcd(b, a%b); trailing zeros = count factors of 5. Watch overflow rules the problem states.",
+     "core_ids": [
+      7,
+      9,
+      13,
+      43,
+      50,
+      66,
+      67,
+      168,
+      172,
+      202,
+      1071,
+      2807
+     ]
+    },
+    {
+     "id": "matrix",
+     "name": "Matrix simulation",
+     "recognize": "Rotate / spiral / set zeroes / Game of Life — transform a grid, often in place.",
+     "solve": "Rotate = transpose + reverse each row. Spiral: four shrinking boundaries. In-place updates encode old+new state in the same cell (extra bit).",
+     "core_ids": [
+      48,
+      54,
+      73,
+      289,
+      867
+     ]
+    },
+    {
+     "id": "geometry-counting",
+     "name": "Geometry & counting",
+     "recognize": "Points on a line, counting axis-aligned squares.",
+     "solve": "Fix one point, hash slopes in lowest terms. Squares: store point counts, iterate diagonal partners.",
+     "core_ids": [
+      149,
+      2013
+     ]
+    },
+    {
+     "id": "randomized",
+     "name": "Randomized algorithms",
+     "recognize": "“Pick uniformly at random” from a stream or by weight, shuffle in place.",
+     "solve": "Fisher-Yates shuffle; reservoir sampling keeps item i with probability 1/i; weighted pick = prefix sums + binary search.",
+     "core_ids": []
+    }
+   ]
+  },
+  "insight": {
+   "name": "Insight & Case Analysis",
+   "tutorial": null,
+   "signals": [
+    "the constraints are tiny or huge in a way that rules out the obvious algorithm",
+    "an invariant, parity, or bound never changes no matter what you do",
+    "“minimum operations” where each operation has one clean effect"
+   ],
+   "one_liner": "No template. One observation collapses the problem: find what is preserved, what is bounded, or what the extremes force, then the code is a few lines.",
+   "template": [
+    "# 1. play the smallest cases by hand",
+    "# 2. name what every operation preserves (sum? parity? order? a bound?)",
+    "# 3. the answer is usually a formula on that invariant, or a scan of the extremes"
+   ],
+   "legacy_patternOf": [],
+   "subtopics": [
+    {
+     "id": "thinking",
+     "name": "Invariants, symmetry, extremes",
+     "recognize": "The brute force is obviously too slow and there is no data structure to reach for.",
+     "solve": "Work small cases, look for what never changes, and try thinking backwards from the final state. Case analysis is legitimate: split by the extreme element or by parity, solve each case cleanly.",
+     "core_ids": []
+    }
+   ]
+  },
+  "strings": {
+   "name": "String Algorithms",
+   "tutorial": null,
+   "signals": [
+    "“find every occurrence of a pattern” or “the string repeats itself”",
+    "compare many substrings for equality, faster than O(length) each",
+    "the shortest period / longest border of a string"
+   ],
+   "one_liner": "Prefix functions and rolling hashes turn substring questions into O(n): a border table answers periodicity and matching, a polynomial hash compares any two substrings in O(1).",
+   "template": [
+    "pi = [0] * len(p)             # pi[i] = longest proper border of p[:i+1]",
+    "k = 0",
+    "for i in range(1, len(p)):",
+    "    while k and p[i] != p[k]:",
+    "        k = pi[k - 1]",
+    "    if p[i] == p[k]:",
+    "        k += 1",
+    "    pi[i] = k"
+   ],
+   "legacy_patternOf": [],
+   "subtopics": [
+    {
+     "id": "kmp",
+     "name": "KMP & the failure function",
+     "recognize": "Pattern matching in linear time; “shortest string that makes it a repetition”; longest prefix that is also a suffix.",
+     "solve": "Build pi on the pattern (or on pattern + '#' + text). A border of length b means the string has period n - b.",
+     "template": [
+      "def find_all(text, p):",
+      "    s = p + '#' + text",
+      "    pi = failure(s)",
+      "    return [i - 2 * len(p) for i in range(len(s)) if pi[i] == len(p)]"
+     ],
+     "core_ids": []
+    },
+    {
+     "id": "rolling-hash",
+     "name": "Rolling hash",
+     "recognize": "Many substring equality checks, longest duplicate substring, matching after edits.",
+     "solve": "h[i+1] = h[i] * B + s[i] mod M; hash(l..r) = h[r+1] - h[l] * B^(r-l+1). Use a big modulus or two moduli; binary search the length when the property is monotone.",
+     "template": [
+      "B, M = 131, (1 << 61) - 1",
+      "h, pw = [0], [1]",
+      "for ch in s:",
+      "    h.append((h[-1] * B + ord(ch)) % M)",
+      "    pw.append(pw[-1] * B % M)",
+      "def get(l, r):                   # hash of s[l:r]",
+      "    return (h[r] - h[l] * pw[r - l]) % M"
+     ],
+     "core_ids": []
+    }
+   ]
+  },
+  "number-theory": {
+   "name": "Number Theory & Combinatorics",
+   "tutorial": null,
+   "signals": [
+    "primes, divisors, gcd/lcm, modular arithmetic",
+    "“how many ways” with a closed form: C(n, k), stars and bars",
+    "answers “modulo 1e9+7”"
+   ],
+   "one_liner": "A small toolkit does the work: sieve primes once, factorize by trial division up to sqrt(n), Euclid for gcd, and precomputed factorials with modular inverses for C(n, k).",
+   "template": [
+    "is_p = [True] * (n + 1)          # sieve of Eratosthenes",
+    "is_p[0] = is_p[1] = False",
+    "for i in range(2, int(n ** 0.5) + 1):",
+    "    if is_p[i]:",
+    "        for j in range(i * i, n + 1, i):",
+    "            is_p[j] = False"
+   ],
+   "legacy_patternOf": [],
+   "subtopics": [
+    {
+     "id": "number-theory",
+     "name": "Primes, divisors, gcd",
+     "recognize": "Primality, prime factors, count of divisors, gcd of an array, lcm.",
+     "solve": "Sieve when many queries; trial division to sqrt(n) for one number; gcd(a, b) = gcd(b, a % b). Divisor counts come from the factorization: product of (exponent + 1).",
+     "core_ids": []
+    },
+    {
+     "id": "combinatorics",
+     "name": "Counting with C(n, k)",
+     "recognize": "Count arrangements, paths on a grid, ways to distribute identical items.",
+     "solve": "Precompute fact[] and inv_fact[] mod p (Fermat inverse). Multiplication principle first, then subtract the forbidden cases (inclusion-exclusion).",
+     "template": [
+      "MOD = 10 ** 9 + 7",
+      "fact = [1] * (n + 1)",
+      "for i in range(1, n + 1):",
+      "    fact[i] = fact[i - 1] * i % MOD",
+      "inv = [1] * (n + 1)",
+      "inv[n] = pow(fact[n], MOD - 2, MOD)",
+      "for i in range(n, 0, -1):",
+      "    inv[i - 1] = inv[i] * i % MOD",
+      "def C(a, b):",
+      "    return fact[a] * inv[b] % MOD * inv[a - b] % MOD if 0 <= b <= a else 0"
+     ],
+     "core_ids": []
+    }
+   ]
+  },
+  "fenwick-segment": {
+   "name": "Fenwick & Segment Tree",
+   "tutorial": null,
+   "signals": [
+    "point updates interleaved with prefix / range queries",
+    "“count smaller elements to the right”, inversions",
+    "range min / max / sum over an array that changes"
+   ],
+   "one_liner": "Log-time range queries under updates. A Fenwick tree is ten lines and covers prefix sums and counting; a segment tree generalizes to any associative operation.",
+   "template": [
+    "tree = [0] * (n + 1)              # Fenwick, 1-indexed",
+    "def add(i, v):",
+    "    while i <= n:",
+    "        tree[i] += v",
+    "        i += i & -i",
+    "def prefix(i):                    # sum of a[1..i]",
+    "    s = 0",
+    "    while i > 0:",
+    "        s += tree[i]",
+    "        i -= i & -i",
+    "    return s"
+   ],
+   "legacy_patternOf": [],
+   "subtopics": [
+    {
+     "id": "fenwick",
+     "name": "Fenwick tree (BIT)",
+     "recognize": "Prefix sums with point updates; “how many earlier elements are smaller” (compress values, then count).",
+     "solve": "i & -i walks the tree. Inversions: scan left to right, query how many seen values are larger, then insert.",
+     "core_ids": []
+    },
+    {
+     "id": "segment-tree",
+     "name": "Segment tree",
+     "recognize": "Range min/max/sum with point updates, or a query the Fenwick tree cannot express.",
+     "solve": "Build over [l, r) recursively; query and update descend into the halves that overlap. Lazy propagation only when range updates are required.",
+     "template": [
+      "def build(o, l, r):",
+      "    if r - l == 1:",
+      "        t[o] = a[l]; return",
+      "    m = (l + r) // 2",
+      "    build(2 * o, l, m); build(2 * o + 1, m, r)",
+      "    t[o] = merge(t[2 * o], t[2 * o + 1])",
+      "def query(o, l, r, ql, qr):",
+      "    if ql <= l and r <= qr: return t[o]",
+      "    m = (l + r) // 2; res = IDENTITY",
+      "    if ql < m: res = merge(res, query(2 * o, l, m, ql, qr))",
+      "    if qr > m: res = merge(res, query(2 * o + 1, m, r, ql, qr))",
+      "    return res"
+     ],
+     "core_ids": []
+    }
+   ]
+  }
+ },
+ "ox3f": {
+  "topics": {
+   "Sliding Window & Two Pointers": {
+    "zh": "滑动窗口与双指针",
+    "post": "https://leetcode.cn/discuss/post/0viNMK/",
+    "default": "sliding-window"
+   },
+   "Binary Search": {
+    "zh": "二分算法",
+    "post": "https://leetcode.cn/discuss/post/SqopEo/",
+    "default": "binary-search"
+   },
+   "Monotonic Stack": {
+    "zh": "单调栈",
+    "post": "https://leetcode.cn/discuss/post/9oZFK9/",
+    "default": "stack"
+   },
+   "Grid Graph": {
+    "zh": "网格图",
+    "post": "https://leetcode.cn/discuss/post/YiXPXW/",
+    "default": "graphs"
+   },
+   "Bit Manipulation": {
+    "zh": "位运算",
+    "post": "https://leetcode.cn/discuss/post/dHn9Vk/",
+    "default": "math-bits"
+   },
+   "Graph Theory": {
+    "zh": "图论算法",
+    "post": "https://leetcode.cn/discuss/post/01LUak/",
+    "default": "graphs"
+   },
+   "Dynamic Programming": {
+    "zh": "动态规划",
+    "post": "https://leetcode.cn/discuss/post/tXLS3i/",
+    "default": "dp-1d"
+   },
+   "Data Structures": {
+    "zh": "常用数据结构",
+    "post": "https://leetcode.cn/discuss/post/mOr1u6/",
+    "default": "arrays-hashing"
+   },
+   "Math": {
+    "zh": "数学算法",
+    "post": "https://leetcode.cn/discuss/post/IYT3ss/",
+    "default": "math-bits"
+   },
+   "Greedy & Thinking": {
+    "zh": "贪心与思维",
+    "post": "https://leetcode.cn/discuss/post/g6KTKL/",
+    "default": "greedy"
+   },
+   "Linked List, Tree & Backtracking": {
+    "zh": "链表、树与回溯",
+    "post": "https://leetcode.cn/discuss/post/K0n2gO/",
+    "default": "linked-list"
+   },
+   "Strings": {
+    "zh": "字符串",
+    "post": "https://leetcode.cn/discuss/post/SJFwQI/",
+    "default": "strings"
+   }
+  },
+  "chapters": {
+   "Sliding Window & Two Pointers": {
+    "1": "sliding-window/shape-1",
+    "2": "sliding-window",
+    "3": "two-pointers",
+    "4": "two-pointers/shape-3",
+    "5": "two-pointers/shape-1",
+    "6": "arrays-hashing/string-scanning"
+   },
+   "Binary Search": {
+    "1": "binary-search/boundary",
+    "2": "binary-search/answer",
+    "4": "binary-search/rotated-mountain"
+   },
+   "Monotonic Stack": {
+    "1": "stack/monotonic",
+    "2": "stack/monotonic",
+    "3": "stack/monotonic",
+    "4": "stack/monotonic"
+   },
+   "Grid Graph": {
+    "1": "graphs/flood-fill",
+    "2": "graphs/bfs",
+    "5": "advanced-graphs/dijkstra"
+   },
+   "Bit Manipulation": {
+    "1": "math-bits/bit-tricks",
+    "2": "math-bits/bit-tricks",
+    "3": "math-bits/bit-contribution",
+    "4": "math-bits/bit-contribution",
+    "5": "math-bits/bit-contribution",
+    "8": "math-bits/bit-contribution",
+    "9": "math-bits/bit-tricks"
+   },
+   "Graph Theory": {
+    "1": "graphs/modeling-traversal",
+    "2": "graphs/topo",
+    "3": "advanced-graphs/dijkstra",
+    "4": "advanced-graphs/mst",
+    "7": "graphs/bfs",
+    "9": "graphs"
+   },
+   "Dynamic Programming": {
+    "1": "dp-1d/linear",
+    "2": "dp-2d/grid",
+    "3": "dp-1d/knapsack",
+    "4": "dp-1d/subsequences",
+    "5": "dp-1d/partition-decode",
+    "6": "dp-2d/state-machines",
+    "7": "dp-1d",
+    "8": "dp-2d/interval",
+    "9": "dp-2d/bitmask",
+    "11": "dp-2d",
+    "12": "trees/paths-tree-dp"
+   },
+   "Data Structures": {
+    "0": "arrays-hashing/hash-basics",
+    "1": "arrays-hashing/prefix-sums",
+    "2": "arrays-hashing/difference-arrays",
+    "3": "stack/matching",
+    "4": "stack/design",
+    "5": "heap/top-k",
+    "6": "tries/build-query",
+    "7": "graphs/union-find",
+    "8": "fenwick-segment/fenwick"
+   },
+   "Math": {
+    "1": "number-theory/number-theory",
+    "2": "number-theory/combinatorics",
+    "5": "math-bits/geometry-counting",
+    "6": "math-bits/randomized",
+    "7": "math-bits/numbers-digits"
+   },
+   "Greedy & Thinking": {
+    "1": "greedy/exchange-arguments",
+    "2": "intervals/sort-by-end",
+    "3": "greedy/exchange-arguments",
+    "4": "greedy/exchange-arguments",
+    "5": "insight/thinking",
+    "7": "binary-search/answer",
+    "8": "insight/thinking"
+   },
+   "Linked List, Tree & Backtracking": {
+    "1": "linked-list/dummy-head-deletion",
+    "2": "trees",
+    "3": "trees/paths-tree-dp",
+    "4": "backtracking/subsets-combos",
+    "5": "linked-list/merging-divide"
+   },
+   "Strings": {
+    "1": "strings/kmp",
+    "4": "strings/rolling-hash",
+    "10": "strings"
+   }
+  },
+  "sections": {
+   "Sliding Window & Two Pointers||2.1.1": "sliding-window/shape-2",
+   "Sliding Window & Two Pointers||2.1.2": "sliding-window/shape-2",
+   "Sliding Window & Two Pointers||2.2": "sliding-window/shape-3",
+   "Sliding Window & Two Pointers||2.3.1": "sliding-window/shape-4",
+   "Sliding Window & Two Pointers||2.3.2": "sliding-window/shape-4",
+   "Sliding Window & Two Pointers||2.3.3": "sliding-window/shape-4",
+   "Sliding Window & Two Pointers||3.1": "two-pointers/shape-1",
+   "Sliding Window & Two Pointers||3.2": "two-pointers/shape-1",
+   "Sliding Window & Two Pointers||3.3": "two-pointers/shape-2a",
+   "Sliding Window & Two Pointers||3.5": "two-pointers/shape-2a",
+   "Sliding Window & Two Pointers||4.2": "two-pointers/shape-2a",
+   "Graph Theory||1.3": "graphs/bfs",
+   "Dynamic Programming||1.2": "dp-1d/take-or-skip",
+   "Dynamic Programming||1.3": "dp-1d/kadane",
+   "Dynamic Programming||4.2.1": "dp-2d/two-sequences",
+   "Dynamic Programming||4.2.2": "dp-2d/two-sequences",
+   "Dynamic Programming||7.1": "dp-1d/linear",
+   "Dynamic Programming||7.2": "intervals/sort-by-end",
+   "Dynamic Programming||7.3": "dp-1d/kadane",
+   "Dynamic Programming||7.4": "dp-1d/subsequences",
+   "Dynamic Programming||7.5": "dp-2d/grid",
+   "Dynamic Programming||7.6": "dp-2d",
+   "Dynamic Programming||7.7": "dp-1d/linear",
+   "Dynamic Programming||Special Topic: Prefix-Suffix Decomposition": "arrays-hashing/prefix-sums",
+   "Dynamic Programming||Special Topic: Jump Game": "greedy/jump-frontier",
+   "Dynamic Programming||Special Topic: Reconstructing the Solution": "dp-1d",
+   "Dynamic Programming||Other": "dp-1d",
+   "Data Structures||0.3": "math-bits/matrix",
+   "Data Structures||3.5": "stack/expression",
+   "Data Structures||4.4": "sliding-window/shape-1",
+   "Data Structures||5.4": "heap/scheduling",
+   "Data Structures||5.6": "heap/scheduling",
+   "Data Structures||5.7": "heap/two-heaps",
+   "Data Structures||6.4": "tries/wildcards-board",
+   "Data Structures||8.3": "fenwick-segment/segment-tree",
+   "Data Structures||Part A": "arrays-hashing/string-scanning",
+   "Data Structures||Part B": "linked-list/design-copying",
+   "Math||7.2": "number-theory/number-theory",
+   "Math||7.7": "arrays-hashing/grouping-counting",
+   "Greedy & Thinking||1.5": "greedy/partition-last-occurrence",
+   "Greedy & Thinking||1.8": "heap/scheduling",
+   "Greedy & Thinking||1.9": "heap/scheduling",
+   "Greedy & Thinking||2.2": "intervals/sweep-heap",
+   "Greedy & Thinking||2.5": "intervals/merge-insert",
+   "Greedy & Thinking||2.6": "intervals/sweep-heap",
+   "Greedy & Thinking||3.1": "stack/monotonic",
+   "Greedy & Thinking||3.2": "two-pointers/shape-1",
+   "Linked List, Tree & Backtracking||1.4": "linked-list/reversal",
+   "Linked List, Tree & Backtracking||1.6": "linked-list/fast-slow",
+   "Linked List, Tree & Backtracking||1.7": "linked-list/fast-slow",
+   "Linked List, Tree & Backtracking||1.8": "linked-list/merging-divide",
+   "Linked List, Tree & Backtracking||1.9": "linked-list/merging-divide",
+   "Linked List, Tree & Backtracking||1.10": "linked-list/design-copying",
+   "Linked List, Tree & Backtracking||1.11": "linked-list/design-copying",
+   "Linked List, Tree & Backtracking||2.1": "trees/traversal",
+   "Linked List, Tree & Backtracking||2.15": "trees/traversal",
+   "Linked List, Tree & Backtracking||2.2": "trees/top-down",
+   "Linked List, Tree & Backtracking||2.7": "trees/top-down",
+   "Linked List, Tree & Backtracking||2.3": "trees/bottom-up",
+   "Linked List, Tree & Backtracking||2.4": "trees/bottom-up",
+   "Linked List, Tree & Backtracking||2.5": "trees/bottom-up",
+   "Linked List, Tree & Backtracking||2.6": "trees/paths-tree-dp",
+   "Linked List, Tree & Backtracking||2.8": "trees/paths-tree-dp",
+   "Linked List, Tree & Backtracking||2.12": "trees/paths-tree-dp",
+   "Linked List, Tree & Backtracking||2.9": "trees/bst",
+   "Linked List, Tree & Backtracking||2.10": "trees/build-transform",
+   "Linked List, Tree & Backtracking||2.11": "trees/build-transform",
+   "Linked List, Tree & Backtracking||2.14": "trees/build-transform",
+   "Linked List, Tree & Backtracking||2.13": "trees/bfs",
+   "Linked List, Tree & Backtracking||3.6": "graphs/topo",
+   "Linked List, Tree & Backtracking||3.13": "trees",
+   "Linked List, Tree & Backtracking||4.3": "backtracking/partition",
+   "Linked List, Tree & Backtracking||4.5": "backtracking/permutations-boards",
+   "Linked List, Tree & Backtracking||4.7": "backtracking/pruning"
+  },
+  "hidden": [
+   "Data Structures||1.3",
+   "Data Structures||1.4",
+   "Data Structures||3.6",
+   "Data Structures||5.5",
+   "Data Structures||Part C"
+  ]
+ }
+}
