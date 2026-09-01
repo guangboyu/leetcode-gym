@@ -145,7 +145,7 @@ class TestServer(unittest.TestCase):
         self.assertEqual(gzip.decompress(body), server._PROBLEMS_RAW)
 
     def test_static_js_mime_and_cache_control(self):
-        status, headers, _ = self._raw("/app.js")
+        status, headers, _ = self._raw("/js/main.js")
         self.assertEqual(status, 200)
         self.assertTrue(headers["Content-Type"].startswith("text/javascript"))
         self.assertEqual(headers["Cache-Control"], "no-cache")

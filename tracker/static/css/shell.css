@@ -44,7 +44,10 @@ html[data-shell] .content { grid-template-rows: 0 calc(var(--toolbar-h) + var(--
 .toolbar .drag { position: absolute; inset: 0; z-index: 0; }
 .toolbar h1 { font-size: var(--fs-2xl); font-weight: 600; letter-spacing: -.01em; line-height: 28px; }
 .toolbar .sub { line-height: 28px; }
-.scroll { overflow: auto; overscroll-behavior: contain; scroll-padding-top: 40px; }
+.views { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; }
+.views > section { grid-area: 1 / 1; }
+.scroll { overflow: auto; overscroll-behavior: contain; scroll-padding-top: 40px; outline: none; }
+.scroll:focus, .scroll:focus-visible { outline: none; }
 .view { padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 20px; max-width: var(--content-max); animation: view-in var(--dur) var(--ease); }
 .view.wide { max-width: none; }
 @keyframes view-in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
