@@ -6,14 +6,14 @@ together and how to check your change before opening a pull request.
 ## Run it
 
 ```bash
-python3 tracker/server.py            # http://localhost:8765 — stdlib only, no install
+python3 tracker/server.py            # http://localhost:8765, stdlib only, no install
 python3 -m tracker.desktop           # same app in a native window (needs pywebview)
 python3 -m unittest discover -s tests
 ```
 
 The Python suite also runs the JavaScript tests: on macOS through the system
 JavaScriptCore shell (`jsc`), elsewhere through `node` if present (see
-`tests/js/README.md`). Nothing needs a build step — `tracker/static/js/` is
+`tests/js/README.md`). Nothing needs a build step: `tracker/static/js/` is
 served as plain ES modules.
 
 ## Where things live
@@ -28,7 +28,7 @@ served as plain ES modules.
 | `tracker/static/route.js` | pure learn/drill logic (`learnState`, `nextUp`, `drillPool`), classic script so it is testable without a bundler |
 | `data/problems.json` | 2,678 problems keyed by slug with list memberships (generated) |
 | `data/patterns.json` | the 21-pattern taxonomy + the 0x3F chapter/section mapping (hand-curated, drafted by `scripts/draft_patterns.py`) |
-| `data/tutorials.json` | parsed from `tutorials/*.md` by `scripts/build_tutorials.py` (generated — never edit by hand) |
+| `data/tutorials.json` | parsed from `tutorials/*.md` by `scripts/build_tutorials.py` (generated, never edit by hand) |
 | `tutorials/` | the hand-written pattern tutorials, their GIFs, and the animation generator |
 | `scripts/` | the data pipeline (see `source/README.md` for the full refresh) |
 | `packaging/` | PyInstaller spec, build scripts, icon |
@@ -55,7 +55,7 @@ served as plain ES modules.
    ```
    Warnings (a difficulty that disagrees with LeetCode, a core problem the tutorial
    does not list) are printed; errors fail the build.
-5. Commit the markdown, the GIFs and the regenerated JSON together — CI fails
+5. Commit the markdown, the GIFs and the regenerated JSON together; CI fails
    if `data/tutorials.json` is stale.
 
 ## Changing the taxonomy
@@ -72,7 +72,7 @@ a tutorial carry no `subtopics` (the tutorial's shapes are the subtopics).
 - JavaScript: ES modules, no framework, no build. Build DOM with `html\`\`` from
   `h.js` (auto-escaping); style through tokens; every clickable thing is a
   `<button>` or `<a>`; keyboard paths for anything the mouse can do.
-- CSS: tokens only — never a literal color outside `tokens.css`; both themes.
+- CSS: tokens only, never a literal color outside `tokens.css`; both themes.
 - Commit messages explain the reason, not just the change.
 
 ## Releasing

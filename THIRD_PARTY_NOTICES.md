@@ -5,15 +5,15 @@ following third-party work, reproduced here with their notices as required.
 
 ## Problem lists and categorization
 
-- **灵茶山艾府 / EndlessCheng — algorithm problem lists** (leetcode.cn posts) and
+- **灵茶山艾府 / EndlessCheng, algorithm problem lists** (leetcode.cn posts) and
   **codeforces-go** (https://github.com/EndlessCheng/codeforces-go), MIT License,
   Copyright (c) EndlessCheng. Parts of the problem categorization in `data/patterns.json`
   and `source/ox3F/` are derived from these lists.
-- **NeetCode 250** (https://neetcode.io) — list membership and categories.
-- **LeetCode Hot 100 / Top Interview 150** (https://leetcode.com/studyplan/) — list
+- **NeetCode 250** (https://neetcode.io): list membership and categories.
+- **LeetCode Hot 100 / Top Interview 150** (https://leetcode.com/studyplan/): list
   membership and groups. LeetCode is a trademark of LeetCode LLC; this project is not
   affiliated with or endorsed by LeetCode.
-- **zerotrac — LeetCode problem ratings**
+- **zerotrac, LeetCode problem ratings**
   (https://zerotrac.github.io/leetcode_problem_rating/).
 
 Only ids, titles, slugs and groupings are redistributed; no problem statements or
@@ -21,17 +21,17 @@ solutions.
 
 ## Bundled software (`tracker/static/vendor/`)
 
-- **marked** 15.0.12 — MIT License, Copyright (c) 2018+ MarkedJS, (c) 2011-2018
+- **marked** 15.0.12: MIT License, Copyright (c) 2018+ MarkedJS, (c) 2011-2018
   Christopher Jeffrey. Full text: `tracker/static/vendor/LICENSE-marked.txt`.
-- **mermaid** 11.6.0 — MIT License, Copyright (c) 2014-2025 Knut Sveidqvist.
+- **mermaid** 11.6.0: MIT License, Copyright (c) 2014-2025 Knut Sveidqvist.
   Full text: `tracker/static/vendor/LICENSE-mermaid.txt`.
 
 ## Fonts
 
-- **JetBrains Mono** — SIL Open Font License 1.1, Copyright 2020 The JetBrains Mono
+- **JetBrains Mono**: SIL Open Font License 1.1, Copyright 2020 The JetBrains Mono
   Project Authors. Full text: `tracker/static/vendor/fonts/JetBrainsMono-OFL.txt`
   (also used by the tutorial animations in `tutorials/anim/dsaviz/fonts/`).
-- **Inter** — SIL Open Font License 1.1, Copyright 2016 The Inter Project Authors.
+- **Inter**: SIL Open Font License 1.1, Copyright 2016 The Inter Project Authors.
   Used by the tutorial animations only; full text: `tutorials/anim/dsaviz/fonts/Inter-OFL.txt`.
 
 ## Build-time dependencies (not redistributed)

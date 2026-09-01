@@ -27,5 +27,5 @@ build/
 # IDE
 .idea/
 
-# Claude Code worktrees
-.claude/worktrees/
+# agent/editor worktrees
+.claude/
