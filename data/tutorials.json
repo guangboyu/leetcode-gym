@@ -367,7 +367,7 @@
      "name": "longest valid",
      "anchor": "shape-2-longest-valid",
      "parent": null,
-     "blurb": "Grow every step. When the window goes invalid, shrink until it is valid again, then",
+     "blurb": "Grow every step. When the window goes invalid, shrink until it is valid again, then measure.",
      "template": "left = 0\nbest = 0\nfor right, x in enumerate(nums):\n    add(x)\n    while not valid():\n        remove(nums[left])\n        left += 1\n    best = max(best, right - left + 1)     # harvest AFTER",
      "worked": [
       {
@@ -504,7 +504,7 @@
      "name": "shortest valid",
      "anchor": "shape-3-shortest-valid",
      "parent": null,
-     "blurb": "The mirror image of Shape 2. Shrink *while the window is still valid*, and record before",
+     "blurb": "The mirror image of Shape 2. Shrink *while the window is still valid*, and record before each shrink, because right now is the smallest valid window you have seen.",
      "template": "left = 0\nbest = float(\"inf\")\nfor right, x in enumerate(nums):\n    add(x)\n    while valid():\n        best = min(best, right - left + 1)  # harvest INSIDE\n        remove(nums[left])\n        left += 1",
      "worked": [
       {
@@ -580,7 +580,7 @@
      "name": "count subarrays",
      "anchor": "shape-4-count-subarrays",
      "parent": null,
-     "blurb": "For each `right`, count how many valid windows *end* at `right`. Once `left` is at its",
+     "blurb": "For each `right`, count how many valid windows *end* at `right`. Once `left` is at its smallest legal position, every start in `[left, right]` gives a valid window.",
      "template": "left = 0\nans = 0\nfor right, x in enumerate(nums):\n    add(x)\n    while not valid():\n        remove(nums[left])\n        left += 1\n    ans += right - left + 1",
      "worked": [
       {
@@ -962,7 +962,7 @@
      "name": "converging",
      "anchor": "shape-1-converging",
      "parent": null,
-     "blurb": "Two pointers start at the ends and walk toward each other. Each iteration either records",
+     "blurb": "Two pointers start at the ends and walk toward each other. Each iteration either records an answer or discards one endpoint forever.",
      "template": "l, r = 0, len(a) - 1\nwhile l < r:\n    if too_small(a[l], a[r]):\n        l += 1              # a[l] is worthless, name why\n    elif too_big(a[l], a[r]):\n        r -= 1\n    else:\n        record(l, r)\n        l += 1\n        r -= 1",
      "worked": [
       {
@@ -1309,7 +1309,7 @@
      "name": "parallel",
      "anchor": "shape-3-parallel",
      "parent": null,
-     "blurb": "Two sorted sequences, one pointer each. Compare the heads, consume the smaller. Nothing",
+     "blurb": "Two sorted sequences, one pointer each. Compare the heads, consume the smaller. Nothing converges and nothing lags.",
      "template": "i = j = 0\nwhile i < len(a) and j < len(b):\n    if a[i] < b[j]:\n        i += 1\n    elif a[i] > b[j]:\n        j += 1\n    else:\n        record(a[i])\n        i += 1\n        j += 1",
      "worked": [
       {

@@ -258,10 +258,15 @@ class Parser:
                 continue
 
             # ---- blurb: first prose paragraph after a (sub)shape heading ----
-            if blurb_pending is not None and line.strip() and not line.startswith("|") \
-                    and not line.startswith("!") and not line.startswith("*"):
-                blurb_pending["blurb"] = line.strip()
-                blurb_pending = None
+            # A paragraph is one or more consecutive non-empty lines; join them
+            # so a wrapped sentence is not cut at the first line break.
+            if blurb_pending is not None:
+                if line.strip() and not line.startswith("|") \
+                        and not line.startswith("!") and not line.startswith("*"):
+                    prev = blurb_pending.get("blurb")
+                    blurb_pending["blurb"] = (prev + " " + line.strip()) if prev else line.strip()
+                elif blurb_pending.get("blurb"):
+                    blurb_pending = None      # blank line ends the paragraph
 
             # ---- images ---------------------------------------------------
             for im in IMAGE.finditer(line):
